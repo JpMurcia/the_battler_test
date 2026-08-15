@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "skills": {
+    "pixijs": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs/SKILL.md",
+      "computedHash": "ae54bc161506b444238c101f5ac25c5a60c8b0592f9469adfb2f7cd57b6f7913"
+    },
+    "pixijs-accessibility": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-accessibility/SKILL.md",
+      "computedHash": "7057601ca1840543c565af43d0ae6f466fdbcf7a67194310c52b3ad9b7aeea7c"
+    },
+    "pixijs-application": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-application/SKILL.md",
+      "computedHash": "3578917036ba897e120b1fa83053a82e74aa94690ab8bc488ecd755dcb07cc98"
+    },
+    "pixijs-assets": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-assets/SKILL.md",
+      "computedHash": "6f8cb5aa95cbe28f5ea310f2eb8498a54e951219d8e379bed4b4fb5b71d88c45"
+    },
+    "pixijs-blend-modes": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-blend-modes/SKILL.md",
+      "computedHash": "8a475c0e0bc6ea7aa74040c31729bd4b4ff6c08e2ed665ea26735de566a2c3fb"
+    },
+    "pixijs-color": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-color/SKILL.md",
+      "computedHash": "2e69c8bf24bb7ba29091fa92350d16b4251c56c8fef905bf6907e39377da6568"
+    },
+    "pixijs-core-concepts": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-core-concepts/SKILL.md",
+      "computedHash": "d4d484a441ade407bdbeb3f7b02145f82234d4ffb71d83be555643ce5374c0df"
+    },
+    "pixijs-create": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-create/SKILL.md",
+      "computedHash": "7ecd3e73f272befdd1b5e953a10572fdd5ab5ac1089e25794c2b229c0ffe2717"
+    },
+    "pixijs-custom-rendering": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-custom-rendering/SKILL.md",
+      "computedHash": "e2898edc77e08bb1d34680a24c33f1dcf4485c0551df77866584693d2db2ffcb"
+    },
+    "pixijs-environments": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-environments/SKILL.md",
+      "computedHash": "75cf04d49274801288f491a8a29b12af0fcbe4fa18e1a3c57cc164da4d095d0a"
+    },
+    "pixijs-events": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-events/SKILL.md",
+      "computedHash": "f260ccfed8976e6428a255324f9e7f9ca968761036e5b6e198d098663dd1e6d6"
+    },
+    "pixijs-filters": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-filters/SKILL.md",
+      "computedHash": "2bb19605080db7ed2048235c403da28f39ba413d0b40790f475d0765e8390276"
+    },
+    "pixijs-html-source": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-html-source/SKILL.md",
+      "computedHash": "35f731e40bbf3c8a780861d566cbfec5495d4363bc270c069f9a1759b9238289"
+    },
+    "pixijs-math": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-math/SKILL.md",
+      "computedHash": "2c08e09f3fa42f9121658f8d77572387b53bd2ab24e6b471111255acc291e5f4"
+    },
+    "pixijs-migration-v8": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-migration-v8/SKILL.md",
+      "computedHash": "96ed9291a6a371e70856aa66b9cb36cd8de1e0d198530684a4f3fe2d66848932"
+    },
+    "pixijs-performance": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-performance/SKILL.md",
+      "computedHash": "3d1d499ce071a9feb5672e762b71875b759d7e63e6ab898fe16114cc7b81930a"
+    },
+    "pixijs-scene-container": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-container/SKILL.md",
+      "computedHash": "9ee65c2ee6320a505215041baa3a3bb3e1ad19679d9bc7c506dcdd51c31ac9c9"
+    },
+    "pixijs-scene-core-concepts": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-core-concepts/SKILL.md",
+      "computedHash": "d04280632b6fc097780a253ad9f36b4346d140d6a7179ea5634c2c298ddbcd10"
+    },
+    "pixijs-scene-dom-container": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-dom-container/SKILL.md",
+      "computedHash": "1bc837f24046970481e3ec59f95a2b0652d79bd4e3e253a478c36451e7ce99fd"
+    },
+    "pixijs-scene-gif": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-gif/SKILL.md",
+      "computedHash": "e8a526eae2046b29055a656c51670145f082b42d2d2ca66d6d7878bcab7d1356"
+    },
+    "pixijs-scene-graphics": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-graphics/SKILL.md",
+      "computedHash": "201b42be1860e404b414b5581de322602657a62cc3207d60a4432a32c3c455da"
+    },
+    "pixijs-scene-mesh": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-mesh/SKILL.md",
+      "computedHash": "f649b51889fb9105c02e557f75d55de7d708f13e151f9255f9139837f990c27a"
+    },
+    "pixijs-scene-particle-container": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-particle-container/SKILL.md",
+      "computedHash": "ea4a3e7245288505c13a47e596930aca1dc26148ba2257b4eab81fe9edfce491"
+    },
+    "pixijs-scene-sprite": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-sprite/SKILL.md",
+      "computedHash": "ba3b123e62afa890a82bff17c410a646df19eff9d97bef2240c2edbf79c54081"
+    },
+    "pixijs-scene-text": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-scene-text/SKILL.md",
+      "computedHash": "90b1346e7265e8739d65d9ea3d9d5549aab35c220075b58048fd3c9641c1ac94"
+    },
+    "pixijs-ticker": {
+      "source": "Xopoko/plug-n-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/pixijs/skills/pixijs-ticker/SKILL.md",
+      "computedHash": "2aaafd0d0511abe845e648704279a1db4b17823bf2bef52ca6a439afc6117da7"
+    }
+  }
+}
