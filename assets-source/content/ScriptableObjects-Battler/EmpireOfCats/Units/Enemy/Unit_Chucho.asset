@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974d2799245e85e45965594e8de5ccb2, type: 3}
+  m_Name: Unit_Chucho
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.UnitDefinition
+  m_UnitId: enemy_chucho
+  m_DisplayName: Chucho
+  m_Cost: 1
+  m_CooldownSeconds: 1.4
+  m_MaxHealth: 20
+  m_Damage: 6
+  m_Range: 1.3
+  m_IdleAnimation: {fileID: 9100000, guid: 31e22d99fcbaa344bba259ef1642697c, type: 2}
+  m_AttackAnimation: {fileID: 9100000, guid: 424633bb9849cbf41b6ad2c0bf3ecb50, type: 2}
+  m_VisualVariant: {fileID: 7568224098917558202, guid: 16938344c50f70e4a8ec236e6cc8fbd7,
+    type: 3}
+  m_Team: 1
+  m_AttackType: 0
+  m_ClassificationType: 0
+  m_SpecialClassificationType: 0
+  m_TraitTargetingAbilities: []
+  m_NeutralAbilities: []
+  m_Immunities: []
+  m_EvolutionStages: []
+  m_Portrait: {fileID: -8398500527302845922, guid: ddabc777bebb15642a62c7be014d8f24,
+    type: 3}
+  m_Rarity: 0
+  m_StrongAgainstModifiers: []
+  m_Resistances: []
+  m_MultiHitCount: 1
+  m_CriticalChance: 0

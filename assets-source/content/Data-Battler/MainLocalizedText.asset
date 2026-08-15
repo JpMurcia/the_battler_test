@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b70ae3ea016b76b40a1f316d429c1aa7, type: 3}
+  m_Name: MainLocalizedText
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.LocalizedTextTable
+  m_Entries:
+  - key: menu.start
+    spanish: Empezar
+    english: Start
+    chinese: "\u5F00\u59CB"
+    french: Commencer
+  - key: menu.continue
+    spanish: Continuar
+    english: Continue
+    chinese: "\u7EE7\u7EED"
+    french: Continuer
+  - key: menu.settings
+    spanish: "Configuraci\xF3n"
+    english: Settings
+    chinese: "\u8BBE\u7F6E"
+    french: "Param\xE8tres"
+  - key: menu.apply
+    spanish: Aplicar/Guardar
+    english: Apply/Save
+    chinese: "\u5E94\u7528/\u4FDD\u5B58"
+    french: Appliquer/Enregistrer
+  - key: menu.close
+    spanish: Cerrar
+    english: Close
+    chinese: "\u5173\u95ED"
+    french: Fermer
+  - key: menu.audio.music
+    spanish: "M\xFAsica"
+    english: Music
+    chinese: "\u97F3\u4E50"
+    french: Musique
+  - key: menu.audio.sfx
+    spanish: Efectos
+    english: SFX
+    chinese: "\u97F3\u6548"
+    french: Effets
+  - key: menu.audio.voice
+    spanish: Voces
+    english: Voice
+    chinese: "\u8BED\u97F3"
+    french: Voix
+  - key: menu.language
+    spanish: Idioma
+    english: Language
+    chinese: "\u8BED\u8A00"
+    french: Langue

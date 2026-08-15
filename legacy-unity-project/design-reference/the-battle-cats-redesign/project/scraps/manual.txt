@@ -1,0 +1,1224 @@
+
+
+THE BATTLE CATS
+MANUAL TÉCNICO DE DISEÑO Y MECÁNICAS DE JUEGO
+Arquitectura · Navegación · Unidades · Enemigos · Niveles · Monetización · Modo Historia
+Documento de referencia elaborado a partir de fuentes públicas —documentación oficial de PONOS Corporation y wikis comunitarias especializadas en The Battle Cats— con fines de estudio técnico, documentación de diseño de sistemas y análisis de mecánicas de juego.
+Agosto de 2026
+
+Aviso sobre derechos de autor y contenido visual
+The Battle Cats, Nyanko Daisensou y todos los personajes, nombres, ilustraciones y textos narrativos originales del juego son marcas registradas y propiedad intelectual de PONOS Corporation. Este documento es un análisis técnico no oficial, sin fines de lucro, elaborado con propósito educativo y de referencia de diseño.
+Por respeto a los derechos de autor, este manual NO reproduce capturas de pantalla reales del juego, ilustraciones de personajes ni texto narrativo textual de los diálogos o cinemáticas. En su lugar:
+Las pantallas e interfaces se describen textualmente, con el detalle suficiente para entender su función, sus elementos y sus transiciones.
+La navegación entre pantallas se representa mediante diagramas de flujo elaborados específicamente para este documento (texto e indentación), no mediante imágenes del juego.
+El argumento del modo historia se resume y parafrasea en términos generales, sin citar diálogos textuales.
+Todas las estadísticas numéricas (HP, costos, porcentajes de gacha, precios) son datos de juego —hechos objetivos, no expresión creativa— y se presentan como referencia de diseño.
+Si necesitas capturas de pantalla reales del juego, puedes consultarlas directamente en la tienda de aplicaciones (App Store / Google Play), en el sitio oficial de PONOS, o en las wikis comunitarias battle-cats.fandom.com y battlecats.miraheze.org, que incluyen galerías de imágenes bajo sus propios términos de uso.
+
+Índice de contenidos
+1. Ficha técnica y visión general
+2. Arquitectura general del juego
+3. Modalidad de juego (bucle central)
+4. Navegación y pantallas del juego
+5. Unidades propias — los gatos (Cat Units)
+6. Unidades enemigas
+7. Tipos de ataque, habilidades y categorías
+8. Niveles, capítulos y sagas
+9. Modos de juego adicionales
+10. Secuencia de una partida (battle flow)
+11. Sistemas de progresión y economía interna
+12. Métodos de pago y monetización
+13. Modo historia — argumento general
+14. Conclusiones y fuentes de referencia
+
+1. Ficha técnica y visión general
+Campo
+Detalle
+Desarrollador / Editor
+PONOS Corporation (Kioto, Japón), fundada en 1990
+Nombre original (JP)
+Nyanko Daisensou (にゃんこ大戦争, "La Gran Guerra de los Gatos")
+Lanzamiento original
+iOS Japón: 15 de noviembre de 2012 · Android: diciembre de 2012
+Lanzamiento internacional (EN)
+17 de septiembre de 2014, bajo el nombre "The Battle Cats"
+Otras plataformas
+Nintendo 3DS (2016, "Battle Cats POP!") · Windows (2017, descontinuado) · Nintendo Switch ("The Battle Cats Unite!", desde dic. 2018)
+Género
+Tower defense / estrategia de carril único, "tap-to-deploy"
+Modelo de negocio
+Free-to-play con compras integradas (moneda premium + sistema gacha)
+Motor / técnica
+2D, animación por sprites/fotogramas, sin motor 3D
+Contenido (aprox., versión reciente)
+Más de 800 unidades de gato y más de 700 enemigos distintos
+Alcance
+Decenas de millones de descargas acumuladas a nivel mundial
+The Battle Cats es un juego de estrategia mobile en el que el jugador dirige un ejército de gatos con apariencias absurdas y humorísticas para conquistar bases enemigas a lo largo de decenas de capítulos, ambientados progresivamente en el mundo real, un futuro invadido por alienígenas y, finalmente, el espacio profundo. Su identidad de diseño combina una mecánica extremadamente simple de aprender —desplegar unidades tocando la pantalla— con una enorme profundidad estratégica derivada de la combinación de rarezas, rasgos enemigos, habilidades especiales y sinergias entre unidades ("Cat Combos").
+El juego se actualiza con una cadencia aproximada de dos semanas, añadiendo nuevas unidades, capítulos, eventos temporales y ajustes de balance, lo que lo convierte en un producto "vivo" cuyo contenido exacto (número total de unidades, tablas de estadísticas, etc.) cambia constantemente. Por esa razón, este manual se centra en explicar los sistemas y arquitecturas subyacentes —que son estables— y utiliza unidades y enemigos concretos únicamente como ejemplos ilustrativos.
+
+2. Arquitectura general del juego
+2.1 Arquitectura cliente-servidor
+The Battle Cats utiliza una arquitectura híbrida cliente-servidor típica de los juegos móviles free-to-play:
+Cliente (dispositivo): ejecuta toda la lógica de la batalla en tiempo real —posicionamiento de unidades, colisiones, temporizadores de recarga, resolución de daño— de forma completamente local y sin necesidad de conexión a internet durante el combate.
+Servidor remoto: gestiona el estado "de cuenta" que debe persistir y sincronizarse: inventario de unidades y su nivel, XP, moneda premium (Cat Food), progreso de capítulos, transferencia de datos entre dispositivos, calendario de eventos y rotación de banners de gacha, validación de compras integradas y expediciones de Gamatoto (que avanzan en tiempo real incluso con la app cerrada).
+Sincronización periódica: el cliente descarga la configuración vigente (qué eventos están activos, qué banner de gacha está disponible, qué ofertas hay en la tienda) al iniciar sesión o volver a primer plano; esto permite a PONOS modificar la disponibilidad de contenido sin publicar una nueva versión de la app.
+2.2 Motor y representación visual
+El juego utiliza gráficos 2D con animación basada en fotogramas (sprite sheets), sin geometría 3D. Cada unidad —tanto propia como enemiga— se representa como un sprite que se desplaza sobre un eje horizontal único (no existe una cuadrícula bidimensional como en otros tower defense de "múltiples carriles"). Esta limitación deliberada del espacio de juego a una sola dimensión de movimiento es la base de toda la simplicidad de control del título, y a la vez el origen de su complejidad estratégica: al no poder reposicionar unidades libremente, toda la planificación ocurre antes y durante el despliegue.
+2.3 Bucle de juego (game loop)
+El bucle central de una partida se puede describir como un ciclo continuo de cuatro fases que se ejecutan en tiempo real durante toda la duración del nivel:
+→ Acumulación pasiva de dinero (la economía de la partida crece sola con el tiempo)
+→ Decisión del jugador: qué unidad desplegar y en qué momento, según el dinero disponible
+→ Simulación automática: las unidades avanzan, colisionan y atacan sin intervención directa
+→ Resolución de eventos: muerte de unidades, generación de más dinero al eliminar enemigos, posible aparición de un jefe (boss)
+→ Vuelta al paso 1 hasta que una de las dos bases llega a 0 HP
+2.4 Persistencia de datos
+Existen dos niveles de persistencia claramente diferenciados: el progreso de cuenta (unidades desbloqueadas, niveles, tesoros obtenidos, capítulos completados) se guarda de forma permanente y se sincroniza con el servidor; el estado de una batalla individual en curso es efímero: si el jugador abandona el nivel antes de completarlo, ese progreso puntual no se conserva (con la excepción de las "Etapas de Continuación", un tipo de nivel especial diseñado para permitir cierta persistencia de energía entre intentos).
+2.5 Dirección de arte y diseño gráfico
+El apartado visual de The Battle Cats es una pieza deliberada de su identidad de marca, y comparte varios rasgos reconocibles en todas sus unidades y enemigos:
+Ilustración plana en 2D con contornos gruesos y paletas de color saturadas, priorizando la legibilidad a tamaño reducido (los sprites se ven, en su mayoría, a una escala pequeña dentro de la pantalla de batalla) por encima del detalle fino.
+Proporciones "chibi" o deformadas: cabezas grandes, cuerpos simplificados y expresiones faciales exageradas, un lenguaje visual heredado de la ilustración cómica japonesa.
+Animación por ciclos cortos de fotogramas (habitualmente entre 2 y 8 fotogramas por animación de ataque o movimiento), suficiente para transmitir la acción sin requerir el peso gráfico de una animación fluida, lo que mantiene el juego ligero en dispositivos móviles de gama baja.
+Humor visual basado en la yuxtaposición absurda: la premisa de "convertir cualquier concepto en un gato" (profesiones, animales, deidades, objetos cotidianos, parodias de otros medios) es la fuente principal del atractivo cómico del roster, antes que la propia mecánica de combate.
+Consistencia entre unidad y enemigo espejo: muchos enemigos son variantes tonales de un mismo diseño base reutilizado (por ejemplo, un mismo esqueleto de animación con distinta paleta de color y accesorios para representar variantes de trait), lo que reduce el coste de producción de contenido nuevo sin sacrificar variedad percibida.
+Fondos y bases enemigas temáticos por región/etapa (monumentos, paisajes o iconografía reconocible del país o escenario representado), que refuerzan la lectura cómica de "conquista mundial" sin necesidad de texto adicional.
+2.6 Sistema de animación: estados, fotogramas y pipeline de construcción
+Para responder con precisión a "cuántos sprites tiene una unidad en batalla" hay que separar dos capas distintas: (A) la máquina de estados de combate, que es idéntica para gatos y enemigos, y (B) el pipeline de animación por piezas recortadas con el que se construye cada estado, que sí varía en complejidad según el tipo de unidad.
+A) Máquina de estados (idéntica para unidades propias y enemigas)
+Estado
+Qué ocurre
+Cuándo se activa
+Caminando (Walking)
+Estado por defecto: la unidad avanza sobre el carril
+Siempre que tenga velocidad > 0 y no haya nada que la detenga
+En espera (Idle)
+La unidad se queda quieta, sin atacar
+Hay un enemigo en su alcance pero su ataque aún no está listo (recarga en curso, o habilidad tipo "Solo ataca a X")
+Atacando — Anticipación (Foreswing)
+Animación previa al golpe; no inflige daño todavía
+Desde que empieza el ataque hasta el fotograma exacto del impacto
+Atacando — Recuperación (Backswing)
+Animación posterior al golpe; la unidad sigue sin poder moverse
+Desde el impacto hasta el final de la animación de ataque
+Retroceso (Knockback)
+La unidad es empujada hacia atrás; su hitbox se desactiva
+Al recibir daño suficiente, una habilidad de retroceso, o la onda de choque de un jefe
+Eliminada (Dead)
+Sale del combate
+Al llegar a 0 HP; la mayoría se convierte en un pequeño "alma" que se eleva y desaparece; algunas unidades tienen una animación de muerte propia
+Enterrado (Burrow) — solo Zombis
+Vuelve a la unidad invulnerable e imposible de seleccionar como objetivo durante un tiempo
+Habilidad exclusiva de ciertos enemigos de rasgo Zombi
+Deformación (Warp)
+Desplazamiento instantáneo hacia atrás en el mapa
+Al recibir la habilidad Warp de una unidad enemiga o propia
+Esta máquina de estados es exactamente la misma para gatos y para enemigos porque ambos tipos de unidad comparten el mismo motor de combate (ver 2.2). Lo que cambia de una unidad a otra no es el conjunto de estados disponibles, sino cuánto dura cada uno, en fotogramas, y cuántas piezas gráficas se mueven durante ellos.
+B) Fotogramas de temporización: el juego corre a 30 fps
+Internamente, el juego mide todos sus tiempos —ataque, recarga, movimiento— en fotogramas de una tasa fija de 30 por segundo (30f = 1 segundo). Cada unidad, propia o enemiga, define como parte de sus estadísticas (no visibles directamente en el juego, pero sí en el Enemy/Cat Guide tras desbloquearla) tres valores que gobiernan su ciclo de ataque:
+Anticipación (Foreswing): fotogramas desde que arranca la animación de ataque hasta que se inflige el daño.
+Recuperación (Backswing): fotogramas desde el impacto hasta que termina la animación y la unidad puede volver a moverse o atacar.
+Tiempo entre ataques (Time Between Attacks, TBA): duración total del ciclo, desde que empieza un ataque hasta que la unidad puede iniciar el siguiente.
+Unidad
+Tipo
+Anticipación
+Recuperación
+Tiempo entre ataques
+Cat (propia, Normal)
+Ataque único
+8f (0,27 s)
+—
+Animación total ≈18f (Normal) / 16f (Evolucionada)
+Tank Cat (propia, Normal)
+Ataque de área
+8f (0,27 s)
+8f (0,27 s)
+67f (2,23 s)
+Doge (enemigo, Sin rasgo)
+Ataque único
+8f (0,27 s)
+10f (0,33 s)
+47f (1,57 s)
+Las unidades con "ataque múltiple" (Multi-Hit) —frecuente en Uber Raros y Legendarios— tienen varias anticipaciones dentro de un mismo ciclo, una por cada golpe (máximo documentado: 3 golpes por ataque), reiniciando la animación completa si son interrumpidas antes del último impacto.
+C) ¿Cuántas piezas gráficas tiene una unidad? El pipeline de animación por recorte
+A diferencia de una animación clásica "fotograma a fotograma" (donde cada instante del movimiento es una imagen completa distinta), The Battle Cats construye a sus unidades con una técnica de recorte y ensamblaje por piezas, similar en concepto a un títere de recortables digital:
+→ 1. Se dibuja una única lámina de arte (sprite sheet) con las piezas sueltas del personaje: normalmente cabeza, torso, uno o dos brazos, una o dos piernas, y accesorios o arma si aplica
+→ 2. Esa lámina se recorta en regiones independientes, cada una asignada a una pieza del personaje
+→ 3. Las piezas recortadas se ensamblan en un modelo jerárquico (un "esqueleto"): cada una se ancla a un punto de pivote y hereda el movimiento de su pieza "padre" (el antebrazo pivota desde el hombro, por ejemplo)
+→ 4. Cada estado de la tabla A (Caminar, Esperar, Anticipación, Recuperación, Retroceso...) se define como una animación independiente: una secuencia de fotogramas clave que mueve, rota o escala esas mismas piezas a lo largo del tiempo, sin sustituir la imagen completa en cada fotograma
+Esta técnica —confirmada por herramientas de edición usadas por la comunidad de creadores de contenido, que replican el formato interno del juego (piezas recortadas + modelo + animación por fotogramas clave)— explica varios rasgos ya mencionados en 2.5: el movimiento ligeramente "rígido" característico del estilo, la facilidad para reutilizar un mismo esqueleto con piezas recoloreadas en distintos enemigos, y que el juego pueda alojar más de 1.500 unidades entre gatos y enemigos sin un peso de instalación desproporcionado.
+El número de piezas sí varía según el diseño de cada unidad: una unidad simple como Cat o Doge puede resolverse con apenas 3-5 piezas (cabeza, cuerpo, un par de extremidades genéricas); una unidad más detallada (un Uber Raro, un jefe) puede usar bastantes más piezas independientes —armas, capas, múltiples accesorios articulados por separado— para lograr una animación más expresiva y dramática.
+Por eso, ante "¿todas las unidades tienen los mismos sprites?": comparten la misma máquina de estados y el mismo pipeline de construcción, pero no la misma cantidad de piezas ni la misma duración en fotogramas de cada estado — eso se decide unidad por unidad, según su presupuesto de diseño.
+Guía práctica para replicar este diseño
+Definir una máquina de estados común y fija (Caminar, Esperar, Anticipación, Recuperación, Retroceso, Muerte) que controle a toda unidad del juego, propia o enemiga, sin excepciones.
+Construir cada personaje con piezas sueltas reutilizables (cabeza/cuerpo/extremidades/arma) en lugar de fotogramas completos dibujados a mano uno por uno.
+Definir, por unidad, solo un puñado de valores de temporización —Anticipación, Recuperación, Tiempo entre ataques, Velocidad, Alcance— y dejar que el controlador de estados calcule automáticamente cuándo cambiar de animación a partir de esos números.
+Fijar una tasa de referencia interna única (aquí, 30 fps) para expresar todos los tiempos del juego —animaciones, recargas, cooldowns— en la misma unidad, facilitando balancear una unidad contra otra.
+Reservar el presupuesto extra de piezas y fotogramas clave (animaciones más elaboradas) solo para un subconjunto de unidades de gama alta; el resto del roster puede compartir esqueletos base con variaciones de color y accesorios, tal como se describe en 2.5.
+
+3. Modalidad de juego (bucle central de combate)
+Cada enfrentamiento ("stage") ocurre en una única pantalla horizontal: la base del jugador se sitúa en el extremo derecho y la base enemiga en el extremo izquierdo (o viceversa, según la orientación del mapa). El objetivo es reducir la salud de la base enemiga a 0 antes de que la propia sea destruida.
+3.1 Recursos administrados en batalla
+Recurso
+Descripción funcional
+Dinero de batalla
+Moneda que se genera automáticamente con el tiempo y se usa para desplegar ("invocar") unidades. Se acelera al destruir enemigos o al mejorar el "Worker Cat" (gato trabajador) durante la partida.
+Energía (Cat Energy)
+Recurso fuera de batalla necesario para poder iniciar un nivel; se regenera pasivamente con el tiempo o puede recargarse con Cat Food.
+Cat Cannon
+Cañón de la base propia. Inflige daño de área ("wave attack") a todos los enemigos dentro de su rango y aplica retroceso (knockback); requiere tiempo de recarga tras cada uso y puede mejorarse permanentemente.
+Objetos de batalla (Battle Items)
+Consumibles seleccionables antes de cada nivel: aceleración de velocidad (Speed Up), radar de tesoros, dinero extra (Rich Cat), Cat CPU (recarga automática del Cat Cannon), Sniper the Cat (elimina un enemigo aleatorio), entre otros.
+Límite de despliegue (Cat Limit)
+Número máximo de unidades propias simultáneas en pantalla; obliga a priorizar qué unidades mantener activas.
+3.2 Características de diseño distintivas
+Sin control directo post-despliegue: una vez invocada, una unidad se mueve y ataca de forma autónoma; el jugador no puede reposicionarla ni cancelarla.
+Progresión por rareza y coste: unidades más raras y potentes cuestan más dinero de despliegue y tienen tiempos de recarga más largos, generando un equilibrio riesgo/recompensa constante.
+Counter-play basado en rasgos: cada enemigo pertenece a uno o más "rasgos" (traits) que determinan qué habilidades de las unidades propias son efectivas contra él, convirtiendo la preparación de equipo (antes de la batalla) en una decisión tan importante como la ejecución durante la batalla.
+Progresión de dificultad por "magnificación de fuerza": los mismos enemigos reaparecen en etapas posteriores con estadísticas multiplicadas (a veces varios cientos por ciento), reutilizando el roster de enemigos en vez de generar contenido gráfico nuevo en cada nivel.
+
+4. Navegación y pantallas del juego
+A continuación se describe la jerarquía de pantallas ('scenes') del juego y las transiciones entre ellas. Dado que no se incluyen capturas reales por motivos de derechos de autor (ver aviso legal), la estructura se representa mediante el siguiente diagrama de flujo textual, elaborado a partir de la descripción funcional publicada por la comunidad y la documentación del propio juego.
+4.1 Diagrama de navegación (elaboración propia)
+→ Pantalla de Título (Title Screen)
+→ Menú Principal (Main Menu): aperturas/finales vistos, redes sociales, idioma, botón "Ajustes"
+→ Menú de la Base de Gatos (Cat Base Menu) — pantalla "hub" central
+→ Botón "¡Empezar!" → selector de saga (las pestañas se van añadiendo a medida que se desbloquean)
+→ Imperio de los Gatos → selector de Capítulo 1/2/3 → Mapa de etapas (Stage Select)
+→ Hacia el Futuro → selector de Capítulo 1/2/3 → Mapa de etapas
+→ Gatos del Cosmos → selector de Capítulo 1/2/3 → Mapa de etapas
+→ Los Reinos de Aku → Mapa de etapas propio (desbloqueo tardío)
+→ Legend Stages → selector de categoría (Stories of Legend / Uncanny Legends / Zero Legends / Event Stages / Collaboration Stages) → sub-capítulo → Mapa de etapas
+→ Catclaw Dojo / Catclaw Championships → lista directa de niveles de puntuación
+→ Mapa de etapas → Formación de equipo (si el jugador la ajusta antes de entrar) → Pantalla de Batalla → Pantalla de Resultados → regreso al mapa
+→ Menú de Mejora (Upgrade Menu): subir de nivel unidades y habilidades
+→ Menú de Equipo (Equip Menu): formación de equipo, elegir y ordenar las unidades que se llevan a la batalla
+→ Cápsula de Gatos / Gacha (Cat Capsule): obtención de nuevas unidades
+→ Expedición Gamatoto: recolección de materiales en tiempo real
+→ Cuerpo Ototo (Ototo Corps): mejoras permanentes de la base y del Cat Cannon
+→ Misiones / Catnip Challenges: objetivos con recompensa
+→ Tienda de Cat Food: compra de moneda premium u ofertas de terceros
+→ Calendario de eventos (Event Calendar): agenda de festivales y eventos próximos
+→ Biblioteca de gatos (Cat Guide), de enemigos (Enemy Guide) y de tesoros (Treasure Menu)
+4.2 Detalle funcional de cada pantalla
+Pantalla
+Función principal
+Elementos clave
+Título
+Pantalla de carga/bienvenida
+Animación de apertura, botón de inicio, botón de Ajustes
+Menú Principal
+Punto de entrada tras el título
+Aperturas/finales desbloqueados, enlaces sociales, selector de idioma
+Cat Base Menu
+Hub central del juego
+3 botones principales: Iniciar, Mejorar, Equipar; accesos a Gamatoto, Misiones, Calendario de eventos y menú de opciones
+Stage Select
+Elegir el nivel a jugar dentro de la saga/capítulo activo
+Mapa desplazable, indicador de energía, botón "Atacar", selección de objetos de batalla
+Battle Screen
+Combate en tiempo real
+Base propia y enemiga, fila de iconos de despliegue, contador de dinero, barra del Cat Cannon, control de velocidad x1/x2, botón de pausa
+Results Screen
+Resumen post-batalla
+XP obtenida, tesoro conseguido (si aplica), objetos de recompensa
+Upgrade Menu
+Progresión de unidades
+Lista filtrable de gatos, coste de XP por nivel, vista previa de evolución
+Equip Menu
+Formación de equipo
+Selección y orden de hasta un número máximo de unidades activas por partida (ver 4.4)
+Cat Capsule (Gacha)
+Obtención de nuevas unidades
+Banner activo, tasas de probabilidad visibles, botón de tirada simple/x11
+Event Calendar
+Agenda de eventos
+Lista cronológica de festivales y eventos activos/próximos, con opción de activar recordatorios (ver 9.8)
+Ajustes (Settings)
+Configuración general de la app
+Ver detalle en 4.3
+Para consultar el aspecto visual real de cada una de estas pantallas, se recomienda revisar las capturas oficiales disponibles en la ficha de la App Store / Google Play, o las galerías de las wikis comunitarias mencionadas en la sección de fuentes.
+4.3 Pantalla de Ajustes (Settings)
+Se accede desde el botón "Ajustes" del Menú Principal (o desde el icono de pausa dentro de una batalla, para las opciones de audio). Sus elementos principales son:
+Opción
+Función
+Música / Efectos de sonido
+Activa o desactiva por separado la música de fondo y los efectos de sonido
+Aviso de energía (Energy Notice)
+Envía una notificación cuando la energía del jugador se ha recargado por completo
+Idioma (Language)
+Cambia el idioma de la interfaz; puede requerir descargar datos adicionales
+Transferencia de datos (Data Transfer)
+Genera un Código de Transferencia y un Código de Confirmación para migrar la partida a otro dispositivo; también muestra el "Código de Consulta" (Inquiry Code) usado para soporte técnico
+Vinculación de cuenta (Account Link)
+Asocia la partida a una cuenta para poder recuperar el progreso si se pierde el dispositivo
+Ayuda (Help)
+Abre un menú de instrucciones sobre las distintas funciones del juego
+Diseño de la fila de despliegue
+Alterna entre una fila estándar de iconos de unidades en batalla o una disposición de dos filas visibles simultáneamente
+4.4 Formación de equipo (Equip Menu) y visual de despliegue en batalla
+La composición del equipo se decide fuera de la batalla, en el Equip Menu, y determina exactamente qué se ve y en qué orden durante el combate:
+En el Equip Menu, el jugador navega una cuadrícula con los iconos de la Forma Normal de todas las unidades desbloqueadas (agrupadas por rareza, con filtros disponibles) y selecciona cuáles llevar a la batalla.
+El número de unidades que se pueden equipar a la vez es limitado y se amplía progresivamente mediante recompensas de Rango de Usuario ("ampliaciones de espacio de despliegue").
+El orden en que se colocan las unidades en el Equip Menu es el mismo orden en que aparecerán sus iconos en la fila inferior de la pantalla de batalla.
+Durante la batalla, el despliegue se controla siempre desde esa fila de iconos, fija en la parte inferior de la pantalla:
+Cada icono muestra el retrato de la unidad y, debajo, su coste de despliegue actualizado en tiempo real.
+Un icono se oscurece (queda deshabilitado) cuando el dinero disponible es insuficiente o mientras la unidad está en tiempo de recarga; en este último caso suele mostrarse un barrido o velo que se retira progresivamente conforme se acerca el momento en que vuelve a estar disponible.
+Tocar un icono habilitado invoca a la unidad, que aparece con una breve animación de salida desde la Base de Gatos (extremo derecho de la pantalla, o izquierdo según la orientación del mapa) y comienza a desplazarse automáticamente hacia el enemigo.
+Si el equipo llevado a la batalla tiene más de 6 unidades, el jugador puede deslizar el dedo hacia arriba o abajo sobre la fila para ver el resto, o bien activar en Ajustes la disposición de dos filas simultáneas para verlas todas sin deslizar.
+Durante el combate, mantener pulsado el icono de una unidad muestra información contextual sobre sus habilidades y qué rasgos enemigos son sus objetivos, sin necesidad de salir al Cat Guide.
+4.5 Sistema de filtros (Cat Filter)
+Ubicación: no es una pantalla propia, sino una herramienta que aparece —representada por un icono de embudo/filtro— dentro de tres pantallas distintas: el Upgrade Menu, el Equip Menu y el Cat Guide. Se desbloquea al completar el Capítulo 2 de Imperio de los Gatos.
+Filtro por rareza: casillas independientes para mostrar u ocultar Normales, Especiales, Raros, Super Raros, Uber Raros y Legendarios.
+Filtro por rasgo objetivo (trait): iconos de los 10 rasgos enemigos (ver sección 6.1); se activan tocándolos para mostrar solo unidades que tienen alguna habilidad dirigida a ese rasgo.
+Filtro por habilidad: iconos equivalentes para las habilidades especiales descritas en la sección 7 (Debilitar, Congelar, Crítico, Fuerte Contra, etc.).
+Interruptor Y/O (AND/OR): decide si el resultado debe cumplir todos los criterios de rasgo/habilidad marcados a la vez (Y) o cualquiera de ellos (O); no afecta al filtro de rareza.
+Inclusión de Talentos: dos botones adicionales permiten decidir si las habilidades otorgadas por Talentos u Talentos Última cuentan también para el filtro de habilidad/rasgo.
+Solo formas máximas: una casilla "Only Max Forms" limita el resultado a la forma más alta desbloqueada de cada unidad, evitando ver duplicados de una misma unidad en distintas formas.
+Ordenar por nivel: en algunas de estas pantallas también es posible reordenar la lista resultante de menor a mayor nivel, útil para detectar qué unidades son más baratas de mejorar a continuación.
+4.6 Mapa de navegación completo (índice de referencia rápida)
+A modo de referencia cruzada, esta tabla resume dónde se ubica cada pantalla o sistema mencionado en este manual, cómo se llega hasta ahí desde la Base de Gatos, y en qué sección del documento se explica en detalle.
+Elemento
+Ruta de acceso
+Para qué sirve
+Sección
+Pantalla de Título
+Al abrir la aplicación
+Carga inicial; acceso a Ajustes
+4.2 / 4.3
+Menú Principal
+Automático tras el Título
+Aperturas/finales vistos, idioma, redes sociales
+4.2
+Ajustes (Settings)
+Menú Principal → botón "Ajustes"
+Audio, idioma, transferencia de datos, diseño de fila
+4.3
+Cat Base Menu
+Automático al elegir un modo de juego
+Hub central de navegación
+4.1 / 4.2
+Stage Select
+Cat Base Menu → "¡Empezar!" → saga → capítulo
+Elegir la etapa a jugar
+4.1
+Battle Screen
+Stage Select → botón "Atacar"
+Combate en tiempo real
+3 / 4.2 / 10
+Results Screen
+Automático al terminar una batalla
+Resumen de XP, tesoro y recompensas
+4.2 / 10
+Upgrade Menu — Unidades
+Cat Base Menu → botón "Mejorar" → pestaña Unidades
+Subir de nivel a los gatos
+5.2-5.7
+Upgrade Menu — Mejoras de Base
+Cat Base Menu → "Mejorar" → pestaña Mejoras de Base
+Energía, cañón, economía, defensa de base
+5.9
+Equip Menu
+Cat Base Menu → botón "Equipar"
+Formación de equipo para la batalla
+4.4
+Cat Filter
+Icono de filtro dentro de Upgrade/Equip/Cat Guide
+Filtrar unidades por rareza, rasgo o habilidad
+4.5
+Cat Capsule (gacha)
+Cat Base Menu → icono de cápsula
+Obtener unidades nuevas por gacha
+12.3
+Cat Storage (almacén)
+Icono de refrigerador (Cat Base Menu o Cat Capsule)
+Activar o intercambiar cápsulas obtenidas
+9.10
+Gamatoto
+Cat Base Menu → icono de pico y casco
+Expediciones que generan materiales
+9.1
+Ototo Corps
+Pantalla de Gamatoto → deslizar a la izquierda
+Base, Estilo y cabezas de cañón alternativas
+9.2
+Misiones (Catnip Challenges)
+Cat Base Menu → icono de checklist
+Objetivos puntuales con recompensa
+9.6
+Event Calendar
+Cat Base Menu → icono de calendario
+Agenda de festivales y eventos
+9.8
+Estado del jugador / User Rank
+Cat Base Menu → barra de Rango (sup. izquierda)
+Progreso de cuenta y recompensas por rango
+9.9
+Cat Guide
+Cat Base Menu → icono de libro rojo con gato
+Biblioteca de unidades propias
+9.7
+Enemy Guide
+Junto al Cat Guide, dentro del menú de guías
+Biblioteca de enemigos
+9.7
+Treasure Menu
+Menú de guías, o desde Stage Select
+Progreso de Tesoros por capítulo
+9.7
+Cat Food Shop
+Cat Base Menu → "+" junto al contador de Cat Food
+Comprar moneda premium u ofertas
+12.1-12.2
+Officers' Club
+Cat Base Menu → tarjeta de suscripción
+Beneficios diarios recurrentes
+12.4
+
+5. Unidades propias — los gatos (Cat Units)
+Las unidades del jugador se conocen genéricamente como "Cats". El sistema cuenta actualmente con más de 800 unidades distintas, organizadas en seis niveles de rareza y con un sistema de evolución en varias etapas por unidad.
+5.1 Rarezas
+Rareza
+Método de obtención habitual
+Perfil general
+Normal (Básicos)
+Progreso de la historia principal, gratuitos
+Bajo coste y baja potencia individual; base del ejército inicial
+Especiales
+Compra directa con Cat Food, eventos o regalos
+Habilidades específicas y utilitarias; complementan al equipo
+Raros
+Cápsula de Gatos (gacha)
+Primer escalón de unidades "gacha"; variedad amplia de roles
+Super Raros
+Cápsula de Gatos (gacha)
+Mayor potencia y habilidades más definidas que los Raros
+Uber Raros
+Cápsula de Gatos (gacha), tasa reducida
+Unidades insignia; suelen tener las habilidades más potentes del juego
+Legendarios (Legend Rare)
+Cápsulas especiales (Platinum/Legend), tasa muy reducida
+La rareza más alta; unidades excepcionales con mecánicas únicas
+5.2 Estadísticas de una unidad
+Cada unidad, en cada una de sus formas de evolución, se define mediante el siguiente conjunto de estadísticas:
+Estadística
+Descripción
+HP (Salud)
+Cantidad de daño que la unidad puede recibir antes de ser eliminada del combate
+Poder de ataque
+Daño infligido por cada golpe conectado
+Frecuencia de ataque
+Tiempo (en fotogramas) entre el inicio de la animación de ataque y el impacto, y entre ataques consecutivos
+Alcance
+Distancia a la que la unidad puede golpear a un enemigo (cuerpo a cuerpo o a distancia)
+Velocidad de movimiento
+Ritmo de avance hacia el enemigo; algunas unidades tienen velocidad 0 y permanecen junto a la base
+Golpes de retroceso (Knockback)
+Número de veces que la unidad puede ser empujada hacia atrás antes de perder la capacidad de seguir retrocediendo
+Coste de despliegue
+Dinero de batalla necesario para invocar a la unidad; aumenta según el capítulo jugado (x1 en el capítulo 1, x1,5 en el capítulo 2, x2 en el capítulo 3, de forma habitual)
+Tiempo de recarga (Recharge / Deploy Recovery)
+Tiempo de espera tras desplegar una unidad antes de poder invocar otra copia de la misma
+5.3 Sistema de evolución
+La mayoría de unidades progresan a través de varias formas visuales y funcionales conforme suben de nivel:
+Forma Normal: disponible desde el desbloqueo de la unidad.
+Forma Evolucionada: se obtiene típicamente al alcanzar el nivel 10; suele mejorar estadísticas base.
+Forma Verdadera (True Form): se desbloquea desde nivel 20 usando "Cat Tickets" u objetos equivalentes; normalmente añade o mejora una habilidad especial, además de aumentar estadísticas.
+Forma Última (Ultra Form): reservada a un subconjunto reducido de unidades de alto nivel, con mejoras adicionales significativas.
+Talentos (Talents): a partir de la Forma Verdadera, ciertas unidades (especialmente Uber Raros y Legendarios) permiten invertir puntos de talento en resistencias a debuffs (Resist Weaken, Resist Freeze, Resist Slow, Resist Knockback), aumentos de estadísticas u orbes especiales que otorgan inmunidades o buffs adicionales.
+5.4 Detalle de las unidades Normales, sus formas y su desbloqueo
+Las diez unidades "Normales" son las primeras que obtiene cualquier jugador. Nueve de ellas se desbloquean de forma automática al completar el Capítulo 1 de Imperio de los Gatos, país por país; la décima (Superfeline) sigue una vía completamente distinta. Todas comparten la misma estructura de progresión: Forma Normal → Forma Evolucionada (nivel 10) → Forma Verdadera (nivel 20+10, usando Cat Tickets), y llegan a un tope de nivel de 110 mediante duplicados y XP.
+Unidad
+Forma Evolucionada
+Forma Verdadera
+Cómo se desbloquea
+Cat
+Macho Cat
+Mohawk Cat
+Disponible desde el inicio del juego
+Tank Cat
+Wall Cat
+Eraser Cat
+Completar Corea, Capítulo 1
+Axe Cat
+Brave Cat
+Dark Cat
+Completar China, Capítulo 1
+Gross Cat
+Sexy Legs Cat
+Macho Leg Cat
+Completar Filipinas, Capítulo 1
+Cow Cat
+Giraffe Cat
+Lion Cat
+Completar Singapur, Capítulo 1
+Bird Cat
+UFO Cat
+The Flying Cat
+Completar Nepal, Capítulo 1
+Fish Cat
+Whale Cat
+Island Cat
+Completar Madagascar, Capítulo 1
+Lizard Cat
+Dragon Cat
+King Dragon Cat
+Completar Egipto, Capítulo 1
+Titan Cat
+Mythical Titan Cat
+Jamiera Cat
+Completar Italia, Capítulo 1 (8.000 XP)
+Superfeline
+—
+Misma unidad, estadísticas mejoradas (nivel 100)
+Cápsula de Gatos Normal+, tras completar Gatos del Cosmos Cap. 3
+Los nombres de país corresponden a la versión en inglés del juego; el orden y los nombres exactos de las primeras etapas de Imperio de los Gatos pueden variar ligeramente entre la versión japonesa, la inglesa y otras regiones (coreana, taiwanesa). Superfeline es un caso especial: su existencia se mantiene oculta por el juego hasta que se cumplen sus requisitos de desbloqueo, y su Forma Verdadera exige nivel 100 en lugar de 30, junto con un requisito adicional de Rango de Usuario.
+Un detalle poco conocido del sistema: salvo Cat, Tank Cat, Axe Cat y Gross Cat —que solo se obtienen completando su etapa correspondiente—, el resto de unidades Normales (Cow Cat, Bird Cat, Fish Cat, Lizard Cat y Titan Cat) también pueden aparecer por azar en la Cápsula de Gatos Normal antes de que el jugador llegue a la etapa que las desbloquea de forma garantizada.
+5.5 Cómo se obtienen las demás unidades: progresión por capítulos y misiones
+El método de obtención de una unidad depende directamente de su rareza. La siguiente tabla resume el "cronograma" general de progresión: en qué punto del juego y por qué vía se accede a cada categoría.
+Rareza
+Vía principal de obtención
+Notas de progresión
+Normal
+Completar la etapa correspondiente en Imperio de los Gatos Cap. 1, o Cápsula de Gatos Normal
+Se obtienen todas dentro de las primeras ~24 etapas del juego; ver tabla 5.4
+Especial
+Misiones ligadas a etapas concretas de la historia, compra directa con Cat Food en la tienda, recompensas de eventos, regalos de inicio de sesión
+Ejemplos: Ninja Cat (Filipinas Cap. 1), Sumo Cat (Singapur Cap. 1), The Cat God (Corea Cap. 1) — ver tabla 5.6
+Rara / Super Rara / Uber Rara
+Cápsula de Gatos Rara (gacha), con Cat Food o Rare Cat Tickets
+El pool de unidades disponibles cambia cada 2-4 días; algunas son exclusivas de eventos temporales (ver sección 12.3)
+Legendaria (Legend Rare)
+Cápsula Platinum o Cápsula Legend (gacha de tasa muy reducida)
+Requiere un Legend Ticket, obtenible por compra, por Rango de Usuario elevado o al completar ciertos hitos endgame (ver sección 12.3)
+Legend Cats
+Derrotar y reclutar a un jefe dentro de las Legend Stages
+Ocurre de forma periódica, aproximadamente cada 5 a 13 sub-capítulos superados
+De colaboración
+Cápsula especial disponible solo durante el evento de colaboración correspondiente
+Contenido temporal; puede reaparecer en reposiciones anunciadas más adelante
+Además de estas vías directas, otros sistemas alimentan la progresión de forma indirecta: las Misiones (Catnip Challenges) recompensan objetivos puntuales con Cat Food, XP o tickets de gacha (no unidades directamente, salvo excepciones puntuales); las recompensas de Rango de Usuario (User Rank) entregan tickets y materiales al superar umbrales de XP acumulada; y los Tesoros de capítulo, aunque no otorgan unidades, son indispensables porque desbloquean las bonificaciones estadísticas permanentes que hacen viables las etapas más difíciles donde se consiguen las unidades de gama alta.
+5.6 Ejemplos de unidades Especiales con sus formas
+La rareza "Especial" no es un único arquetipo, sino una categoría definida por su método de obtención (fuera del gacha principal). Incluye desde unidades ligadas a hitos narrativos muy tempranos hasta subgrupos temáticos completos, como la línea "Li'l", que replica en miniatura a las diez unidades Normales con sus propias formas:
+Unidad
+Forma Evolucionada
+Forma Verdadera
+Cómo se desbloquea
+Ninja Cat
+Ninja Frog Cat
+Flying Ninja Cat
+Completar Filipinas, Capítulo 1
+Sumo Cat
+Madame Sumo
+Riceball Cat
+Completar Singapur, Capítulo 1
+The Cat God
+— (unidad única, sin evolución)
+—
+Completar Corea, Capítulo 1
+Li'l Axe Cat (línea "Li'l", paralela a los Normales)
+Li'l Brave Cat
+Li'l Dark Cat
+Cápsula de Gatos Rara / eventos específicos
+La línea "Li'l" completa reproduce, unidad por unidad, la misma estructura de evolución de los diez gatos Normales (por ejemplo, Li'l Gross Cat → Li'l Sexy Legs Cat → Li'l Macho Legs Cat), pero como versión de menor tamaño y rareza Especial en vez de Normal, con su propia curva de estadísticas independiente.
+5.7 Fórmula de crecimiento de estadísticas al subir de nivel
+Cada vez que una unidad sube de nivel, solo dos estadísticas base aumentan de forma directa: HP y Poder de Ataque (el resto —alcance, velocidad, frecuencia de ataque, coste— permanece fijo dentro de una misma forma, y solo cambia al evolucionar). El juego calcula el valor final con la fórmula:
+Estadística en nivel N = (Estadística base + Acumulado de subidas de nivel) × Multiplicador de Tesoros
+El "acumulado de subidas de nivel" es simplemente la suma de todos los incrementos de HP/Ataque otorgados en cada nivel-up (natural o "+", ver más abajo), y el "multiplicador de Tesoros" es el bono permanente y global que se obtiene al completar los Tesoros de cada saga (puede llegar a multiplicar las estadísticas base varias veces). Como aproximación práctica —asumiendo todos los Tesoros completados—, la comunidad usa la siguiente fórmula simplificada para estimar el crecimiento total desde el nivel 1:
+HP o Daño en nivel L ≈ (2 + L / 2) × (HP o Daño base en nivel 1, sin Tesoros)
+Es decir, una unidad de nivel 30 con todos los Tesoros llega a tener, aproximadamente, 17 veces sus estadísticas base de nivel 1 — de ahí que subir de nivel y completar Tesoros sean, en la práctica, dos ejes de progresión igual de importantes que obtener unidades nuevas.
+Niveles "naturales" y niveles "+"
+Niveles naturales: se compran con XP directamente en el Upgrade Menu.
+Niveles "+" (plus levels): se obtienen "usando" copias duplicadas de una unidad (o Cápsulas de Habilidad) obtenidas por gacha; equivalen a un nivel natural más, pero siguen un límite aparte (por ejemplo, un nivel mostrado como "20+10" significa 20 niveles naturales más 10 niveles "+").
+El tope de nivel natural inicial es 10, y se amplía progresivamente (hasta 50 para la mayoría de unidades, 60 para Uber Raras) a medida que el jugador sube su Rango de Usuario y avanza en la historia.
+Superar el nivel 30 requiere además gastar "Catseyes" de la rareza correspondiente (1 por nivel hasta el 45, luego 2 por nivel), un material adicional obtenido en Gamatoto, eventos y Tesoros.
+Ejemplos reales de costo de XP por nivel
+El costo de XP no crece de forma lineal: aumenta con cada nivel hasta el 10, y a partir de ahí se convierte en múltiplos del costo de los primeros 10 niveles (x2 en el tramo 11-20, x3 en el 21-30, y +0,5 adicional cada 10 niveles siguientes). Estos son los valores reales de dos curvas muy representativas del juego:
+Nivel
+Cat / Gatos Normales (XP)
+Gato Raro estándar (XP)
+2
+400
+8.000
+3
+700
+12.200
+5
+1.600
+24.800
+8
+3.700
+54.200
+10
+5.600
+80.800
+20
+11.200
+161.600
+30
+16.800
+242.400
+Acumulado 1→10
+22.800
+340.800
+Acumulado 1→30
+137.800
+2.069.800
+Cada rareza (Normal, Especial, Rara, Super Rara, Uber Rara/Legendaria) tiene su propia curva de costo de XP, y dentro de una misma rareza existen variantes (por ejemplo, unidades de eventos o colaboraciones caras usan curvas todavía más costosas). Las dos curvas anteriores —la de los gatos Normales y la de un gato Raro estándar— son representativas del salto de costo entre rarezas: llevar un Raro típico del nivel 1 al 30 cuesta aproximadamente 15 veces más XP que hacer lo mismo con un gato Normal.
+5.8 Catálogo ampliado: ejemplos de unidades Especiales y Raras
+Para complementar la sección 5.6, esta tabla amplía el catálogo con más de diez unidades reales de rareza Especial y Rara, mostrando cómo el mismo patrón de diseño (arquetipo cotidiano + evolución + rasgo objetivo) se repite decenas de veces a lo largo del roster.
+Unidad
+Rareza
+Concepto / temática
+Vía de obtención
+Ninja Cat → Ninja Frog Cat → Flying Ninja Cat
+Especial
+Ninja
+Completar Filipinas, Imperio de los Gatos Cap. 1
+Sumo Cat → Madame Sumo → Riceball Cat
+Especial
+Luchador de sumo
+Completar Singapur, Imperio de los Gatos Cap. 1
+The Cat God
+Especial
+Deidad/mascota, sin evolución
+Completar Corea, Imperio de los Gatos Cap. 1
+Lieutenant Cat
+Especial
+Militar
+Compra en tienda / eventos
+Maneki Cat
+Especial
+Gato de la suerte (maneki-neko)
+Eventos / recompensas
+Secret Crush Cat → Girlfriend Cat
+Especial
+Comedia romántica escolar
+Eventos
+Pogo Cat
+Rara
+Deporte / pogo stick
+Cápsula de Gatos Rara
+Salon Cat
+Rara
+Peluquería
+Cápsula de Gatos Rara
+Jurassic Cat
+Rara
+Dinosaurio
+Cápsula de Gatos Rara
+Viking Cat
+Rara
+Vikingo
+Cápsula de Gatos Rara
+Pirate Cat
+Rara
+Pirata
+Cápsula de Gatos Rara
+Bishop Cat
+Rara
+Clero/religioso
+Cápsula de Gatos Rara
+Witch Cat
+Rara
+Bruja
+Cápsula de Gatos Rara
+Estos gatos Raros forman parte del fondo ("pool") estándar de la Cápsula de Gatos Rara desde las primeras versiones del juego, y ejemplifican el patrón de diseño más repetido del roster: tomar una profesión, arquetipo cultural o referencia cotidiana reconocible y convertirla en un gato con una mecánica de combate asociada.
+A partir de este núcleo básico, el resto del roster (Raros, Super Raros, Uber Raros y Legendarios) expande estos mismos arquetipos de diseño —meatshield, atacante de área, atacante a distancia, control de masas, soporte— combinándolos con las habilidades especiales descritas en la sección 7.
+5.9 Mejoras de Base (Base Upgrades): la otra mitad del Menú de Mejora
+Ubicación: Cat Base Menu → botón amarillo central "Mejorar" (Upgrade Menu). Dentro de esa misma pantalla, una pestaña/selector en la parte superior permite alternar entre "Unidades" (Cat Units, la mejora de gatos vista en 5.2-5.7) y "Mejoras de Base", un segundo grupo de mejoras que no afectan a ningún gato en concreto, sino a la infraestructura general del jugador: la energía, el dinero, el cañón y la base misma. Ambas categorías se compran con el mismo recurso, XP, desde la misma pantalla.
+Mejora de Base
+Efecto
+Ejemplo numérico
+Tope de nivel
+Potencia del Cañón (Cat Cannon Power)
+Aumenta el daño del Cat Cannon; también incrementa su tiempo de recarga
+1.550-4.550 de daño a nivel 20+10 según Tesoros
+20+10
+Alcance del Cañón (Cat Cannon Range)
+Aumenta la distancia que cubre el disparo
+Hasta 6.000 de alcance máximo
+10 (única excepción con tope reducido)
+Recarga del Cañón (Cat Cannon Charge)
+Reduce el tiempo entre disparos
+-50 fotogramas (~0,16 s) por nivel
+20+10
+Ritmo del Trabajador (Worker Cat Rate)
+Aumenta la velocidad de generación de dinero en batalla
++3¢ por segundo por nivel
+20+10
+Cartera del Trabajador (Worker Cat Wallet)
+Aumenta el dinero máximo acumulable en batalla
++100 de cartera inicial, +50 por nivel de Worker Cat en partida
+20+10
+Defensa de Base (Base Defense)
+Aumenta la salud máxima de la Base de Gatos
++1.000 HP por nivel
+20+10
+Investigación (Research)
+Reduce el tiempo de recarga/reactivación de las unidades propias para volver a desplegarlas
+-0,2 s por nivel desde nivel 2 (hasta -5,8 s en 20+10)
+20+10
+Contabilidad (Accounting)
+Aumenta el dinero obtenido al eliminar enemigos
++5% por nivel desde nivel 2 (hasta +145% en 20+10)
+20+10
+Estudio (Study)
+Aumenta la XP obtenida al completar una etapa
++5% por nivel desde nivel 2 (hasta +145% en 20+10)
+20+10
+Energía (Cat Energy)
+Aumenta la capacidad máxima de energía del jugador
++10 de energía máxima por nivel
+20+10
+La mejora "Investigación" es, en la práctica, la que coloquialmente podría llamarse "reactivación": su efecto concreto es reducir el tiempo que una unidad tarda en volver a estar disponible (recargar) tras desplegarla. El aspecto y el efecto especial del disparo del cañón, en cambio, no se controlan aquí, sino en Ototo Corps (ver sección 9.2).
+5.10 Diseño de personaje: estados de sprite y trasfondo narrativo
+Cada unidad no es una sola imagen, sino un pequeño conjunto de "estados" visuales —uno por forma de evolución— más un breve texto de presentación por estado. Esta estructura es la misma para (casi) todas las unidades del juego, aunque no todas llegan a tener el mismo número de estados:
+Estado (forma)
+Cuándo aparece
+¿Aplica a todas las unidades?
+Forma Normal
+Siempre, desde el momento del desbloqueo
+Sí, sin excepción: es el estado mínimo de cualquier unidad
+Forma Evolucionada
+Nivel 10 (natural o con niveles "+")
+La mayoría, pero no todas: algunas unidades Especiales solo tienen Forma Normal y Forma Verdadera, sin paso intermedio
+Forma Verdadera (True Form)
+Nivel 20+10, usando Cat Tickets
+La mayoría de Raros, Super Raros, Uber Raros y Legendarios; bastantes Especiales; los diez Normales también la tienen
+Forma Última (Ultra Form)
+Requisitos avanzados específicos de cada unidad; introducida en la versión 13.0
+No: reservada a un subconjunto reducido de unidades de muy alto nivel
+Cada estado tiene su propio sprite (ilustración base + fotogramas de animación) y, casi siempre, cambia visualmente de forma notoria respecto al anterior: nuevos colores, accesorios, postura o incluso una silueta distinta, no solo una versión más grande de la misma imagen.
+Cada estado va acompañado de un breve texto descriptivo dentro del Cat Guide (ver 9.7), a medio camino entre una ficha de personaje y una broma visual, que ambienta el cambio de apariencia (por ejemplo, explicando qué le "pasó" a la unidad para llegar a esa forma). Por respeto a los derechos de autor, este manual no reproduce esos textos originales; solo describe que existen y su función.
+Los Talentos (Talents, ver 5.3) NO añaden un nuevo estado visual: son puramente estadísticos/de habilidad y no cambian el sprite de la unidad.
+Algunas unidades de eventos de colaboración o Legend Stages tienen, además, una breve reseña de trasfondo ligada a su aparición como jefe reclutable, pero de nuevo se trata de texto narrativo propiedad de PONOS que este documento no reproduce.
+
+6. Unidades enemigas
+El juego cuenta con más de 700 enemigos distintos, cada uno perteneciente a uno o más "rasgos" (traits) que determinan qué habilidades del jugador son efectivas contra ellos. Este sistema de rasgos es, junto con las rarezas de las unidades propias, el eje central de la estrategia del juego.
+6.1 Rasgos estándar (Standard Traits)
+Rasgo
+Color identificador
+Notas de diseño
+Sin rasgo (Traitless)
+Blanco
+Enemigos genéricos sin bonificaciones ni debilidades especiales; incluye al enemigo más básico del juego
+Rojo (Red)
+Rojo
+Uno de los rasgos más comunes en las primeras etapas
+Flotante (Floating)
+Verde claro
+Enemigos aéreos; algunas unidades propias solo pueden dañarlos si tienen la habilidad correspondiente
+Negro / Oscuro (Black/Dark)
+Negro
+Introducido a mitad de la progresión principal
+Metálico (Metal)
+Gris
+Solo reciben 1 punto de daño por golpe salvo ante Golpes Críticos, "Metal Killer" o el cañón especial "Waterblast"; requieren estrategias específicas
+Ángel (Angel)
+Amarillo
+Suelen tener alta resistencia y aparecen en tramos de dificultad media-alta
+Alienígena (Alien)
+Cian
+Introducido en la saga "Hacia el Futuro"; sujeto a un multiplicador de fuerza elevado que se puede reducir recolectando Tesoros específicos
+Zombi (Zombie)
+Morado
+Pueden revivir tras ser derribados; requieren unidades con la habilidad "Zombie Killer" para su eliminación definitiva
+Reliquia (Relic)
+Verde oscuro
+Rasgo de alta resistencia introducido en tramos avanzados
+Aku
+Azul
+Rasgo de las etapas más recientes y de mayor dificultad ("The Aku Realms")
+6.2 Categorías especiales (no estándar)
+Además de los rasgos anteriores, existen categorías especiales que solo aparecen en un número reducido de niveles: Colossus (jefes de tamaño colosal con mecánicas propias), Behemoth, Sage, Witch (de eventos de colaboración) y Eva Angel. Estas categorías no siempre son afectadas por habilidades que dicen aplicarse "a todos los enemigos", lo que obliga a preparar equipos específicos para las etapas donde aparecen.
+6.3 Magnificación de fuerza (Strength Magnification) y niveles de dificultad
+Cada nivel asigna a sus enemigos un porcentaje de "magnificación" que multiplica su HP y su poder de ataque respecto a los valores base. Este es el mecanismo principal mediante el cual el juego incrementa la dificultad sin necesidad de crear enemigos gráficamente nuevos en cada etapa, y responde a una fórmula simple:
+Estadística final del enemigo = Estadística base × (Magnificación % / 100)
+Ejemplo (Doge, rasgo Sin rasgo)
+HP
+Daño de ataque
+Magnificación 100% (valores base)
+90
+8
+Magnificación 200%
+180
+16
+En etapas avanzadas es habitual encontrar magnificaciones de varios cientos o incluso miles por ciento, y en algunos casos la HP y el daño reciben porcentajes distintos entre sí (por ejemplo, 200% HP y 150% de daño), lo que permite a los diseñadores ajustar con precisión cuánto "tanquea" o cuánto "pega" un mismo enemigo en cada aparición, sin tocar su diseño gráfico ni sus habilidades.
+¿Cuántos niveles de dificultad existen?
+El juego combina dos sistemas de dificultad independientes, uno continuo (la magnificación, sin límite superior fijo) y dos escalas discretas de referencia visual para el jugador:
+Sistema
+Rango
+Dónde se aplica
+Magnificación de fuerza
+Sin techo fijo (100% en adelante; puede superar el 1.000% en endgame)
+Todas las etapas; es el valor real que multiplica las estadísticas
+Escala de estrellas (★)
+De ★1 (más fácil) a ★12 (más difícil)
+Capítulos principales y Legend Stages; se muestra como icono en el selector de etapas para dar una referencia rápida sin exponer el porcentaje exacto
+Coronas (Crown difficulties)
+De 1 a 4 Coronas por sub-capítulo
+Exclusivo de las Legend Stages: permite rejugar la misma etapa con magnificaciones más altas (por ejemplo, x1,5 en 2ª Corona, x2 en 3ª, x3 en 4ª al inicio del juego, aunque estos multiplicadores se reducen en sub-capítulos posteriores)
+En Imperio de los Gatos específicamente, la progresión de dificultad entre capítulos ya funciona como una demostración directa de la fórmula: el Capítulo 1 combate a todos sus enemigos al 100% (valores base, sin modificar), mientras que el Capítulo 3 —con el mismo roster de enemigos, sin unidades nuevas— los enfrenta al 400% (cuatro veces sus estadísticas base). El Capítulo 2 se sitúa en un punto intermedio de esa progresión. Es, en esencia, el mismo puñado de ~19 enemigos reutilizado tres veces con la fórmula de magnificación como único factor de dificultad añadido, y por eso mismo se corresponde con los niveles más bajos de la escala de estrellas (equivalente a la antigua categoría "Fácil" del sistema previo a la versión 10.7).
+6.4 Enemigos jefe (Bosses)
+Muchas etapas incluyen un enemigo designado como jefe, que suele aparecer al reducir la base enemiga a un pequeño porcentaje de su HP (habitualmente 99%) o tras un temporizador. Al aparecer, un jefe genera una "onda de choque" (Boss Shockwave) que empuja hacia atrás a todas las unidades propias en pantalla, salvo aquellas con inmunidad específica a este efecto. Un mismo enemigo puede actuar como jefe en una etapa y como enemigo común ("peón") en otra, dependiendo del diseño de cada nivel.
+6.5 Estadísticas de una unidad enemiga
+Los enemigos se definen con el mismo tipo de ficha de estadísticas que las unidades propias —incluyendo alcance y tipo de ataque (único o de área)—, aunque el jugador no puede consultarlas todas directamente en el juego sin usar el Enemy Guide tras enfrentarlas por primera vez:
+Estadística
+Descripción
+Ejemplo: Doge (Sin rasgo)
+Salud (HP)
+Daño que resiste antes de ser destruido
+90
+Poder de ataque
+Daño por golpe (y su equivalente en daño por segundo, DPS)
+8 de daño (≈5,1 DPS)
+Alcance de ataque (Attack Range)
+Distancia a la que puede golpear; puede ser cuerpo a cuerpo, a distancia, o de área si afecta a varios objetivos a la vez
+110 (ataque único, cuerpo a cuerpo)
+Tiempo entre ataques
+Duración completa del ciclo de ataque, en fotogramas y segundos
+47 fotogramas (≈1,57 s)
+Velocidad de movimiento
+Ritmo de avance hacia la base del jugador
+5
+Retroceso (Knockback)
+Número de veces que puede ser empujado hacia atrás antes de perder esa reacción
+3 veces
+Habilidad especial
+Cualquier efecto adicional (Debilitar, Congelar, Ola, área, etc.); muchos enemigos básicos no tienen ninguna
+— (sin habilidad especial)
+Rasgo (trait)
+El o los rasgos que determinan qué unidades propias son efectivas en su contra
+Sin rasgo (Traitless)
+Al igual que con las unidades propias, el alcance y el patrón de ataque (único vs. de área) son los factores que definen el "arquetipo" de un enemigo: por ejemplo, Teacher Bear —introducido en Imperio de los Gatos— es de los primeros enemigos con ataque de área y alcance largo del juego, capaz de golpear a varias unidades propias a la vez pese a moverse muy despacio; en cambio Croco tiene alcance corto y golpea una sola vez, pero compensa su fragilidad apareciendo en grupos numerosos.
+6.6 Enemigos del Capítulo 1 de Imperio de los Gatos
+La siguiente tabla reúne las estadísticas base (HP y daño de ataque, a magnificación 100%) de prácticamente todos los enemigos que aparecen a lo largo del Capítulo 1, en su aproximado orden de aparición:
+Enemigo
+HP
+Daño
+Rasgo / patrón
+Doge
+90
+8
+Sin rasgo; ataque único, corto alcance
+Ms. Sign
+—
+—
+Sin rasgo; enemigo de apoyo introducido junto a Doge
+Snache
+100
+15
+Sin rasgo; más rápido y con más daño que Doge
+Croco
+70
+30
+Sin rasgo; muy frágil pero alto daño, aparece en grupos
+Squire Rel
+80
+30
+Sin rasgo; corto alcance, fácil de derrotar individualmente
+Those Guys
+200
+20
+Sin rasgo; se agrupan y avanzan rápido
+Hippoe
+1.000
+100
+Sin rasgo; lento pero muy resistente y golpea fuerte
+Gory
+1.000
+80
+Rojo; de los primeros enemigos con este rasgo
+Baa Baa
+500
+50
+Flotante; enemigo aéreo
+B.B.Bunny
+500
+50
+Flotante
+Jackie Peng
+1.300
+80
+Flotante
+Sir Seal
+2.500
+150
+Sin rasgo; resistencia media-alta
+Kang Roo
+4.000
+250
+Sin rasgo; alta resistencia
+Le'boin
+4.000
+654
+Sin rasgo; muy alto daño para su punto de aparición
+Teacher Bear
+3.000
+1.000
+Sin rasgo; ataque de área de largo alcance, muy lento
+One Horn
+15.000
+500
+Sin rasgo; el "muro" de resistencia del capítulo
+The Face (jefe final)
+99.999
+2.000
+Sin rasgo; jefe de la etapa 48, ataque de largo alcance
+Todos los valores corresponden a magnificación 100% (su primera aparición). Ms. Sign se incluye por ser introducida en la primera etapa junto a Doge, aunque sus estadísticas de combate no están documentadas de forma consistente en las fuentes públicas consultadas. Como se explica en 6.1, toda la saga de Imperio de los Gatos —los tres capítulos— usa exclusivamente los rasgos Sin rasgo, Rojo y Flotante; los demás rasgos del juego no aparecen hasta sagas posteriores.
+
+7. Tipos de ataque, habilidades y categorías
+7.1 Patrones de ataque
+Patrón
+Descripción
+Ataque único (Single Target)
+Impacta a un solo enemigo por golpe; es el patrón más común
+Ataque de área (Area Attack)
+Impacta a todos los enemigos dentro de un radio determinado
+Ataque de onda (Wave Attack)
+Proyectil que atraviesa el escenario dañando a todo enemigo en su trayectoria; también usado por el Cat Cannon
+Mini-oleada / Oleada (Mini-Wave / Wave)
+Variantes de menor o mayor alcance del ataque de onda
+Surge Attack
+Ataque de área retardado que se activa a cierta distancia frente a la unidad, introducido en contenido más reciente
+Ataque múltiple (Multi-Hit)
+Varios impactos en una sola animación de ataque
+Golpe crítico (Critical)
+Probabilidad de infligir daño duplicado; es una de las pocas formas fiables de dañar eficazmente a enemigos de rasgo Metálico
+7.2 Habilidades ofensivas (por rasgo objetivo)
+Fuerte contra (Strong Against): más daño infligido y menos daño recibido frente al rasgo indicado.
+Daño masivo / Daño insano (Massive Damage / Insane Damage): multiplicadores de daño crecientes contra rasgos específicos.
+Golpe letal (Savage Blow): probabilidad de infligir un daño extra tras el impacto normal.
+Exterminador de zombis / metal (Zombie Killer / Metal Killer): habilidades necesarias para eliminar de forma definitiva a estos rasgos, que de otro modo revivirían o resistirían el daño.
+Destructor de base (Base Destroyer): daño adicional dirigido específicamente contra la base enemiga.
+Explosión (Explosion) y Perforador de escudo/barrera (Shield/Barrier Piercing): habilidades diseñadas para atravesar mecánicas defensivas concretas de ciertos enemigos.
+7.3 Habilidades de control y debilitamiento
+Debilitar (Weaken): reduce temporalmente el poder de ataque del objetivo.
+Congelar (Freeze): inmoviliza por completo al objetivo durante un tiempo determinado.
+Ralentizar (Slow): reduce la velocidad de movimiento del objetivo.
+Retroceso (Knockback): empuja al enemigo hacia atrás, retrasando su avance.
+Deformación (Warp): teletransporta al objetivo hacia atrás en el mapa.
+Maldición (Curse): anula temporalmente casi todas las habilidades especiales del objetivo.
+Tóxico (Toxic): inflige daño continuo a lo largo del tiempo.
+7.4 Habilidades defensivas y de supervivencia
+Resistente (Resistant) / Increíblemente resistente (Insanely Tough): reduce drásticamente el daño recibido de un rasgo concreto.
+Sobrevivir (Survive): probabilidad de resistir con 1 HP un golpe que de otro modo sería letal.
+Fortalecer (Strengthen): aumenta las estadísticas de la unidad al quedar por debajo de un umbral de HP.
+Esquivar ataque (Dodge Attack): probabilidad de evitar por completo un ataque entrante.
+Inmunidades específicas: a Debilitar, Congelar, Ralentizar, Retroceso, Maldición, Tóxico, Oleadas o Surge, entre otras.
+7.5 Habilidades de utilidad
+Dinero extra (Extra Money): otorga dinero de batalla adicional al eliminar al enemigo objetivo.
+Metálico (Metal, en unidades propias): permite a una unidad propia comportarse con las reglas defensivas del rasgo Metálico.
+Escudo (Barrier / Wave Shield): absorbe un número determinado de golpes o ataques de onda antes de romperse.
+Invocar (Conjure): genera un espíritu kamikaze adicional una vez por ciclo de ataque.
+Este catálogo de habilidades —que supera las cuarenta variantes distintas si se cuentan todas sus combinaciones e inmunidades asociadas— es el verdadero corazón estratégico del juego: el diseño de cada nivel consiste, en esencia, en combinar rasgos enemigos y magnificaciones de fuerza para obligar al jugador a construir equipos que cubran combinaciones específicas de counters.
+
+8. Niveles, capítulos y sagas
+La campaña principal se organiza en cuatro grandes sagas narrativas, cada una dividida en varios capítulos de aproximadamente 48 etapas.
+Saga
+Capítulos
+Etapas por capítulo
+Jefe final (ejemplo)
+Gimmick principal
+Imperio de los Gatos (Empire of Cats)
+3
+48 (uno con 49-50)
+The Face (Luna)
+Introducción del juego; coste de despliegue reducido en el capítulo 1
+Hacia el Futuro (Into the Future)
+3
+48
+Cli-One / Corrupted Valkyrie
+Introduce el rasgo Alienígena y viaje en el tiempo al año 29XX
+Gatos del Cosmos (Cats of the Cosmos)
+3
+48
+Raging Bahamut Cat
+Alienígenas "Estelares" con magnificación base muy elevada
+Los Reinos de Aku (The Aku Realms)
+—
+—
+—
+Contenido de fin de juego más reciente, centrado en el rasgo Aku
+Cada saga desbloquea a la siguiente al completar su primer capítulo, y el coste de despliegue de las unidades aumenta progresivamente entre capítulos (normalmente x1 en el primero, x1,5 en el segundo y x2 en el tercero), obligando a una gestión económica cada vez más ajustada.
+8.1 Contenido de fin de juego: Legend Stages
+Tras completar el primer capítulo de Imperio de los Gatos se desbloquean las Legend Stages, el contenido principal de progresión a largo plazo. Se subdividen por color según su origen:
+Categoría
+Color
+Descripción
+Stories of Legend
+Amarillo
+Sub-capítulos temáticos originales de la saga endgame, con jefes que en ocasiones se pueden reclutar como "Legend Cats"
+Uncanny Legends
+Verde
+Contenido de mayor dificultad con mecánicas más exigentes
+Zero Legends
+Azul
+Otra línea de sub-capítulos de progresión endgame
+Event Stages
+Rojo
+Etapas temporales ligadas a eventos estacionales o especiales
+Collaboration Stages
+Morado
+Etapas de eventos de colaboración con otras franquicias
+Las Legend Stages introducen además un sistema de "coronas" (Crown difficulties): la misma etapa puede rejugarse en dificultades sucesivas que multiplican la magnificación de fuerza de los enemigos (por ejemplo, x1,5 en la segunda corona, x2 en la tercera, x3 en la cuarta), reutilizando el mismo diseño de nivel para ofrecer una curva de dificultad mucho más larga sin trabajo artístico adicional.
+8.2 Otros modos ligados a niveles
+Catclaw Dojo: niveles de puntuación contrarreloj con una base invulnerable que genera enemigos sin parar; sirve para medir el DPS del equipo del jugador.
+Catclaw Championships: doce mapas permanentes desbloqueables que otorgan medallas de progreso.
+Zombie Outbreaks: irrupciones de enemigos zombis dentro de etapas de la campaña principal, añadidas como capa adicional de dificultad.
+Gauntlet Stages: etapas de alta dificultad con temporizador de reintento ("cooldown") entre repeticiones.
+Enigma Stages: etapas ocultas de desbloqueo especial, ligadas a la obtención de determinadas unidades ("Meow Medals").
+Etapas de restricción (Restriction Stages): imponen límites de coste, rareza o número de unidades permitidas, forzando composiciones de equipo alternativas.
+No Continues / Continuation Stage: variantes que eliminan la opción de continuar tras perder, o que permiten repartir el intento en varias sesiones.
+8.3 Caso de estudio: Imperio de los Gatos, Capítulo 1
+Para ilustrar con un ejemplo concreto cómo se construye una progresión de dificultad, esta sección detalla el primer capítulo del juego, el que juega cualquier persona que instala la aplicación por primera vez.
+Dato
+Valor
+Número de etapas
+48
+Rasgos de enemigo utilizados en toda la saga (los 3 capítulos)
+Solo 3 de los 10 rasgos existentes: Sin rasgo (Traitless), Rojo y Flotante
+Enemigos distintos introducidos en la saga completa
+Aproximadamente 19-21 tipos distintos (incluye a los jefes de capítulo)
+Primer enemigo del juego
+Doge (Sin rasgo), introducido en la primera etapa junto con Ms. Sign
+Jefe final del Capítulo 1
+The Face, en la 48ª y última etapa ("Luna")
+Coste de despliegue
+Todas las unidades cuestan un 33% menos que su valor estándar durante este capítulo
+La saga completa de Imperio de los Gatos (sus tres capítulos) se apoya deliberadamente en un roster de enemigos muy reducido y en solo tres rasgos, para poder enseñar la mecánica de "counter-play por rasgo" sin abrumar a alguien que recién empieza. La dificultad no proviene de enemigos nuevos, sino de la magnificación de fuerza creciente entre el Capítulo 1, el 2 y el 3 sobre ese mismo puñado de enemigos.
+Selección de etapas del Capítulo 1 y qué desbloquean
+N.º de etapa
+Nombre (versión EN)
+Qué introduce o desbloquea
+1
+Corea
+Tank Cat; Doge y Ms. Sign (primeros enemigos del juego); tutorial de combate
+2
+Mongolia
+Continuación del tutorial de despliegue
+3-4
+China
+Snache (nuevo enemigo); Cow Cat / Axe Cat según la versión regional
+7
+Japón
+Hippoe (nuevo enemigo); desbloqueo de la Cápsula de Gatos y un Rare Cat Ticket gratuito
+11
+India
+Progresión intermedia del capítulo
+16
+Madagascar
+Fish Cat
+23
+Grecia
+Progresión avanzada del capítulo
+24
+Italia
+Titan Cat (8.000 XP)
+32
+Groenlandia
+Progresión tardía del capítulo
+48
+Luna
+Jefe final "The Face"; al derrotarlo se desbloquea el resto de Legend Stages, Ototo Corps, Hacia el Futuro y Legend Quest
+El orden y los nombres exactos de las etapas varían por región (por ejemplo, la versión taiwanesa reemplaza Corea y Mongolia por Taiwán y Hong Kong, y la versión japonesa usa prefecturas de Japón en lugar de países). Los números de etapa citados corresponden a la versión en inglés.
+
+9. Modos de juego y sistemas adicionales
+Además del combate propiamente dicho, el juego incluye varios sistemas paralelos que se entrelazan con la progresión del jugador:
+9.1 Gamatoto
+Sistema de expediciones en tiempo real: el jugador envía miembros de tripulación a distintas zonas del mapa durante un tiempo determinado (minutos u horas) para obtener materiales de mejora, incluso con la aplicación cerrada. Es el principal ejemplo de mecánica "asíncrona" del juego.
+9.2 Cuerpo Ototo (Ototo Corps / Ototo Development Team) y comportamiento del Cat Cannon
+Ubicación: se accede deslizando hacia la izquierda desde la propia pantalla de Gamatoto (Cat Base Menu → icono de pico y casco → deslizar). Se desbloquea al completar el Capítulo 1 de Imperio de los Gatos, pero solo se vuelve funcional después de llevar las tres mejoras del cañón (Potencia, Alcance y Recarga; ver 5.9) al nivel 10 en el Upgrade Menu.
+Ototo Corps permite invertir materiales (obtenidos en Legend Stages, Gauntlets, Builder's Blitz Stages o como recompensa de Rango de Usuario) y hasta 5 ingenieros (obtenidos de expediciones de Gamatoto) para construir, en 12 o 24 horas de tiempo real, nuevas piezas para la base:
+Base (Foundation): cambia el aspecto de la Base de Gatos y, una vez construida y subida a nivel 1, otorga una reducción permanente de daño recibido de un rasgo enemigo específico para todas las unidades desplegadas en batalla.
+Estilo (Style): cambia el aspecto del Cat Cannon y otorga resistencia a una habilidad enemiga concreta (por ejemplo, reducir la duración de un Debilitar o una Congelación) para todas las unidades en batalla.
+Nuevas cabezas de cañón (Cat Cannon): variantes del Cat Cannon con efectos distintos al del cañón por defecto (que aturde/hace retroceder al impactar); por ejemplo, cabezas que detienen brevemente a los enemigos en lugar de solo empujarlos, o que interrumpen animaciones de ataque largas de ciertos jefes.
+Cómo se comporta el Cat Cannon durante la batalla
+Es un arma situada sobre la Base de Gatos que se recarga sola con el paso del tiempo, dividida en 10 barras de carga; la velocidad de llenado depende de las mejoras Potencia y Recarga del cañón.
+El tiempo mínimo de recarga completa es de 31,67 segundos (se puede acortar aún más con Orbes de Talento específicos).
+Una vez cargado, no se dispara solo: el jugador debe pulsar el botón "¡Fuego!" situado en la esquina inferior derecha de la pantalla de batalla para activarlo manualmente.
+Su alcance máximo es de 6.000 unidades de distancia, suficiente para llegar de un extremo a otro en la gran mayoría de los escenarios.
+Su daño de referencia (cañón por defecto, nivel 20+10) va de 1.550 sin Tesoros a 4.550 con todos los Tesoros del juego completados.
+Su efecto por defecto es un ataque de onda con retroceso (empuja hacia atrás a todos los enemigos alcanzados); las variantes obtenidas en Ototo Corps pueden cambiar ese efecto secundario (por ejemplo, inmovilizar brevemente en lugar de empujar).
+En resumen: "disparo de la torreta" en el Upgrade Menu se refiere a tres mejoras separadas (Potencia, Alcance, Recarga) que se suben con XP; el aspecto y el efecto especial del disparo, en cambio, se eligen y construyen aparte, en Ototo Corps.
+9.3 Cat Combos
+Bonificaciones pasivas que se activan automáticamente al llevar juntas al combate ciertas combinaciones predefinidas de unidades (por ejemplo, todas las unidades "Normales" iniciales). Añaden una capa adicional de planificación de equipo más allá de la simple potencia individual de cada unidad.
+9.4 Tesoros (Treasures)
+Cada etapa de la campaña principal otorga, con cierta probabilidad, un tesoro específico de esa etapa. Acumular todos los tesoros "superiores" de un capítulo desbloquea bonificaciones estadísticas permanentes y globales (por ejemplo, +HP de base o +daño de unidades), lo que incentiva rejugar niveles ya completados.
+9.5 Talentos y Orbes de Talento
+Sistema de mejora post-Forma Verdadera que permite invertir puntos en resistencias a debuffs, aumentos de estadísticas o habilidades adicionales, además de la posibilidad de equipar "orbes" que otorgan bonificaciones frente a rasgos concretos.
+9.6 Misiones y Meow Medals
+Las Catnip Challenges (misiones) otorgan recompensas por completar objetivos puntuales (derrotar cierto número de enemigos, completar capítulos, etc.). Las Meow Medals son logros de largo plazo que, además de servir como reconocimiento, condicionan el desbloqueo de contenido oculto como las Enigma Stages.
+9.7 Bibliotecas del juego: Cat Guide, Enemy Guide y Treasure Menu
+El juego mantiene tres compendios de consulta, accesibles desde el Cat Base Menu, que documentan todo lo que el jugador ha ido desbloqueando:
+Cat Guide (biblioteca de gatos)
+Se desbloquea al completar la etapa de Madagascar en el Capítulo 1 de Imperio de los Gatos.
+Organiza las unidades por rareza, en páginas de hasta 24 unidades (4 filas de 6), mostrando el icono de la Forma Normal de cada una.
+Las unidades aún no obtenidas se muestran como un signo de interrogación gris; revisar por primera vez la ficha de una unidad recién desbloqueada otorga 5 Cat Food.
+Incluye filtros (por ejemplo, excluir unidades "Limitadas" de eventos) y la posibilidad de marcar unidades como favoritas para encontrarlas más rápido en el Upgrade y Equip Menu.
+Enemy Guide (biblioteca de enemigos)
+Estructura equivalente a la del Cat Guide, pero para enemigos: organiza por rasgo/trait, muestra estadísticas base y habilidades especiales, y revela la ficha de un enemigo la primera vez que se lo enfrenta.
+Desde la pantalla de selección de etapa también es posible consultar qué enemigos aparecerán en un nivel concreto (una vez que se ha intentado esa etapa al menos una vez), lo que permite preparar el equipo con antelación.
+Treasure Menu (biblioteca de tesoros)
+Muestra, etapa por etapa dentro de cada capítulo, qué Tesoro (inferior o superior) se ha obtenido y cuál falta, con el resumen del bono acumulado que otorga completar todos los Tesoros superiores de un capítulo.
+Es la referencia principal para planificar qué etapas antiguas conviene rejugar ("treasure hunting") antes de intentar contenido más difícil.
+9.8 Calendario de eventos (Event Calendar)
+Accesible desde el Cat Base Menu mediante el icono de calendario, el Event Calendar centraliza la programación de todo el contenido temporal del juego:
+Festivales de Tesoro (Treasure Festival): duplican la probabilidad de obtener Tesoro en las etapas de la campaña principal; suelen durar una hora y aparecer al menos una vez al día, alternando entre Imperio de los Gatos y Hacia el Futuro.
+Meow Meow Day: se celebra el día 22 de cada mes, con Festival de Tesoro activo durante 24 horas en todos los capítulos principales.
+Eventos mensuales (Monthly Events): mapas de duración limitada ligados a un día fijo del calendario (por ejemplo, un jefe "Crazed" específico que solo aparece los días 27 y 28 de cada mes).
+Otros eventos programados: Cat Ticket Stages, Catfruit Buffet, Builder's Blitz Stages, y las rotaciones de banners de gacha (Uberfest, Epicfest, etc., ver sección 12.3).
+El propio calendario permite activar recordatorios/notificaciones para no perderse la ventana de un evento concreto.
+PONOS publica y actualiza este calendario semanalmente (cada lunes); dado que el contenido temporal cambia constantemente, este manual describe la estructura del sistema y no un calendario específico vigente.
+9.9 Rango de Usuario (User Rank) y estado del jugador
+El "Rango de Usuario" es el indicador de progreso general de la cuenta, visible como un contador en la esquina superior izquierda del Cat Base Menu, y se desbloquea al completar la primera etapa del juego (Corea, Imperio de los Gatos Cap. 1).
+Cómo se calcula: el Rango de Usuario es la suma de los niveles de todas las unidades que el jugador posee (incluyendo niveles "+" de duplicados). Cada vez que se sube de nivel una unidad, por XP, por duplicado o al desbloquear una nueva, el Rango sube en la misma cantidad de puntos.
+Estado del jugador: tocar la barra de Rango de Usuario abre una pantalla de estado que resume el progreso de la cuenta —el Rango actual, las recompensas disponibles para reclamar y accesos a información sobre funciones del juego—, siendo lo más cercano a un "perfil" dentro de la aplicación. El número total de unidades distintas obtenidas se consulta, en cambio, en el Cat Guide (sección 9.7), donde el llenado de la cuadrícula de páginas funciona como progreso de colección.
+Recompensas por Rango: cada cierto número de puntos de Rango se desbloquea una recompensa reclamable (se indica con un aviso parpadeante "Pts!" sobre el contador). En los tramos iniciales suelen ser objetos de batalla y Cat Tickets; en el rango 800 se obtiene un Rare Cat Ticket; más adelante se desbloquean Catseyes utilizables (aprox. rango 1.600) y, en la franja alta del juego, un Legend Ticket (aprox. rango 25.000-30.000). Reclamar cualquier recompensa de Rango también otorga un "Leadership", un objeto que recarga la energía al máximo.
+Ofertas por Rango: cada 100 puntos de Rango acumulados se presenta además una oferta especial ("Rank Up Sale") con Cat Food, XP o un lote de objetos a precio reducido.
+Ampliación de topes de nivel: los topes de nivel natural de las unidades (ver sección 5.7) también se amplían a medida que el Rango de Usuario sube y se avanza en la historia, no solo con XP.
+9.10 Almacén de Gatos (Cat Storage)
+Cada vez que el jugador obtiene una unidad por la Cápsula de Gatos (gacha), esa unidad no aparece automáticamente lista para usar: llega primero, en forma de "cápsula" sin activar, al Almacén de Gatos (Cat Storage).
+Acceso: se entra al almacén tocando el icono con forma de refrigerador, disponible tanto desde el Cat Base Menu como desde el propio menú de la Cápsula de Gatos.
+Activar ("Usar"): si la unidad es nueva, activarla la añade de forma permanente al roster, haciéndola visible y disponible en el Upgrade Menu y en el Equip Menu (formación de equipo) para poder llevarla a batalla.
+Duplicados: si el jugador ya posee esa unidad, activar la copia no la duplica como unidad independiente; en su lugar, se convierte en un nivel "+" adicional para la copia que ya existe (ver la fórmula de crecimiento en la sección 5.7).
+Intercambiar: en lugar de activarla, cualquier cápsula del almacén puede cambiarse por XP; las unidades Uber Raras y Legendarias en el almacén también pueden intercambiarse por NP, una moneda secundaria usada para ampliaciones de nivel adicionales.
+Mientras una unidad permanece sin activar en el almacén, no puede desplegarse en batalla ni aparece en la fila de despliegue descrita en la sección 4.4: activarla o intercambiarla es un paso obligatorio antes de poder usarla.
+
+10. Secuencia de una partida (battle flow)
+El siguiente diagrama resume, paso a paso, el flujo completo de una partida individual desde la selección del nivel hasta la pantalla de resultados:
+→ 1. El jugador navega el mapa de Stage Select y elige una etapa
+→ 2. Selección de objetos de batalla (hasta un número limitado) y confirmación del gasto de energía
+→ 3. Pulsar "¡Atacar!" inicia la carga del nivel
+→ 4. Comienza la batalla: el dinero empieza a acumularse automáticamente
+→ 5. El jugador despliega unidades tocando sus iconos en la parte inferior de la pantalla
+→ 6. Las unidades avanzan de forma autónoma y entran en combate con los enemigos que encuentran
+→ 7. Al eliminar enemigos se genera dinero adicional; el Cat Cannon se recarga con el tiempo y puede activarse manualmente
+→ 8. Cuando la base enemiga alcanza el umbral definido (normalmente 99% de daño) puede aparecer un enemigo jefe
+→ 9a. Condición de victoria: la base enemiga llega a 0 HP
+→ 9b. Condición de derrota: la base propia llega a 0 HP (con posibilidad de "continuar" gastando Cat Food, salvo en etapas de tipo No Continues)
+→ 10. Pantalla de Resultados: se muestran la XP obtenida, el tesoro (si se ha conseguido) y los objetos de recompensa
+→ 11. Regreso a Stage Select o al Cat Base Menu
+Durante toda la batalla, el jugador puede pausar, cambiar la velocidad de simulación (x1/x2), alternar entre una o dos filas de unidades visibles, o abandonar la etapa (Escape); si se abandona antes de los primeros 10 segundos, la energía y los objetos utilizados se devuelven.
+
+11. Sistemas de progresión y economía interna
+Más allá del dinero de batalla (que solo existe dentro de una partida), el juego gestiona varias monedas y recursos persistentes a nivel de cuenta:
+Recurso
+Uso principal
+Forma de obtención
+XP
+Subir de nivel a las unidades propias
+Recompensa de victoria en cualquier etapa; también canjeable por Cat Food excedente
+NP
+Moneda alternativa de progresión de unidades
+Canje de unidades gacha duplicadas no deseadas
+Cat Food
+Moneda premium: gacha, recarga de energía, continuar tras derrota, ofertas especiales
+Compra con dinero real, recompensas de misiones, publicidad con recompensa, tesoros de capítulo
+Cat Tickets
+Tirada gratuita diaria en la Cápsula Normal
+Regalo diario de inicio de sesión
+Rare Cat Tickets
+Tirada gratuita en la Cápsula Rara (gacha)
+Recompensa de eventos, misiones o compra directa
+Leadership
+Recarga completa de energía sin usar Cat Food
+Recompensas de progreso (coronas, capítulos)
+Catamins / Catfruit / Catseyes
+Materiales de mejora de habilidades y niveles avanzados de unidades
+Gamatoto, tesoros, eventos especiales
+El diseño económico del juego combina de forma deliberada recompensas gratuitas constantes (XP, Cat Tickets diarios, tesoros) con una moneda premium (Cat Food) que actúa como acelerador opcional, permitiendo un modelo free-to-play jugable de principio a fin sin gasto obligatorio, aunque con fricción creciente en el contenido más avanzado.
+
+12. Métodos de pago y monetización
+El modelo de negocio se basa en la venta de Cat Food (moneda premium) y en un sistema de gacha (Cat Capsule) para la obtención de unidades Raras, Super Raras, Uber Raras y Legendarias.
+12.1 Paquetes de Cat Food (compra directa)
+Paquete
+Precio de referencia (USD)
+30 Cat Food
+$0.99
+90 Cat Food
+$2.99
+180 Cat Food
+$5.99
+330 Cat Food
+$9.99
+690 Cat Food
+$19.99
+Rare Ticket (paquete)
+$0.99
+Legend Ticket (garantiza acceso a Cápsula Legendaria)
+$7.99
+Champion's Sale (paquete especial)
+$7.99
+Thank-You Pack (paquete especial)
+$11.99
+Los precios pueden variar por región y cambian con el tiempo; se listan como referencia de la estructura de precios habitual, tomada de la ficha pública de la aplicación.
+12.2 Vías de obtención gratuita de Cat Food
+Tesoros de capítulo: completar todos los tesoros "superiores" de un capítulo otorga un lote de Cat Food.
+Publicidad con recompensa: ver un anuncio a cambio de una pequeña cantidad de Cat Food o de energía.
+Tienda de ofertas (Cat Food Shop / Complete Offers): objetivos de terceros (a través de un proveedor de publicidad) que reportan cantidades variables de Cat Food, desde unas pocas unidades hasta varios miles según la dificultad del objetivo.
+Recompensas de eventos y misiones diarias/semanales.
+12.3 Sistema de gacha (Cat Capsule)
+La obtención de unidades de rareza Rara o superior se realiza mediante tiradas de la Cápsula de Gatos, con un coste habitual de 150 Cat Food por tirada individual o 1.500 Cat Food por un lote de 11 tiradas. Las probabilidades varían según el tipo de banner activo:
+Tipo de banner
+Prob. Legend Rare
+Prob. Uber Rare
+Prob. Super Rare
+Prob. Rare
+Banner estándar
+—
+≈5%
+variable
+variable (mayoría)
+EPICFEST
+—
+9%
+26%
+65%
+UBERFEST
+0,3%
+9%
+26%
+64,7%
+Cápsula Legendaria (Legend Ticket)
+5,3%
+94,7%
+—
+—
+Existen además campañas de "Uber Rare garantizado" (el undécimo tiro de una tirada x11 es siempre Uber Rare o superior), tickets Platinum que garantizan un Uber Rare al 100% en una sola tirada, y eventos "Step Up" con tiradas progresivas de coste creciente y un Uber Rare garantizado en un paso determinado.
+12.4 Sistema de suscripción
+El juego ofrece un pase de suscripción ("Officers' Club") que otorga beneficios diarios recurrentes, como bonificaciones de recursos o accesos especiales, a cambio de una cuota periódica.
+
+13. Modo historia — argumento general
+El tono narrativo de The Battle Cats es deliberadamente absurdo y humorístico: presenta a un ejército de gatos que, sin motivo aparente más allá de la comedia, emprende la conquista del mundo y, posteriormente, del universo. A continuación se resume el argumento general de cada saga en términos generales, sin citar diálogos textuales del juego.
+13.1 Imperio de los Gatos
+Es la saga introductoria. El ejército felino parte de Japón y avanza progresivamente por distintos países y regiones del mundo, presentados como escenarios temáticos sucesivos. La narrativa funciona como un pretexto cómico para introducir mecánicas y unidades de forma gradual; culmina en un enfrentamiento final en la Luna contra un enemigo conocido como "The Face".
+13.2 Hacia el Futuro
+Los gatos viajan en el tiempo desde la era de Imperio de los Gatos hasta un futuro lejano (el año "29XX" en la versión en inglés), en el que una invasión alienígena ha tomado el planeta. Esta saga introduce el rasgo Alienígena junto con un mecanismo de "tesoros anti-alienígena" necesario para contrarrestar la elevada magnificación de fuerza de estos enemigos. El tramo culmina con la derrota del líder alienígena y la revelación de que los gatos están construyendo un cohete, lo que enlaza narrativamente con la siguiente saga.
+13.3 Gatos del Cosmos
+Continuación directa de la anterior: la acción se traslada al espacio profundo, con nuevos enemigos alienígenas "Estelares" de magnificación base mucho más alta, que solo pueden reducirse recolectando un nuevo conjunto de tesoros específicos de esta saga. El tono se mantiene igualmente satírico, llevando la premisa de "conquista" a una escala cósmica.
+13.4 Los Reinos de Aku
+Contenido más reciente de la progresión principal, centrado en el rasgo Aku y en un nivel de dificultad superior al de las sagas anteriores, pensado como puente hacia el contenido de Legend Stages.
+13.5 Legend Stages
+A diferencia de la campaña principal, las Legend Stages no narran una historia continua, sino que agrupan sub-capítulos temáticos independientes (por ejemplo, centrados en un tipo de enemigo o en una mecánica concreta). Es habitual que el jefe final de un sub-capítulo se pueda reclutar como aliado ("Legend Cat") tras derrotarlo, lo que conecta la narrativa de cada mini-arco con una recompensa jugable directa.
+El juego incorpora además, de forma recurrente, eventos de colaboración con otras franquicias de videojuegos, anime y cultura popular, que introducen unidades y enemigos temáticos ajenos al universo original del juego durante tiempo limitado.
+
+14. Conclusiones y fuentes de referencia
+The Battle Cats es un ejemplo depurado de diseño "fácil de aprender, difícil de dominar": una mecánica de entrada extremadamente simple —tocar la pantalla para desplegar una unidad— sostiene, gracias a la combinación de rarezas, rasgos enemigos, habilidades especiales y magnificaciones de fuerza, cientos de horas de contenido estratégico. Su arquitectura cliente-servidor ligera, su reutilización sistemática de enemigos mediante multiplicadores de dificultad, y su modelo de monetización basado en gacha son patrones representativos de una categoría muy amplia de juegos móviles free-to-play, lo que convierte a este título en un caso de estudio útil para el diseño de sistemas similares.
+14.1 Alcance y limitaciones de este documento
+Dado que el juego supera actualmente las 800 unidades propias y los 700 enemigos distintos, y se actualiza aproximadamente cada dos semanas, este manual se ha centrado en explicar los sistemas, categorías y mecánicas —que son estables— utilizando ejemplos representativos en lugar de listados exhaustivos unidad por unidad, que quedarían desactualizados rápidamente y se solapan con el propósito de una base de datos más que con el de un manual de diseño.
+Para consultar fichas exhaustivas y actualizadas de cada unidad y cada enemigo (incluyendo estadísticas exactas por nivel, ilustraciones oficiales y capturas de pantalla), se recomienda:
+El Cat Guide y el Enemy Guide integrados en el propio juego (dentro del Cat Base Menu).
+Las wikis comunitarias especializadas battle-cats.fandom.com y battlecats.miraheze.org, que mantienen bases de datos completas y galerías de imágenes bajo sus propios términos de uso.
+La ficha oficial de la aplicación en App Store / Google Play para capturas de pantalla actualizadas y detalles de precios vigentes en cada región.
+14.2 Recomendaciones
+Para quien use este documento como referencia de diseño
+El mayor rendimiento del sistema de The Battle Cats no está en la cantidad de unidades, sino en la matriz de counters (rareza × rasgo × habilidad): un roster grande se vuelve manejable de balancear porque cada pieza nueva se define en relación con las que ya existen, no de forma aislada.
+Reutilizar enemigos con multiplicadores de dificultad (magnificación de fuerza) es una técnica de bajo coste de producción especialmente relevante para equipos pequeños: permite generar decenas de niveles de dificultad percibida a partir de un roster de arte limitado.
+Separar claramente "progreso de cuenta" (persistente) de "estado de partida" (efímero) simplifica mucho la arquitectura cliente-servidor y reduce el riesgo de inconsistencias al sincronizar.
+Un bucle de monetización basado en gacha necesita, para sostenerse a largo plazo, una vía gratuita de progreso paralela y constante (aquí: XP, Cat Tickets diarios, Tesoros); sin eso, la percepción de "pay to win" tiende a acelerar el abandono de jugadores nuevos.
+Para quien juegue o estudie el título en profundidad
+Priorizar el Cat Guide y el Enemy Guide desde el principio: revisar qué enemigos aparecen en una etapa antes de intentarla ahorra más tiempo que memorizar estadísticas.
+Completar Tesoros "superiores" tiene más impacto a largo plazo que subir de nivel una sola unidad, porque el bono de Tesoro es permanente y global (ver la fórmula de la sección 5.7).
+Revisar el Event Calendar semanalmente evita desperdiciar energía o Cat Food fuera de las ventanas de Festival de Tesoro o de eventos de gacha con mejores probabilidades.
+Todo el contenido de este documento se ha redactado de forma original a partir de información pública sobre las mecánicas del juego, sin reproducir texto, ilustraciones ni capturas de pantalla protegidas por derechos de autor.

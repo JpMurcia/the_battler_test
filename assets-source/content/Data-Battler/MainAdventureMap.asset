@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80cfa9a3486ea7a409b13daec4fdb3cd, type: 3}
+  m_Name: MainAdventureMap
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.AdventureMap
+  m_Banners:
+  - {fileID: 11400000, guid: c0529f04ee8289f45b7eee6c060ef51b, type: 2}
+  - {fileID: 11400000, guid: a714a6d78cbc01943af8acd3c6c7dcd1, type: 2}
+  - {fileID: 11400000, guid: 6131815028c11714798a1071e0fde3ea, type: 2}
+  - {fileID: 11400000, guid: 771bdfee6d88b354b9f526456e29aad5, type: 2}
+  - {fileID: 11400000, guid: cdd3ae6899119994d84e5849ade3ed05, type: 2}
+  m_EventBanners:
+  - {fileID: 11400000, guid: ac0761d577f3d9344a94e79e7b9b7e3e, type: 2}

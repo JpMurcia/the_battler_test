@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974d2799245e85e45965594e8de5ccb2, type: 3}
+  m_Name: Unit_Zerpi
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.UnitDefinition
+  m_UnitId: enemy_zerpi
+  m_DisplayName: Zerpi
+  m_Cost: 1
+  m_CooldownSeconds: 1.1
+  m_MaxHealth: 30
+  m_Damage: 9
+  m_Range: 1.4
+  m_IdleAnimation: {fileID: 9100000, guid: 57c0bc7663b0c3548a97ddbe10c520fc, type: 2}
+  m_AttackAnimation: {fileID: 9100000, guid: ab323448511377941b55bc9d85abaaf1, type: 2}
+  m_VisualVariant: {fileID: 2902861932562919268, guid: 2efadc16c951c0b418cafb0b67ba37a1,
+    type: 3}
+  m_Team: 1
+  m_AttackType: 0
+  m_ClassificationType: 0
+  m_SpecialClassificationType: 0
+  m_TraitTargetingAbilities: []
+  m_NeutralAbilities: []
+  m_Immunities: []
+  m_EvolutionStages: []
+  m_Portrait: {fileID: -1882347247711912902, guid: 1bedbc2da85209842ab93a4e0e5d322f,
+    type: 3}
+  m_Rarity: 0
+  m_StrongAgainstModifiers: []
+  m_Resistances: []
+  m_MultiHitCount: 1
+  m_CriticalChance: 0

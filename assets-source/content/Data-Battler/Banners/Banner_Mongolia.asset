@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 298d2f4e425028d478d6570abf059d2e, type: 3}
+  m_Name: Banner_Mongolia
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.ChapterBannerDefinition
+  m_LinkedChapter: {fileID: 11400000, guid: bbb5f27f529659d45879f6bfe7e69c17, type: 2}
+  m_TargetSceneName: Mongolia_Battle
+  m_DisplayNameKey: banner.mongolia.name
+  m_BannerArt: {fileID: 21300000, guid: 367fef7c7a0cf8b4e8fc2020259965e9, type: 3}
+  m_EnergyCost: 45
+  m_Region: {fileID: 11400000, guid: 5b453e67d6e95de4b9dac98b6e40ccb9, type: 2}
+  m_DifficultyRank: 2

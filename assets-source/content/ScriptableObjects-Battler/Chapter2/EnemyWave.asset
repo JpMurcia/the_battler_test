@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f7408af8b30aaf46bebe7beb77cb5e1, type: 3}
+  m_Name: EnemyWave
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.EnemyWaveDefinition
+  m_WaveEntries:
+  - spawnTimeSeconds: 2
+    unit: {fileID: 11400000, guid: 4471284c6df72c840bac797b34ec746e, type: 2}
+    lanePosition: 8
+    isLinkedBoss: 0
+  - spawnTimeSeconds: 6
+    unit: {fileID: 11400000, guid: 4471284c6df72c840bac797b34ec746e, type: 2}
+    lanePosition: 8
+    isLinkedBoss: 0
+  - spawnTimeSeconds: 10
+    unit: {fileID: 11400000, guid: 4471284c6df72c840bac797b34ec746e, type: 2}
+    lanePosition: 8
+    isLinkedBoss: 0
+  - spawnTimeSeconds: 14
+    unit: {fileID: 11400000, guid: 4471284c6df72c840bac797b34ec746e, type: 2}
+    lanePosition: 8
+    isLinkedBoss: 0
+  - spawnTimeSeconds: 18
+    unit: {fileID: 11400000, guid: 4471284c6df72c840bac797b34ec746e, type: 2}
+    lanePosition: 8
+    isLinkedBoss: 0
+  - spawnTimeSeconds: 22
+    unit: {fileID: 11400000, guid: 4471284c6df72c840bac797b34ec746e, type: 2}
+    lanePosition: 8
+    isLinkedBoss: 0

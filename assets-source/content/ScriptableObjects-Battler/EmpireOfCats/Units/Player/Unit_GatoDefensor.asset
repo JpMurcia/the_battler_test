@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974d2799245e85e45965594e8de5ccb2, type: 3}
+  m_Name: Unit_GatoDefensor
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.UnitDefinition
+  m_UnitId: gato_defensor
+  m_DisplayName: Gato Defensor
+  m_Cost: 8
+  m_CooldownSeconds: 3.2
+  m_MaxHealth: 45
+  m_Damage: 7
+  m_Range: 1.3
+  m_IdleAnimation: {fileID: 9100000, guid: 6331260fdc7276c478403ec233c9d718, type: 2}
+  m_AttackAnimation: {fileID: 9100000, guid: baf42c4b0df95114f934315250ce2895, type: 2}
+  m_VisualVariant: {fileID: 1871497437055479401, guid: d8e12d24b2b530140a596b69c9c986bd,
+    type: 3}
+  m_Team: 0
+  m_AttackType: 0
+  m_ClassificationType: 0
+  m_SpecialClassificationType: 0
+  m_TraitTargetingAbilities: []
+  m_NeutralAbilities: []
+  m_Immunities: []
+  m_EvolutionStages: []
+  m_Portrait: {fileID: 21300000, guid: fb4cca35b23c6ea40b8495cb49592fe6, type: 3}
+  m_Rarity: 1
+  m_StrongAgainstModifiers: []
+  m_Resistances: []
+  m_MultiHitCount: 1
+  m_CriticalChance: 0

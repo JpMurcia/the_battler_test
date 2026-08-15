@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a021ca40f9d9b448fbb5eda9002a27, type: 3}
+  m_Name: EnemyCatalog
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.EnemyCatalog
+  m_Enemies:
+  - {fileID: 11400000, guid: 23c1829b37e9c704188b01000ab70ecb, type: 2}
+  - {fileID: 11400000, guid: 4471284c6df72c840bac797b34ec746e, type: 2}
+  - {fileID: 11400000, guid: 2b82da0b7630c8544aaa2526374a2964, type: 2}
+  - {fileID: 11400000, guid: a15b54a7b68d5cc4a849ae1b418dbd17, type: 2}
+  - {fileID: 11400000, guid: 27361d5330c78e24da9ad6e14fdb0184, type: 2}
+  - {fileID: 11400000, guid: 2cada1b8ad9d3d94c8090dd4f322898d, type: 2}
+  - {fileID: 11400000, guid: ee0bdbbc0cbf36b4cb05d08f57cbc4bf, type: 2}

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974d2799245e85e45965594e8de5ccb2, type: 3}
+  m_Name: Unit_Kodrizzz
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.UnitDefinition
+  m_UnitId: enemy_kodrizzz
+  m_DisplayName: Kodrizzz
+  m_Cost: 1
+  m_CooldownSeconds: 1.5
+  m_MaxHealth: 34
+  m_Damage: 10
+  m_Range: 1.3
+  m_IdleAnimation: {fileID: 9100000, guid: 3df78872dae78a74ca092de8209e41bf, type: 2}
+  m_AttackAnimation: {fileID: 9100000, guid: 1b2fa5071ff393e4cba00d29c380e7fb, type: 2}
+  m_VisualVariant: {fileID: 1135317884917846358, guid: 1de4a6aa5bb2b574d9451037954b268f,
+    type: 3}
+  m_Team: 1
+  m_AttackType: 0
+  m_ClassificationType: 0
+  m_SpecialClassificationType: 0
+  m_TraitTargetingAbilities: []
+  m_NeutralAbilities: []
+  m_Immunities: []
+  m_EvolutionStages: []
+  m_Portrait: {fileID: -8296385383580801948, guid: 90283cdf9b552ee45b3378f19e7ce6a9,
+    type: 3}
+  m_Rarity: 0
+  m_StrongAgainstModifiers: []
+  m_Resistances: []
+  m_MultiHitCount: 1
+  m_CriticalChance: 0

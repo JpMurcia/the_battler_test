@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974d2799245e85e45965594e8de5ccb2, type: 3}
+  m_Name: Unit_Serpi
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.UnitDefinition
+  m_UnitId: enemy_serpi
+  m_DisplayName: Serpi
+  m_Cost: 1
+  m_CooldownSeconds: 1.2
+  m_MaxHealth: 24
+  m_Damage: 7
+  m_Range: 1.4
+  m_IdleAnimation: {fileID: 9100000, guid: 99b942ac6cb73fa4197cbea28a0a8d71, type: 2}
+  m_AttackAnimation: {fileID: 9100000, guid: a0765dc8f328ba54992ff78232132cc0, type: 2}
+  m_VisualVariant: {fileID: 4021165010192333274, guid: 09293da29d33f4c44baf504afff9f2a0,
+    type: 3}
+  m_Team: 1
+  m_AttackType: 0
+  m_ClassificationType: 0
+  m_SpecialClassificationType: 0
+  m_TraitTargetingAbilities: []
+  m_NeutralAbilities: []
+  m_Immunities: []
+  m_EvolutionStages: []
+  m_Portrait: {fileID: 8793639957104055765, guid: 06bcc4d7ce9d91b4d957a1f2bb07f55b,
+    type: 3}
+  m_Rarity: 0
+  m_StrongAgainstModifiers: []
+  m_Resistances: []
+  m_MultiHitCount: 1
+  m_CriticalChance: 0

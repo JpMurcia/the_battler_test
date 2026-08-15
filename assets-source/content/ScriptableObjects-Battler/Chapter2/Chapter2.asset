@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbea4efb0c250644d883894a427ea603, type: 3}
+  m_Name: Chapter2
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.ChapterDefinition
+  m_ChapterId: chapter_2
+  m_PreBattleDialogue:
+  - {fileID: 11400000, guid: 7b3379c19078fb441b008a2aae94a087, type: 2}
+  - {fileID: 11400000, guid: b56b3ac48e1e3144c873e9ea32ee1d41, type: 2}
+  - {fileID: 11400000, guid: 7173f53683e6f2346bae168d565605a2, type: 2}
+  m_PostBattleDialogue:
+  - {fileID: 11400000, guid: 08281af57737441478caaab335fca6d5, type: 2}
+  - {fileID: 11400000, guid: fa9daefd05ffdda47a810461dce97077, type: 2}
+  m_AvailableUnits:
+  - {fileID: 11400000, guid: f0061d1f348fe934fb8d0ed4c7f5514c, type: 2}
+  - {fileID: 11400000, guid: 8a08fc5dd595aa74b8b69f10ac721c99, type: 2}
+  - {fileID: 11400000, guid: 4c1babdc65d4deb4bb843503049286b0, type: 2}
+  - {fileID: 11400000, guid: 97309e995ec6cf2459af3805e53bb9ff, type: 2}
+  - {fileID: 11400000, guid: 9b5ba2f1dcdebe84ca3a555a40ce34f9, type: 2}
+  - {fileID: 11400000, guid: 01b5f9c7ab861424bb0d4af462991182, type: 2}
+  - {fileID: 11400000, guid: 20c7545c4a7b37944b6928b2e1458dec, type: 2}
+  m_EnemyWaves: {fileID: 11400000, guid: bba3e29e772ddd049ba6f4afcca11e0a, type: 2}
+  m_PlayerBaseMaxHealth: 35
+  m_EnemyBaseMaxHealth: 55
+  m_MaxSimultaneousEnemies: 0
+  m_HealthThresholdWaveTriggers: []
+  m_TreasureRewardId: 
+  m_XpReward: 0
+  m_FirstClearUnitUnlock: {fileID: 0}
+  m_ZombieOutbreakWave: {fileID: 0}
+  m_LevelWidth: 18

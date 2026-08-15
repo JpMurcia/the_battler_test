@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-944dcd56-ae79-4718-890f-ec2498678107/styles.css">
+  <script src="_ds/modernist-944dcd56-ae79-4718-890f-ec2498678107/_ds_bundle.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;background:#020308;font-family:'Inter',sans-serif;}
+    ::selection{background:#fb923c;color:#050505}
+    a{color:#22d3ee} a:hover{color:#67e8f9}
+    @keyframes bc-pulse{0%,100%{box-shadow:0 0 0 0 rgba(251,146,60,.55),0 12px 34px rgba(239,68,68,.35)}50%{box-shadow:0 0 0 10px rgba(251,146,60,0),0 12px 34px rgba(239,68,68,.35)}}
+    @keyframes bc-glow{0%,100%{filter:drop-shadow(0 0 3px rgba(34,211,238,.7))}50%{filter:drop-shadow(0 0 11px rgba(34,211,238,1))}}
+    @keyframes bc-gold{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.6)}50%{box-shadow:0 0 16px 4px rgba(250,204,21,.8)}}
+    @keyframes bc-none{0%,100%{opacity:1}}
+    @keyframes bc-neon{0%{filter:drop-shadow(0 0 6px #fff) hue-rotate(0deg)}50%{filter:drop-shadow(0 0 20px #fff) hue-rotate(180deg)}100%{filter:drop-shadow(0 0 6px #fff) hue-rotate(360deg)}}
+    @keyframes bc-capsule{0%{transform:rotate(0deg) scale(.6);opacity:0}55%{transform:rotate(420deg) scale(1.12);opacity:1}100%{transform:rotate(360deg) scale(1);opacity:1}}
+    @keyframes bc-pop{0%{transform:scale(.5) translateY(8px);opacity:0}70%{transform:scale(1.06) translateY(0);opacity:1}100%{transform:scale(1);opacity:1}}
+    @keyframes bc-shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+    @keyframes bc-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes bc-blink{0%,90%,100%{opacity:1}94%{opacity:0}}
+  </style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:22px;padding:36px 20px;background:radial-gradient(circle at 20% 10%,rgba(34,211,238,.10),transparent 45%),radial-gradient(circle at 85% 20%,rgba(251,146,60,.10),transparent 45%),radial-gradient(circle at 60% 90%,rgba(168,85,247,.10),transparent 45%),#020308;">
+
+  <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:900px;width:100%;">
+    <div style="font:700 11px/1 'Orbitron',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#fb923c;">Cyber-Modern Game UI</div>
+    <h1 style="font:800 28px/1.15 'Orbitron',sans-serif;color:#f4f6fb;margin:0;">The Battle Cats — HUD de Producción</h1>
+    <p style="font:400 14px/1.6 'Inter',sans-serif;color:#94a3b8;margin:0;max-width:640px;">Base de Gatos, Mapa de Etapas, Batalla, Equipar, Mejorar y Cápsula — alineados con las estadísticas, rarezas, rasgos y probabilidades del manual técnico.</p>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" width="{{ deviceW }}" height="{{ deviceH }}" hint-size="874px,402px">
+    <div style="width:100%;height:100%;background:radial-gradient(circle at 15% 15%,rgba(34,211,238,.20),transparent 42%),radial-gradient(circle at 88% 10%,rgba(251,146,60,.20),transparent 45%),radial-gradient(circle at 55% 100%,rgba(168,85,247,.18),transparent 45%),#05070d;display:flex;flex-direction:column;box-sizing:border-box;padding:50px 24px 16px;font-family:'Inter',sans-serif;overflow:hidden;position:relative;color:#f4f6fb;">
+
+      <sc-if value="{{ isTitle }}" hint-placeholder-val="{{ true }}">
+        <div style="position:relative;height:100%;display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <button style="border:none;background:none;color:#5b6577;font:600 9px 'Inter',sans-serif;cursor:pointer;text-align:left;padding:0;" onclick="{{ toggleCode }}">
+              Anota y guarda este código:<br/>
+              <span style="color:#c8cdd6;">{{ codeDisplay }}</span>
+            </button>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+              <span style="font:700 10px 'Inter',sans-serif;color:#5b6577;">Versión 15.5.0</span>
+              <button style="display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;cursor:pointer;" onclick="{{ openNews }}">
+                <span style="position:relative;width:36px;height:36px;border-radius:10px;background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.4);display:flex;align-items:center;justify-content:center;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6l9 7 9-7"/></svg>
+                  <sc-if value="{{ newsUnreadBadge }}" hint-placeholder-val="{{ true }}">
+                    <span style="position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font:800 9px 'Orbitron',sans-serif;display:flex;align-items:center;justify-content:center;padding:0 3px;">{{ newsUnreadCount }}</span>
+                  </sc-if>
+                </span>
+                <span style="font:700 8px 'Inter',sans-serif;color:#94a3b8;">Buzón</span>
+              </button>
+            </div>
+          </div>
+
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+            <div style="font:900 34px 'Orbitron',sans-serif;background:{{ titleGrad }};-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:1px;text-align:center;line-height:1.05;">BATTLE<br/>CATS</div>
+            <div style="font:800 11px 'Orbitron',sans-serif;color:#facc15;letter-spacing:2px;">MODERNIZADO</div>
+          </div>
+
+          <div style="display:flex;justify-content:center;gap:10px;padding-bottom:8px;">
+            <button style="width:76px;display:flex;flex-direction:column;align-items:center;gap:5px;border:none;border-radius:12px;background:{{ titleGrad }};color:#050505;padding:10px 6px;cursor:pointer;box-shadow:0 8px 20px rgba(251,146,60,.35);" onclick="{{ goHub }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#050505" stroke-width="2"><path d="M6 4l14 8-14 8V4Z" fill="#050505"/></svg>
+              <span style="font:800 11px 'Orbitron',sans-serif;">Jugar</span>
+            </button>
+            <button style="width:76px;display:flex;flex-direction:column;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(255,255,255,.06);color:#c8cdd6;padding:10px 6px;cursor:pointer;" onclick="{{ openSettings }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c8cdd6" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+              <span style="font:800 11px 'Orbitron',sans-serif;">Ajustes</span>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNews }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.9);backdrop-filter:blur(4px);z-index:50;display:flex;align-items:center;justify-content:center;">
+          <div style="width:90%;height:82%;border-radius:16px;background:rgba(20,22,30,.94);border:1px solid rgba(239,68,68,.3);padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Buzón de Noticias</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeNews }}">✕</button>
+            </div>
+            <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ newsList }}" as="n" hint-placeholder-count="3">
+                <div style="border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:11px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ n.title }}</span>
+                    <span style="font:600 9px 'Inter',sans-serif;color:#5b6577;">{{ n.date }}</span>
+                  </div>
+                  <div style="font:500 10px/1.5 'Inter',sans-serif;color:#94a3b8;margin-top:4px;">{{ n.body }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHub }}" hint-placeholder-val="{{ true }}">
+        <div style="position:relative;height:100%;background:radial-gradient(ellipse at 50% 30%,rgba(34,211,238,.10),transparent 60%),radial-gradient(ellipse at 50% 100%,rgba(251,146,60,.08),transparent 55%);border-radius:14px;overflow:hidden;">
+
+          <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px;z-index:5;">
+            <button style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:6px 10px;cursor:pointer;" onclick="{{ openPlayerProfile }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4"/></svg>
+              <span style="font:700 12px 'Orbitron',sans-serif;color:#f4f6fb;">Rango {{ profileRank }}</span>
+            </button>
+            <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:6px 10px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="#22d3ee"><path d="M13 2 3 14h7l-1 8 11-14h-7l1-6Z"/></svg>
+              <span style="font:700 12px 'Orbitron',sans-serif;color:#22d3ee;">8/10</span>
+              <span style="font:500 10px 'Inter',sans-serif;color:#5b6577;">↻ 12:30</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:6px 8px 6px 10px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="#a855f7"><path d="M12 2 2 9l10 13L22 9Z"/></svg>
+              <span style="font:700 12px 'Orbitron',sans-serif;color:#f4f6fb;">{{ catFoodLabel }}</span>
+              <button style="width:20px;height:20px;border-radius:8px;border:none;background:linear-gradient(135deg,#fb923c,#ef4444);color:#050505;font:800 13px/1 'Inter',sans-serif;cursor:pointer;" onclick="{{ addCatFood }}">+</button>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:0;top:44px;bottom:70px;width:132px;display:flex;flex-direction:column;justify-content:center;gap:8px;z-index:5;">
+            <button style="border:1px solid #fb923c;border-radius:14px;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;padding:12px 10px;cursor:pointer;text-align:left;animation:bc-pulse 2.4s ease-in-out infinite;box-shadow:0 8px 22px rgba(239,68,68,.35);" onclick="{{ goStages }}">
+              <div style="font:800 13px 'Orbitron',sans-serif;letter-spacing:.02em;">¡BATALLA!</div>
+              <div style="font:500 9px 'Inter',sans-serif;opacity:.9;margin-top:2px;">Elegir etapa</div>
+            </button>
+            <button style="border:1px solid rgba(34,211,238,.5);border-radius:14px;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);color:#e0fbff;padding:12px 10px;cursor:pointer;text-align:left;box-shadow:0 6px 16px rgba(0,0,0,.4);" onclick="{{ openEquip }}">
+              <div style="font:800 12px 'Orbitron',sans-serif;color:#22d3ee;">Equipar</div>
+              <div style="font:500 9px 'Inter',sans-serif;color:#94a3b8;margin-top:2px;">Organizar equipo</div>
+            </button>
+            <button style="border:1px solid rgba(251,146,60,.5);border-radius:14px;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);color:#ffe8d6;padding:12px 10px;cursor:pointer;text-align:left;box-shadow:0 6px 16px rgba(0,0,0,.4);" onclick="{{ openUpgrade }}">
+              <div style="font:800 12px 'Orbitron',sans-serif;color:#fb923c;">Mejorar</div>
+              <div style="font:500 9px 'Inter',sans-serif;color:#94a3b8;margin-top:2px;">Unidades y base</div>
+            </button>
+          </div>
+
+          <div style="position:absolute;right:0;top:44px;bottom:70px;width:150px;display:flex;flex-direction:column;justify-content:center;gap:8px;z-index:5;">
+            <button style="position:relative;border:1px solid rgba(250,204,21,.5);border-radius:14px;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);color:#f4f6fb;padding:10px;cursor:pointer;text-align:left;box-shadow:0 6px 16px rgba(0,0,0,.4);" onclick="{{ openMissions }}">
+              <sc-if value="{{ pendingBadge }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font:800 10px 'Orbitron',sans-serif;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 8px rgba(239,68,68,.7);">{{ pendingMissions }}</span>
+              </sc-if>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                <span style="font:800 11px 'Orbitron',sans-serif;">Misiones</span>
+              </div>
+              <div style="font:500 9px 'Inter',sans-serif;color:#94a3b8;margin-top:3px;">Catnip Challenges</div>
+            </button>
+            <button style="border:1px solid rgba(255,255,255,.16);border-radius:14px;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);color:#f4f6fb;padding:10px;cursor:pointer;text-align:left;box-shadow:0 6px 16px rgba(0,0,0,.4);" onclick="{{ openPlayerProfile }}">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c8cdd6" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                <span style="font:800 11px 'Orbitron',sans-serif;">Perfil</span>
+              </div>
+              <div style="font:500 9px 'Inter',sans-serif;color:#94a3b8;margin-top:3px;">Rango y colección</div>
+            </button>
+          </div>
+
+          <div style="position:absolute;left:50%;bottom:78px;transform:translateX(-50%);display:flex;align-items:flex-end;gap:8px;z-index:5;max-width:300px;animation:bc-pop .5s ease-out;">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" style="flex:none;animation:bc-bob 3s ease-in-out infinite;">
+              <circle cx="12" cy="13" r="7" fill="rgba(251,146,60,.16)" stroke="#fb923c" stroke-width="1.6"/>
+              <path d="M6 8 4 3l4.5 3" stroke="#fb923c" stroke-width="1.6" fill="rgba(251,146,60,.16)"/>
+              <path d="M18 8 20 3l-4.5 3" stroke="#fb923c" stroke-width="1.6" fill="rgba(251,146,60,.16)"/>
+              <circle cx="9.5" cy="13" r="1" fill="#f4f6fb" style="animation:bc-blink 4.5s ease-in-out infinite;"/>
+              <circle cx="14.5" cy="13" r="1" fill="#f4f6fb" style="animation:bc-blink 4.5s ease-in-out infinite;"/>
+              <path d="M10.5 16h3" stroke="#f4f6fb" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <div style="position:relative;border-radius:12px;border-bottom-left-radius:3px;background:rgba(10,11,16,.72);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);padding:8px 10px;box-shadow:0 6px 16px rgba(0,0,0,.4);">
+              <div style="font:500 10px/1.4 'Inter',sans-serif;color:#e5e7eb;">{{ tipMessage }}</div>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:50%;bottom:6px;transform:translateX(-50%);display:flex;gap:6px;background:rgba(10,11,16,.55);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:7px 9px;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.5);">
+            <button style="width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#f472b6;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="{{ openGuide }}" title="Biblioteca">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2Z"/><path d="M6 3v16"/></svg>
+            </button>
+            <button style="position:relative;width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(74,222,128,.4);color:#4ade80;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="{{ openGamatoto }}" title="Gamatoto">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.8"><rect x="3" y="10" width="18" height="10" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+              <sc-if value="{{ gamatotoReadyBadge }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#4ade80;color:#052e16;font:800 9px 'Orbitron',sans-serif;display:flex;align-items:center;justify-content:center;padding:0 3px;">!</span>
+              </sc-if>
+            </button>
+            <button style="position:relative;width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.4);color:#a855f7;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="{{ openGacha }}" title="Cápsula">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.8"><path d="M12 2 2 9l10 13L22 9Z"/></svg>
+              <span style="position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#a855f7;color:#fff;font:800 9px 'Orbitron',sans-serif;display:flex;align-items:center;justify-content:center;padding:0 3px;">{{ gachaTicketsLabel }}</span>
+            </button>
+            <button style="width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(148,163,184,.4);color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="{{ openStorage }}" title="Almacén de Gatos">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 7l3-4h12l3 4"/></svg>
+            </button>
+            <button style="width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(250,204,21,.4);color:#facc15;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="{{ openShop }}" title="Tienda">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="1.8"><path d="M4 8l1-4h14l1 4"/><path d="M3 8h18l-1 12H4L3 8Z"/></svg>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isStages }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;height:100%;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button style="border:none;background:none;color:#f4f6fb;font:700 18px 'Orbitron',sans-serif;cursor:pointer;padding:0 6px 0 0;" onclick="{{ goHub }}">←</button>
+            <div style="display:flex;gap:6px;flex:1;overflow-x:auto;">
+              <sc-for list="{{ sagaTabs }}" as="tab" hint-placeholder-count="4">
+                <button style="border-radius:10px;border:1px solid {{ tab.borderColor }};background:{{ tab.bg }};color:{{ tab.color }};font:700 11px 'Inter',sans-serif;padding:7px 11px;white-space:nowrap;cursor:pointer;" onclick="{{ tab.select }}">{{ tab.name }}</button>
+              </sc-for>
+            </div>
+            <button style="border-radius:10px;border:1px solid rgba(250,204,21,.4);background:rgba(255,255,255,.06);color:#facc15;font:700 10px 'Inter',sans-serif;padding:7px 10px;cursor:pointer;white-space:nowrap;" onclick="{{ openTreasureMenu }}">Tesoros {{ treasureInferior }}%</button>
+          </div>
+
+          <div style="flex:1;position:relative;border-radius:14px;background:radial-gradient(circle at 30% 20%,rgba(34,211,238,.10),transparent 55%),radial-gradient(circle at 75% 75%,rgba(168,85,247,.10),transparent 50%),#0a0c14;border:1px solid rgba(255,255,255,.08);overflow:hidden;">
+
+            <div style="position:absolute;left:8px;top:8px;z-index:3;border-radius:12px;background:linear-gradient(135deg,rgba(250,204,21,.22),rgba(239,68,68,.18));border:1px solid rgba(250,204,21,.5);backdrop-filter:blur(8px);padding:8px 10px;box-shadow:0 0 16px rgba(250,204,21,.25);animation:bc-gold 2.2s ease-in-out infinite;">
+              <div style="font:700 8px 'Orbitron',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#facc15;">Festival de Tesoros</div>
+              <div style="font:800 15px 'Orbitron',sans-serif;color:#fff;margin-top:1px;">{{ festivalMult }} Tesoros</div>
+              <div style="font:600 9px 'Inter',sans-serif;color:#ffe8b0;margin-top:1px;">⏱ {{ festivalTime }}</div>
+            </div>
+
+            <svg width="100%" height="100%" style="position:absolute;inset:0;" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <sc-for list="{{ nodeLines }}" as="ln" hint-placeholder-count="9">
+                <line x1="{{ ln.x1 }}" y1="{{ ln.y1 }}" x2="{{ ln.x2 }}" y2="{{ ln.y2 }}" stroke="rgba(255,255,255,.22)" stroke-width="0.6" stroke-dasharray="2,2"/>
+              </sc-for>
+            </svg>
+            <sc-for list="{{ stageNodes }}" as="node" hint-placeholder-count="10">
+              <button style="position:absolute;left:{{ node.x }}%;top:{{ node.y }}%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;border:2px solid {{ node.fill }};background:rgba(10,11,16,.7);color:{{ node.fill }};font:800 11px 'Orbitron',sans-serif;cursor:pointer;box-shadow:0 0 10px {{ node.fill }};opacity:{{ node.opacity }};z-index:2;animation:{{ node.anim }};transition:transform .15s;" onclick="{{ node.select }}">★{{ node.stars }}</button>
+            </sc-for>
+
+            <div style="position:absolute;right:8px;top:8px;width:190px;border-radius:14px;background:rgba(20,22,30,.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);padding:12px;z-index:3;box-shadow:0 8px 24px rgba(0,0,0,.5);">
+              <div style="font:700 8px 'Orbitron',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5b6577;">{{ activeSagaName }}</div>
+              <div style="font:800 16px 'Orbitron',sans-serif;color:#f4f6fb;margin:2px 0 6px;">{{ selectedStage.name }}</div>
+              <div style="display:flex;gap:10px;margin-bottom:6px;">
+                <span style="font:700 11px 'Inter',sans-serif;color:#facc15;">★ {{ selectedStage.stars }}</span>
+                <span style="font:700 11px 'Inter',sans-serif;color:#22d3ee;">⚡ {{ selectedStage.energy }}</span>
+              </div>
+              <p style="font:400 10px/1.4 'Inter',sans-serif;color:#94a3b8;margin:0 0 8px;">{{ selectedStage.note }}</p>
+              <button style="width:100%;border:none;border-radius:10px;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;font:800 12px 'Orbitron',sans-serif;letter-spacing:.03em;padding:9px;cursor:pointer;" onclick="{{ goBattle }}">¡ATACAR!</button>
+            </div>
+
+            <div style="position:absolute;left:8px;bottom:8px;right:206px;display:flex;gap:5px;z-index:3;overflow-x:auto;">
+              <sc-for list="{{ battleItemsList }}" as="bi" hint-placeholder-count="5">
+                <button style="flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:10px;border:1px solid {{ bi.borderColor }};background:{{ bi.bg }};color:{{ bi.color }};font:700 8px 'Inter',sans-serif;padding:6px 7px;cursor:pointer;" onclick="{{ bi.toggle }}">
+                  <span style="font-size:14px;line-height:1;">{{ bi.icon }}</span>{{ bi.label }}
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTreasureMenu }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.9);backdrop-filter:blur(4px);z-index:45;display:flex;align-items:center;justify-content:center;">
+          <div style="width:80%;border-radius:16px;background:rgba(20,22,30,.94);border:1px solid rgba(255,255,255,.14);padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 14px 'Orbitron',sans-serif;color:#f4f6fb;">Menú de Tesoros — {{ activeSagaName }}</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeTreasureMenu }}">✕</button>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font:600 10px 'Inter',sans-serif;color:#c8cdd6;margin-bottom:4px;"><span>Tesoros Inferiores</span><span>{{ treasureInferior }}%</span></div>
+              <div style="height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,#facc15,#f59e0b);width:{{ treasureInferior }}%;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font:600 10px 'Inter',sans-serif;color:#c8cdd6;margin-bottom:4px;"><span>Tesoros Superiores</span><span>{{ treasureSuperior }}%</span></div>
+              <div style="height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,#a855f7,#7c3aed);width:{{ treasureSuperior }}%;"></div></div>
+            </div>
+            <p style="font:400 10px/1.5 'Inter',sans-serif;color:#5b6577;margin:0;">Los bonos globales del capítulo aumentan según el % de tesoros recolectados en cada etapa (Sección 9.4/9.7).</p>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isBattle }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;height:100%;gap:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button style="border:none;background:none;color:#f4f6fb;font:700 16px 'Orbitron',sans-serif;cursor:pointer;" onclick="{{ goStages }}">←</button>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#facc15"><circle cx="12" cy="12" r="10"/></svg>
+                <span style="font:800 15px 'Orbitron',sans-serif;color:#facc15;">{{ moneyLabel }}</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <button style="border:1px solid rgba(255,255,255,.16);border-radius:8px;background:{{ speed1Bg }};color:{{ speed1Color }};font:800 11px 'Orbitron',sans-serif;padding:5px 8px;cursor:pointer;" onclick="{{ setSpeed1 }}">x1</button>
+              <button style="border:1px solid rgba(255,255,255,.16);border-radius:8px;background:{{ speed2Bg }};color:{{ speed2Color }};font:800 11px 'Orbitron',sans-serif;padding:5px 8px;cursor:pointer;" onclick="{{ setSpeed2 }}">x2</button>
+              <button style="border:1px solid rgba(255,255,255,.16);border-radius:8px;background:rgba(255,255,255,.06);color:#c8cdd6;font:800 11px 'Orbitron',sans-serif;padding:5px 8px;cursor:pointer;" onclick="{{ togglePause }}">{{ pauseLabel }}</button>
+              <button style="position:relative;width:40px;height:40px;border-radius:50%;border:none;background:transparent;cursor:{{ cannonCursor }};display:flex;align-items:center;justify-content:center;animation:{{ cannonAnim }};" onclick="{{ fireCannon }}">
+                <svg width="40" height="40" viewBox="0 0 40 40" style="position:absolute;top:0;left:0;">
+                  <circle cx="20" cy="20" r="17" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3"/>
+                  <circle cx="20" cy="20" r="17" fill="none" stroke="{{ cannonStroke }}" stroke-width="3" stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="{{ cannonRingOffset }}" transform="rotate(-90 20 20)"/>
+                </svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="{{ cannonIconFill }}"><path d="M13 2 3 14h7l-1 8 11-14h-7l1-6Z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5Z"/></svg>
+            <div style="flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;">
+              <div style="position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#0891b2,#22d3ee);width:{{ allyHpPct }}%;"></div>
+            </div>
+            <div style="flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;">
+              <div style="position:absolute;right:0;top:0;bottom:0;background:linear-gradient(90deg,#a855f7,#ef4444);width:{{ enemyHpPct }}%;"></div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="9" cy="10" r="1.4" fill="#ef4444"/><circle cx="15" cy="10" r="1.4" fill="#ef4444"/><path d="M4 12a8 8 0 0 1 16 0v3a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3Z"/></svg>
+          </div>
+
+          <div style="flex:1;position:relative;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.01) 45%,rgba(0,0,0,.28) 100%),repeating-linear-gradient(180deg,rgba(255,255,255,.025) 0px,rgba(255,255,255,.025) 1px,transparent 1px,transparent 9px);min-height:0;overflow:hidden;">
+            <sc-for list="{{ allyTokens }}" as="tok" hint-placeholder-count="0">
+              <div style="position:absolute;bottom:{{ tok.bottomPx }}px;left:{{ tok.leftPct }}%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:1px;">
+                <div style="width:26px;height:26px;border-radius:50%;border:2px solid #22d3ee;background:rgba(34,211,238,.15);color:#e0fbff;display:flex;align-items:center;justify-content:center;font:800 11px 'Orbitron',sans-serif;box-shadow:0 0 8px rgba(34,211,238,.6);">{{ tok.initial }}</div>
+                <div style="width:24px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);"><div style="height:100%;border-radius:2px;background:#22d3ee;width:{{ tok.hpPct }}%;"></div></div>
+                <div style="width:22px;height:7px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.55) 0%,transparent 75%);margin-top:1px;"></div>
+              </div>
+            </sc-for>
+            <sc-for list="{{ enemyTokens }}" as="tok" hint-placeholder-count="0">
+              <div style="position:absolute;bottom:{{ tok.bottomPx }}px;left:{{ tok.leftPct }}%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:1px;">
+                <div style="width:{{ tok.size }}px;height:{{ tok.size }}px;border-radius:50%;border:2px solid {{ tok.color }};background:rgba(0,0,0,.3);color:{{ tok.color }};display:flex;align-items:center;justify-content:center;font:800 11px 'Orbitron',sans-serif;box-shadow:0 0 8px {{ tok.color }};">{{ tok.initial }}</div>
+                <div style="width:24px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);"><div style="height:100%;border-radius:2px;background:{{ tok.color }};width:{{ tok.hpPct }}%;"></div></div>
+                <div style="width:{{ tok.shadowW }}px;height:8px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.6) 0%,transparent 75%);margin-top:1px;"></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;align-items:flex-end;gap:6px;">
+            <div style="display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:58px;gap:5px;flex:1;">
+              <sc-for list="{{ deployUnits }}" as="u" hint-placeholder-count="6">
+                <button style="position:relative;border-radius:12px;border:1px solid {{ u.borderColor }};background:rgba(255,255,255,.05);overflow:hidden;cursor:{{ u.cursor }};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;opacity:{{ u.opacity }};" onclick="{{ u.deploy }}">
+                  <span style="position:absolute;left:0;right:0;bottom:0;height:{{ u.cooldownPct }}%;background:linear-gradient(180deg,rgba(251,146,60,.05),rgba(239,68,68,.55));z-index:1;"></span>
+                  <span style="position:relative;z-index:2;font:800 12px 'Orbitron',sans-serif;color:#f4f6fb;">{{ u.initial }}</span>
+                  <span style="position:relative;z-index:2;font:700 10px 'Inter',sans-serif;color:#facc15;">${{ u.cost }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <button style="border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#c8cdd6;font:700 10px 'Orbitron',sans-serif;padding:8px;height:58px;cursor:pointer;" onclick="{{ toggleRows }}">{{ rowsLabel }}</button>
+          </div>
+
+          <sc-if value="{{ battleOver }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;background:rgba(2,3,8,.88);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+              <div style="font:800 28px 'Orbitron',sans-serif;color:{{ resultColor }};">{{ resultLabel }}</div>
+              <button style="border:none;border-radius:12px;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;font:800 13px 'Orbitron',sans-serif;padding:10px 20px;cursor:pointer;" onclick="{{ goStages }}">Volver al mapa</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showEquip }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.86);backdrop-filter:blur(4px);z-index:40;display:flex;align-items:center;justify-content:center;">
+          <div style="width:92%;height:88%;border-radius:18px;background:rgba(20,22,30,.9);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.5);padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Equipar Unidades</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeEquip }}">✕</button>
+            </div>
+            <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;">
+              <sc-for list="{{ equipSlots }}" as="slot" hint-placeholder-count="10">
+                <button style="flex:none;width:44px;height:44px;border-radius:10px;border:2px solid {{ slot.borderColor }};background:{{ slot.bg }};color:#f4f6fb;font:800 12px 'Orbitron',sans-serif;cursor:pointer;" onclick="{{ slot.select }}">{{ slot.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:5px;overflow-x:auto;">
+              <sc-for list="{{ equipRarityFilters }}" as="rf" hint-placeholder-count="7">
+                <button style="flex:none;border-radius:8px;border:1px solid {{ rf.color }};background:{{ rf.bg }};color:{{ rf.textColor }};font:700 9px 'Inter',sans-serif;padding:5px 8px;cursor:pointer;" onclick="{{ rf.select }}">{{ rf.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:6px;overflow-x:auto;">
+              <sc-for list="{{ rosterUnits }}" as="ru" hint-placeholder-count="6">
+                <button style="flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;border-radius:10px;border:1px solid {{ ru.rarityColor }};background:rgba(255,255,255,.05);cursor:pointer;" onclick="{{ ru.assign }}">
+                  <span style="width:24px;height:24px;border-radius:50%;background:rgba(34,211,238,.15);border:1px solid #22d3ee;display:flex;align-items:center;justify-content:center;font:700 10px 'Orbitron',sans-serif;color:#f4f6fb;">{{ ru.initial }}</span>
+                  <span style="font:600 9px 'Inter',sans-serif;color:#94a3b8;">{{ ru.name }}</span>
+                  <span style="font:700 7px 'Inter',sans-serif;color:{{ ru.rarityColor }};">{{ ru.rarityLabel }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="flex:1;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:14px;display:flex;flex-direction:column;gap:8px;min-height:0;overflow-y:auto;">
+              <sc-if value="{{ detailUnit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="width:40px;height:40px;border-radius:50%;background:rgba(34,211,238,.15);border:2px solid #22d3ee;display:flex;align-items:center;justify-content:center;font:800 14px 'Orbitron',sans-serif;color:#f4f6fb;">{{ detailUnit.initial }}</span>
+                  <div style="display:flex;flex-direction:column;">
+                    <span style="font:800 16px 'Orbitron',sans-serif;color:#f4f6fb;">{{ detailUnit.name }}</span>
+                    <span style="font:700 10px 'Inter',sans-serif;color:{{ detailUnit.rarityColor }};">{{ detailUnit.rarityLabel }} · Nivel {{ detailUnit.levelLabel }}</span>
+                  </div>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <sc-for list="{{ detailUnit.forms }}" as="f" hint-placeholder-count="3">
+                    <button style="flex:1;border-radius:8px;border:1px solid {{ f.borderColor }};background:{{ f.bg }};color:{{ f.color }};font:700 10px 'Inter',sans-serif;padding:6px 4px;cursor:pointer;" onclick="{{ f.select }}">{{ f.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;"><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;">HP</span><span style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ detailUnit.hp }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:1px;"><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;">ATQ / DPS</span><span style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ detailUnit.atk }} / {{ detailUnit.dps }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:1px;"><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Alcance</span><span style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ detailUnit.range }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:1px;"><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Frecuencia</span><span style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ detailUnit.freqSec }}s</span></div>
+                  <div style="display:flex;flex-direction:column;gap:1px;"><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Velocidad</span><span style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ detailUnit.speed }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:1px;"><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Retroceso</span><span style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ detailUnit.knockback }}x</span></div>
+                  <div style="display:flex;flex-direction:column;gap:1px;"><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Coste $</span><span style="font:700 12px 'Inter',sans-serif;color:#facc15;">${{ detailUnit.cost }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:1px;"><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Cooldown</span><span style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ detailUnit.cooldown }}s</span></div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noDetailUnit }}" hint-placeholder-val="{{ true }}">
+                <div style="font:500 12px 'Inter',sans-serif;color:#5b6577;">Selecciona un slot con unidad para ver sus estadísticas y formas de evolución.</div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showUpgrade }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.86);backdrop-filter:blur(4px);z-index:40;display:flex;align-items:center;justify-content:center;">
+          <div style="width:92%;height:88%;border-radius:18px;background:rgba(20,22,30,.9);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.5);padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Mejorar</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font:700 11px 'Orbitron',sans-serif;color:#4ade80;">XP {{ xpLabel }}</span>
+                <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeUpgrade }}">✕</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;">
+              <button style="border:none;background:none;color:{{ unitsTabColor }};font:800 12px 'Orbitron',sans-serif;padding:4px 6px;border-bottom:2px solid {{ unitsTabBorder }};cursor:pointer;" onclick="{{ setUpgradeTabUnits }}">Unidades</button>
+              <button style="border:none;background:none;color:{{ baseTabColor }};font:800 12px 'Orbitron',sans-serif;padding:4px 6px;border-bottom:2px solid {{ baseTabBorder }};cursor:pointer;" onclick="{{ setUpgradeTabBase }}">Mejoras de Base</button>
+            </div>
+
+            <sc-if value="{{ isUpgradeUnits }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;gap:6px;overflow-x:auto;">
+                <sc-for list="{{ upgradeRosterUnits }}" as="ru" hint-placeholder-count="7">
+                  <button style="flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;border-radius:10px;border:1px solid {{ ru.borderColor }};background:{{ ru.bg }};cursor:pointer;" onclick="{{ ru.select }}">
+                    <span style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid {{ ru.rarityColor }};display:flex;align-items:center;justify-content:center;font:700 10px 'Orbitron',sans-serif;color:#f4f6fb;">{{ ru.initial }}</span>
+                    <span style="font:600 9px 'Inter',sans-serif;color:#94a3b8;">{{ ru.name }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="flex:1;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="display:flex;flex-direction:column;">
+                    <span style="font:800 16px 'Orbitron',sans-serif;color:#f4f6fb;">{{ upgradeUnit.name }}</span>
+                    <span style="font:700 10px 'Inter',sans-serif;color:{{ upgradeUnit.rarityColor }};">{{ upgradeUnit.rarityLabel }} · Nivel {{ upgradeUnit.levelLabel }}</span>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font:600 8px 'Inter',sans-serif;color:#5b6577;">HP / ATQ actual</div>
+                    <div style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;">{{ upgradeUnit.hp }} / {{ upgradeUnit.atk }}</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <div style="flex:1;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:10px;">
+                    <div style="font:700 10px 'Orbitron',sans-serif;color:#94a3b8;margin-bottom:4px;">Nivel natural {{ upgradeUnit.natural }}/{{ upgradeUnit.naturalMax }}</div>
+                    <div style="font:500 10px 'Inter',sans-serif;color:#5b6577;margin-bottom:6px;">XP (subida directa)</div>
+                    <button style="width:100%;border:none;border-radius:8px;padding:8px;font:800 11px 'Orbitron',sans-serif;cursor:{{ upgradeUnit.naturalCursor }};background:{{ upgradeUnit.naturalBg }};color:{{ upgradeUnit.naturalColor }};" onclick="{{ upgradeUnit.levelUpNatural }}">+Nivel ({{ upgradeUnit.naturalCost }} XP)</button>
+                  </div>
+                  <div style="flex:1;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:10px;">
+                    <div style="font:700 10px 'Orbitron',sans-serif;color:#94a3b8;margin-bottom:4px;">Nivel "+" {{ upgradeUnit.plus }}/{{ upgradeUnit.plusMax }}</div>
+                    <div style="font:500 10px 'Inter',sans-serif;color:#5b6577;margin-bottom:6px;">Por duplicados (gacha)</div>
+                    <button style="width:100%;border:none;border-radius:8px;padding:8px;font:800 11px 'Orbitron',sans-serif;cursor:{{ upgradeUnit.plusCursor }};background:{{ upgradeUnit.plusBg }};color:{{ upgradeUnit.plusColor }};" onclick="{{ upgradeUnit.levelUpPlus }}">+Nivel "+" ({{ upgradeUnit.plusCost }} XP)</button>
+                  </div>
+                </div>
+                <p style="font:400 11px/1.5 'Inter',sans-serif;color:#5b6577;margin:0;">Fórmula (5.7): Estadística(N) = (base + acumulado) × Multiplicador de Tesoros. Nivel mostrado como "natural+plus", ej. 20+10.</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isUpgradeBase }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <sc-for list="{{ baseUpgradesList }}" as="bu" hint-placeholder-count="10">
+                  <div style="border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:10px;display:flex;flex-direction:column;gap:4px;">
+                    <span style="font:700 11px 'Inter',sans-serif;color:#f4f6fb;">{{ bu.name }}</span>
+                    <span style="font:400 9px/1.4 'Inter',sans-serif;color:#94a3b8;">{{ bu.effect }}</span>
+                    <span style="font:500 8px 'Inter',sans-serif;color:#5b6577;">{{ bu.example }}</span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:2px;">
+                      <span style="font:700 9px 'Orbitron',sans-serif;color:#22d3ee;">Nv. {{ bu.levelLabel }} (tope {{ bu.capLabel }})</span>
+                    </div>
+                    <button style="border:none;border-radius:8px;padding:6px;font:800 10px 'Orbitron',sans-serif;cursor:{{ bu.cursor }};background:{{ bu.bg }};color:{{ bu.color }};" onclick="{{ bu.upgrade }}">Mejorar ({{ bu.cost }} XP)</button>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showGacha }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.9);backdrop-filter:blur(4px);z-index:40;display:flex;align-items:center;justify-content:center;">
+          <div style="width:92%;height:88%;border-radius:18px;background:radial-gradient(circle at 20% 0%,rgba(168,85,247,.18),transparent 55%),radial-gradient(circle at 90% 100%,rgba(34,211,238,.16),transparent 55%),rgba(15,12,24,.94);border:1px solid rgba(168,85,247,.35);box-shadow:0 0 40px rgba(168,85,247,.25),0 10px 30px rgba(0,0,0,.5);padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 16px 'Orbitron',sans-serif;letter-spacing:.04em;background:linear-gradient(90deg,#a855f7,#22d3ee,#a855f7);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:bc-shimmer 3s linear infinite;">CÁPSULA DE GATOS</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#a855f7"><path d="M12 2 2 9l10 13L22 9Z"/></svg>
+                <span style="font:700 12px 'Orbitron',sans-serif;color:#f4f6fb;">{{ catFoodLabel }}</span>
+                <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeGacha }}">✕</button>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:6px;">
+              <sc-for list="{{ gachaBannersList }}" as="b" hint-placeholder-count="3">
+                <button style="flex:1;border-radius:12px;border:1px solid {{ b.borderColor }};background:{{ b.bg }};color:{{ b.textColor }};font:800 11px 'Orbitron',sans-serif;padding:9px 6px;cursor:pointer;" onclick="{{ b.select }}">{{ b.name }}</button>
+              </sc-for>
+            </div>
+
+            <div style="border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+              <span style="font:600 11px 'Inter',sans-serif;color:#c8cdd6;">{{ activeBanner.tagline }}</span>
+              <sc-for list="{{ activeBanner.odds }}" as="o" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="width:78px;font:700 10px 'Inter',sans-serif;color:{{ o.color }};">{{ o.label }}</span>
+                  <div style="flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;"><div style="height:100%;border-radius:5px;background:{{ o.color }};width:{{ o.barPct }}%;"></div></div>
+                  <span style="width:44px;text-align:right;font:700 10px 'Orbitron',sans-serif;color:{{ o.color }};">{{ o.pctLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="flex:1;"></div>
+
+            <div style="display:flex;gap:10px;">
+              <button style="flex:1;border-radius:14px;border:2px solid #22d3ee;background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(15,12,24,.4));color:#e0fbff;font:800 13px 'Orbitron',sans-serif;padding:14px;cursor:{{ singleCursor }};box-shadow:0 0 18px rgba(34,211,238,.35);" onclick="{{ rollSingle }}">Tirada Simple<br/><span style="font:600 10px 'Inter',sans-serif;opacity:.85;">150 Cat Food</span></button>
+              <button style="flex:1;border-radius:14px;border:2px solid #f472b6;background:linear-gradient(135deg,rgba(244,114,182,.2),rgba(15,12,24,.4));color:#ffe4f2;font:800 13px 'Orbitron',sans-serif;padding:14px;cursor:{{ multiCursor }};box-shadow:0 0 18px rgba(244,114,182,.35);" onclick="{{ rollMulti }}">Tirada x11<br/><span style="font:600 10px 'Inter',sans-serif;opacity:.85;">1.500 Cat Food</span></button>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ gachaRevealOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(2,3,8,.94);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;">
+            <sc-if value="{{ isSingleReveal }}" hint-placeholder-val="{{ false }}">
+              <div style="width:130px;height:130px;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:bc-capsule .9s ease-out;box-shadow:{{ singleResult.shadow }};background:{{ singleResult.orbBg }};">
+                <span style="font:800 30px 'Orbitron',sans-serif;color:#050505;">{{ singleResult.initial }}</span>
+              </div>
+              <div style="text-align:center;animation:bc-pop .5s ease-out .5s both;">
+                <div style="font:700 11px 'Orbitron',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:{{ singleResult.color }};">{{ singleResult.rarityLabel }}</div>
+                <div style="font:800 20px 'Orbitron',sans-serif;color:#f4f6fb;margin-top:2px;">{{ singleResult.name }}</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isMultiReveal }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:520px;">
+                <sc-for list="{{ multiResults }}" as="r" hint-placeholder-count="11">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;animation:bc-pop .45s ease-out both;animation-delay:{{ r.delay }}s;">
+                    <div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:{{ r.shadow }};background:{{ r.orbBg }};">
+                      <span style="font:800 15px 'Orbitron',sans-serif;color:#050505;">{{ r.initial }}</span>
+                    </div>
+                    <span style="font:700 8px 'Inter',sans-serif;color:{{ r.color }};text-align:center;">{{ r.name }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <button style="border:none;border-radius:12px;background:linear-gradient(135deg,#a855f7,#22d3ee);color:#050505;font:800 13px 'Orbitron',sans-serif;padding:10px 24px;cursor:pointer;" onclick="{{ closeReveal }}">Continuar</button>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ showGuide }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.88);backdrop-filter:blur(4px);z-index:40;display:flex;align-items:center;justify-content:center;">
+          <div style="width:92%;height:88%;border-radius:18px;background:rgba(20,22,30,.92);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.5);padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Biblioteca</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button style="border:1px solid rgba(255,255,255,.16);border-radius:8px;background:rgba(255,255,255,.06);color:#c8cdd6;font:700 10px 'Inter',sans-serif;padding:6px 9px;cursor:pointer;display:flex;align-items:center;gap:4px;" onclick="{{ openFilter }}">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c8cdd6" stroke-width="2"><path d="M4 5h16M7 12h10M10 19h4"/></svg> Filtro
+                </button>
+                <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeGuide }}">✕</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;">
+              <button style="border:none;background:none;color:{{ unitsTabColor }};font:800 12px 'Orbitron',sans-serif;padding:4px 6px;border-bottom:2px solid {{ unitsTabBorder }};cursor:pointer;" onclick="{{ setGuideTabCats }}" data-active="{{ isGuideCats }}">Cat Guide</button>
+              <button style="border:none;background:none;color:{{ baseTabColor }};font:800 12px 'Orbitron',sans-serif;padding:4px 6px;border-bottom:2px solid {{ baseTabBorder }};cursor:pointer;" onclick="{{ setGuideTabEnemies }}">Enemy Guide</button>
+            </div>
+
+            <sc-if value="{{ isGuideCats }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+                <sc-for list="{{ guideCatCards }}" as="c" hint-placeholder-count="7">
+                  <button style="border-radius:12px;background:rgba(255,255,255,.05);backdrop-filter:blur(6px);border:1px solid {{ c.rarityColor }};padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-align:center;transition:transform .15s,background .15s;" style-hover="background:rgba(255,255,255,.09);transform:scale(1.03);" onclick="{{ c.openProfile }}">
+                    <span style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid {{ c.rarityColor }};display:flex;align-items:center;justify-content:center;font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">{{ c.initial }}</span>
+                    <span style="font:700 11px 'Inter',sans-serif;color:#f4f6fb;">{{ c.name }}</span>
+                    <span style="font:700 8px 'Inter',sans-serif;color:{{ c.rarityColor }};">{{ c.rarityLabel }}</span>
+                    <span style="font:600 7px 'Inter',sans-serif;color:#5b6577;">Toca para ver formas y stats</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isGuideEnemies }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+                <sc-for list="{{ guideEnemyCards }}" as="e" hint-placeholder-count="7">
+                  <button style="border-radius:12px;background:rgba(255,255,255,.05);backdrop-filter:blur(6px);border:1px solid {{ e.color }};padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-align:center;transition:transform .15s,background .15s;" style-hover="background:rgba(255,255,255,.09);transform:scale(1.03);" onclick="{{ e.openEnemyProfile }}">
+                    <span style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid {{ e.color }};display:flex;align-items:center;justify-content:center;font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">{{ e.initial }}</span>
+                    <span style="font:700 11px 'Inter',sans-serif;color:#f4f6fb;">{{ e.name }}</span>
+                    <span style="font:700 8px 'Inter',sans-serif;color:{{ e.color }};">{{ e.traitLabel }}</span>
+                    <span style="font:600 7px 'Inter',sans-serif;color:#5b6577;">Toca para ver detalles</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{ showFilter }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(2,3,8,.92);z-index:45;display:flex;align-items:center;justify-content:center;">
+            <div style="width:94%;height:90%;border-radius:16px;background:rgba(18,20,28,.96);border:1px solid rgba(255,255,255,.14);padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font:800 14px 'Orbitron',sans-serif;color:#f4f6fb;">Cat Filter</span>
+                <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeFilter }}">✕</button>
+              </div>
+              <div>
+                <div style="font:700 9px 'Orbitron',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5b6577;margin-bottom:5px;">Rarity</div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                  <sc-for list="{{ filterRarityChips }}" as="fr" hint-placeholder-count="6">
+                    <button style="border-radius:8px;border:1px solid {{ fr.borderColor }};background:{{ fr.bg }};color:{{ fr.color }};font:700 9px 'Inter',sans-serif;padding:6px 9px;cursor:pointer;" onclick="{{ fr.toggle }}">{{ fr.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <div style="font:700 9px 'Orbitron',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5b6577;margin-bottom:5px;">Target (Traits)</div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                  <sc-for list="{{ filterTraitChips }}" as="ft" hint-placeholder-count="10">
+                    <button style="display:inline-flex;align-items:center;gap:5px;border-radius:8px;border:1px solid {{ ft.color }};background:{{ ft.bg }};padding:5px 8px;cursor:pointer;" onclick="{{ ft.toggle }}">
+                      <span style="width:7px;height:7px;border-radius:50%;background:{{ ft.color }};border:{{ ft.ring }};"></span>
+                      <span style="font:700 9px 'Inter',sans-serif;color:{{ ft.textColorActive }};">{{ ft.label }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <div style="font:700 9px 'Orbitron',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5b6577;margin-bottom:5px;">Ability</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+                  <sc-for list="{{ filterAbilityChips }}" as="fa" hint-placeholder-count="12">
+                    <button style="border-radius:8px;border:1px solid rgba(255,255,255,.14);background:{{ fa.bg }};color:{{ fa.color }};font:700 9px 'Inter',sans-serif;padding:6px 4px;cursor:pointer;" onclick="{{ fa.toggle }}">{{ fa.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:10px;">
+                <label style="display:flex;align-items:center;gap:6px;font:600 10px 'Inter',sans-serif;color:#c8cdd6;cursor:pointer;">
+                  <input type="checkbox" checked="{{ filterMaxOnly }}" onchange="{{ toggleMaxOnly }}" />
+                  Solo Formas Máximas
+                </label>
+                <div style="display:flex;gap:4px;">
+                  <button style="border:none;border-radius:6px;background:{{ orBg }};color:{{ orColor }};font:800 10px 'Orbitron',sans-serif;padding:5px 9px;cursor:pointer;" onclick="{{ setModeOr }}">O</button>
+                  <button style="border:none;border-radius:6px;background:{{ andBg }};color:{{ andColor }};font:800 10px 'Orbitron',sans-serif;padding:5px 9px;cursor:pointer;" onclick="{{ setModeAnd }}">Y</button>
+                </div>
+              </div>
+              <button style="border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.06);color:#c8cdd6;font:700 11px 'Orbitron',sans-serif;padding:9px;cursor:pointer;" onclick="{{ clearFilters }}">Limpiar filtros</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isProfileOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(2,3,8,.95);z-index:50;display:flex;flex-direction:column;padding:16px;gap:10px;overflow-y:auto;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:700 11px 'Inter',sans-serif;color:{{ profileUnit.rarityColor }};">{{ profileUnit.rarityLabel }}</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeProfile }}">✕</button>
+            </div>
+            <div style="align-self:center;width:150px;height:150px;border-radius:24px;background:radial-gradient(circle,rgba(34,211,238,.22),transparent 70%),linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:2px solid {{ profileUnit.rarityColor }};box-shadow:0 0 30px {{ profileUnit.rarityColor }};display:flex;align-items:center;justify-content:center;">
+              <span style="font:800 52px 'Orbitron',sans-serif;color:#f4f6fb;">{{ profileUnit.initial }}</span>
+            </div>
+            <div style="text-align:center;">
+              <div style="font:800 20px 'Orbitron',sans-serif;color:#f4f6fb;">{{ profileUnit.name }}</div>
+              <div style="font:600 11px 'Inter',sans-serif;color:#5b6577;">Nivel {{ profileUnit.levelLabel }}</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <sc-for list="{{ profileUnit.forms }}" as="f" hint-placeholder-count="3">
+                <button style="flex:1;border-radius:8px;border:1px solid {{ f.borderColor }};background:{{ f.bg }};color:{{ f.color }};font:700 10px 'Inter',sans-serif;padding:7px 4px;cursor:pointer;" onclick="{{ f.select }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+            <div style="border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:10px 12px;">
+              <p style="font:400 12px/1.5 'Inter',sans-serif;color:#c8cdd6;margin:0;font-style:italic;">"{{ profileUnit.lore }}"</p>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">HP</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileUnit.hp }}</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">ATQ/DPS</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileUnit.atk }}/{{ profileUnit.dps }}</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">Alcance</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileUnit.range }}</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">Frecuencia</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileUnit.freqSec }}s</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">Velocidad</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileUnit.speed }}</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">Retroceso</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileUnit.knockback }}x</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">Coste $</span><span style="font:700 13px 'Inter',sans-serif;color:#facc15;">${{ profileUnit.cost }}</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">Cooldown</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileUnit.cooldown }}s</span></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isEnemyProfileOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(2,3,8,.95);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;">
+            <button style="position:absolute;top:16px;right:16px;border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeEnemyProfile }}">✕</button>
+            <div style="width:120px;height:120px;border-radius:50%;background:rgba(0,0,0,.3);border:2px solid {{ profileEnemy.color }};box-shadow:0 0 26px {{ profileEnemy.color }};display:flex;align-items:center;justify-content:center;">
+              <span style="font:800 40px 'Orbitron',sans-serif;color:{{ profileEnemy.color }};">{{ profileEnemy.initial }}</span>
+            </div>
+            <div style="text-align:center;">
+              <div style="font:800 18px 'Orbitron',sans-serif;color:#f4f6fb;">{{ profileEnemy.name }}</div>
+              <div style="font:700 10px 'Inter',sans-serif;color:{{ profileEnemy.color }};">{{ profileEnemy.traitLabel }}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:280px;">
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">HP</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileEnemy.hp }}</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">ATQ/DPS</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileEnemy.atk }}/{{ profileEnemy.dps }}</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">Velocidad</span><span style="font:700 13px 'Inter',sans-serif;color:#f4f6fb;">{{ profileEnemy.speed }}</span></div>
+              <div><span style="font:600 8px 'Inter',sans-serif;color:#5b6577;display:block;">Rasgo</span><span style="font:700 13px 'Inter',sans-serif;color:{{ profileEnemy.color }};">{{ profileEnemy.traitLabel }}</span></div>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ showPlayerProfile }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.92);backdrop-filter:blur(4px);z-index:45;display:flex;align-items:center;justify-content:center;">
+          <div style="width:86%;border-radius:16px;background:rgba(20,22,30,.94);border:1px solid rgba(255,255,255,.14);padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Perfil de Jugador</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closePlayerProfile }}">✕</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#22d3ee,#a855f7);display:flex;align-items:center;justify-content:center;font:800 20px 'Orbitron',sans-serif;color:#050505;">{{ profileName.0 }}</div>
+              <div>
+                <div style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">{{ profileName }}</div>
+                <div style="font:700 11px 'Inter',sans-serif;color:#facc15;">Rango {{ profileRank }}</div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font:600 10px 'Inter',sans-serif;color:#c8cdd6;margin-bottom:4px;"><span>XP hacia siguiente recompensa</span><span>{{ profileXpLabel }}</span></div>
+              <div style="height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,#22d3ee,#0891b2);width:{{ profileXpPct }}%;"></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <div style="border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:9px;">
+                <div style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Leadership</div>
+                <div style="font:700 12px 'Inter',sans-serif;color:{{ leadershipColor }};margin-top:2px;">{{ leadershipLabel }}</div>
+              </div>
+              <div style="border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:9px;">
+                <div style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Colección</div>
+                <div style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;margin-top:2px;">{{ collectionLabel }}</div>
+              </div>
+              <div style="border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:9px;">
+                <div style="font:600 8px 'Inter',sans-serif;color:#5b6577;">Meow Medals</div>
+                <div style="font:700 12px 'Inter',sans-serif;color:#facc15;margin-top:2px;">{{ medalsLabel }}</div>
+              </div>
+            </div>
+            <button style="border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.06);color:#c8cdd6;font:700 11px 'Orbitron',sans-serif;padding:9px;cursor:pointer;" onclick="{{ openSettings }}">Ajustes (Música · Idioma · Transferencia de datos)</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showGamatoto }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.9);backdrop-filter:blur(4px);z-index:45;display:flex;align-items:center;justify-content:center;">
+          <div style="width:90%;height:84%;border-radius:16px;background:radial-gradient(circle at 15% 0%,rgba(74,222,128,.14),transparent 55%),rgba(20,22,30,.94);border:1px solid rgba(74,222,128,.3);padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Base Gamatoto</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeGamatoto }}">✕</button>
+            </div>
+            <p style="font:500 11px/1.5 'Inter',sans-serif;color:#94a3b8;margin:0;">Envía al Gato Trabajador a explorar. Cada expedición tarda un tiempo y devuelve XP, Cat Food o materiales.</p>
+            <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ gamatotoSlots }}" as="slot" hint-placeholder-count="3">
+                <div style="border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:12px;display:flex;align-items:center;gap:12px;">
+                  <div style="width:40px;height:40px;border-radius:10px;background:{{ slot.iconBg }};display:flex;align-items:center;justify-content:center;flex:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ slot.iconColor }}" stroke-width="1.8"><rect x="3" y="10" width="18" height="10" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+                  </div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font:700 12px 'Orbitron',sans-serif;color:#f4f6fb;">{{ slot.title }}</div>
+                    <div style="font:500 10px 'Inter',sans-serif;color:#5b6577;margin-top:2px;">{{ slot.subtitle }}</div>
+                    <sc-if value="{{ slot.busy }}" hint-placeholder-val="{{ false }}">
+                      <div style="height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px;"><div style="height:100%;background:linear-gradient(90deg,#4ade80,#16a34a);width:{{ slot.pct }}%;"></div></div>
+                    </sc-if>
+                  </div>
+                  <button style="flex:none;border:none;border-radius:9px;padding:8px 12px;font:800 10px 'Orbitron',sans-serif;cursor:pointer;background:{{ slot.btnBg }};color:{{ slot.btnColor }};" onclick="{{ slot.action }}">{{ slot.btnLabel }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showStorage }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.9);backdrop-filter:blur(4px);z-index:45;display:flex;align-items:center;justify-content:center;">
+          <div style="width:92%;height:88%;border-radius:16px;background:rgba(20,22,30,.94);border:1px solid rgba(148,163,184,.3);padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Almacén de Cápsulas</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeStorage }}">✕</button>
+            </div>
+            <p style="font:500 11px/1.5 'Inter',sans-serif;color:#94a3b8;margin:0;">Cápsulas obtenidas en la Cápsula de Gatos en espera de activarse. Actívalas para sumarlas a tu colección, o intercámbialas por XP o Puntos Nyanko (NP).</p>
+            <div style="display:flex;gap:10px;">
+              <div style="flex:1;border-radius:10px;background:rgba(255,255,255,.05);padding:8px 12px;font:700 12px 'Orbitron',sans-serif;color:#22d3ee;">XP {{ xpLabel }}</div>
+              <div style="flex:1;border-radius:10px;background:rgba(255,255,255,.05);padding:8px 12px;font:700 12px 'Orbitron',sans-serif;color:#facc15;">NP {{ nyankoPointsLabel }}</div>
+            </div>
+            <div style="font:600 10px 'Inter',sans-serif;color:#5b6577;">{{ storageCountLabel }}</div>
+            <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ storageCapsules }}" as="cap" hint-placeholder-count="4">
+                <div style="border-radius:12px;background:rgba(255,255,255,.05);border:1px solid {{ cap.borderColor }};padding:10px;display:flex;align-items:center;gap:10px;">
+                  <div style="width:38px;height:38px;border-radius:50%;background:{{ cap.bg }};display:flex;align-items:center;justify-content:center;font:800 12px 'Orbitron',sans-serif;color:#050505;flex:none;">{{ cap.initial }}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font:700 11px 'Inter',sans-serif;color:#f4f6fb;">{{ cap.name }}</div>
+                    <div style="font:700 9px 'Orbitron',sans-serif;color:{{ cap.borderColor }};">{{ cap.rarityLabel }}</div>
+                  </div>
+                  <button style="flex:none;border:none;border-radius:8px;padding:7px 9px;font:800 9px 'Orbitron',sans-serif;cursor:pointer;background:{{ cap.borderColor }};color:#050505;" onclick="{{ cap.activate }}">Activar</button>
+                  <button style="flex:none;border:none;border-radius:8px;padding:7px 9px;font:800 9px 'Orbitron',sans-serif;cursor:pointer;background:rgba(34,211,238,.14);color:#22d3ee;" onclick="{{ cap.exchangeXp }}">XP</button>
+                  <button style="flex:none;border:none;border-radius:8px;padding:7px 9px;font:800 9px 'Orbitron',sans-serif;cursor:pointer;background:rgba(250,204,21,.14);color:#facc15;" onclick="{{ cap.exchangeNp }}">NP</button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ storageEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="font:500 11px 'Inter',sans-serif;color:#5b6577;text-align:center;padding:20px;">No hay cápsulas pendientes. Tira en la Cápsula de Gatos para conseguir más.</div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showShop }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.9);backdrop-filter:blur(4px);z-index:45;display:flex;align-items:center;justify-content:center;">
+          <div style="width:92%;height:88%;border-radius:16px;background:radial-gradient(circle at 90% 0%,rgba(250,204,21,.14),transparent 55%),rgba(20,22,30,.94);border:1px solid rgba(250,204,21,.3);padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Tienda</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeShop }}">✕</button>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <div style="flex:1;border-radius:10px;background:rgba(255,255,255,.05);padding:8px 12px;font:700 12px 'Orbitron',sans-serif;color:#facc15;">🐟 {{ catFoodLabel }}</div>
+              <div style="flex:1;border-radius:10px;background:rgba(255,255,255,.05);padding:8px 12px;font:700 12px 'Orbitron',sans-serif;color:#22d3ee;">XP {{ xpLabel }}</div>
+            </div>
+            <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <sc-for list="{{ shopItems }}" as="it" hint-placeholder-count="6">
+                <div style="border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:10px;display:flex;flex-direction:column;gap:6px;">
+                  <div style="font:700 11px 'Orbitron',sans-serif;color:#f4f6fb;">{{ it.name }}</div>
+                  <div style="font:500 9px/1.4 'Inter',sans-serif;color:#5b6577;flex:1;">{{ it.desc }}</div>
+                  <button style="border:none;border-radius:8px;padding:7px;font:800 10px 'Orbitron',sans-serif;cursor:pointer;background:{{ it.btnBg }};color:{{ it.btnColor }};" onclick="{{ it.buy }}">{{ it.price }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.92);backdrop-filter:blur(4px);z-index:50;display:flex;align-items:center;justify-content:center;">
+          <div style="width:86%;border-radius:16px;background:rgba(20,22,30,.94);border:1px solid rgba(255,255,255,.14);padding:16px 18px;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Ajustes</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeSettings }}">✕</button>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font:600 10px 'Inter',sans-serif;color:#c8cdd6;margin-bottom:5px;"><span>Música</span><span>{{ musicVolume }}%</span></div>
+              <input type="range" min="0" max="100" value="{{ musicVolume }}" oninput="{{ setMusicVolume }}" style="width:100%;accent-color:#22d3ee;"/>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font:600 10px 'Inter',sans-serif;color:#c8cdd6;margin-bottom:5px;"><span>Efectos de sonido</span><span>{{ sfxVolume }}%</span></div>
+              <input type="range" min="0" max="100" value="{{ sfxVolume }}" oninput="{{ setSfxVolume }}" style="width:100%;accent-color:#22d3ee;"/>
+            </div>
+            <div>
+              <div style="font:600 10px 'Inter',sans-serif;color:#c8cdd6;margin-bottom:6px;">Idioma</div>
+              <div style="display:flex;gap:6px;">
+                <sc-for list="{{ languageOptions }}" as="lang" hint-placeholder-count="3">
+                  <button style="flex:1;border-radius:9px;border:1px solid {{ lang.border }};background:{{ lang.bg }};color:{{ lang.color }};font:700 11px 'Inter',sans-serif;padding:8px;cursor:pointer;" onclick="{{ lang.select }}">{{ lang.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <button style="border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.06);color:#c8cdd6;font:700 11px 'Orbitron',sans-serif;padding:9px;cursor:pointer;">Transferencia de datos</button>
+            <button style="border:1px solid rgba(34,211,238,.4);border-radius:10px;background:rgba(34,211,238,.1);color:#22d3ee;font:700 11px 'Orbitron',sans-serif;padding:9px;cursor:pointer;" onclick="{{ goHomeFromSettings }}">Volver a la Pantalla Principal</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showMissions }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(2,3,8,.86);backdrop-filter:blur(4px);z-index:40;display:flex;align-items:center;justify-content:center;">
+          <div style="width:88%;height:86%;border-radius:18px;background:rgba(20,22,30,.9);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.5);padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:800 15px 'Orbitron',sans-serif;color:#f4f6fb;">Catnip Challenges</span>
+              <button style="border:none;background:none;color:#94a3b8;font:700 16px 'Inter',sans-serif;cursor:pointer;" onclick="{{ closeMissions }}">✕</button>
+            </div>
+            <div style="display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;">
+              <button style="border:none;background:none;color:{{ dailyTabColor }};font:800 12px 'Orbitron',sans-serif;padding:4px 6px;border-bottom:2px solid {{ dailyTabBorder }};cursor:pointer;" onclick="{{ setTabDaily }}">Diarias</button>
+              <button style="border:none;background:none;color:{{ achTabColor }};font:800 12px 'Orbitron',sans-serif;padding:4px 6px;border-bottom:2px solid {{ achTabBorder }};cursor:pointer;" onclick="{{ setTabAch }}">Logros</button>
+            </div>
+            <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ missionsList }}" as="m" hint-placeholder-count="3">
+                <div style="border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:10px 12px;display:flex;align-items:center;gap:10px;">
+                  <div style="flex:1;">
+                    <div style="font:700 12px 'Inter',sans-serif;color:#f4f6fb;margin-bottom:5px;">{{ m.name }}</div>
+                    <div style="height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;">
+                      <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#22d3ee,#fb923c);width:{{ m.pct }}%;"></div>
+                    </div>
+                    <div style="font:600 10px 'Inter',sans-serif;color:#5b6577;margin-top:3px;">{{ m.progress }}/{{ m.target }}</div>
+                  </div>
+                  <button style="border:none;border-radius:10px;padding:8px 12px;font:800 11px 'Orbitron',sans-serif;cursor:{{ m.cursor }};background:{{ m.claimBg }};color:{{ m.claimColor }};animation:{{ m.claimAnim }};" onclick="{{ m.claim }}">{{ m.claimLabel }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </x-import>
+
+  <div style="max-width:900px;width:100%;display:flex;flex-direction:column;gap:8px;">
+    <div style="border-top:1px solid rgba(255,255,255,.12);padding-top:10px;font:700 11px/1 'Orbitron',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;">Navegación del prototipo</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button style="border-radius:10px;border:1px solid rgba(255,255,255,.14);background:{{ navHubBg }};color:{{ navHubColor }};font:700 12px 'Inter',sans-serif;padding:8px 12px;cursor:pointer;" onclick="{{ goHub }}">Base de Gatos</button>
+      <button style="border-radius:10px;border:1px solid rgba(255,255,255,.14);background:{{ navStagesBg }};color:{{ navStagesColor }};font:700 12px 'Inter',sans-serif;padding:8px 12px;cursor:pointer;" onclick="{{ goStages }}">Mapa de Etapas</button>
+      <button style="border-radius:10px;border:1px solid rgba(255,255,255,.14);background:{{ navBattleBg }};color:{{ navBattleColor }};font:700 12px 'Inter',sans-serif;padding:8px 12px;cursor:pointer;" onclick="{{ goBattle }}">Pantalla de Batalla</button>
+    </div>
+    <p style="font:400 12px/1.5 'Inter',sans-serif;color:#5b6577;margin:6px 0 0;">Toca "Equipar", "Mejorar" o "Cápsula" en la Base de Gatos para abrir sus modales. En Batalla, las unidades avanzan con una leve deriva vertical y sombra ovalada para dar sensación de profundidad en el mismo carril.</p>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+const RARITY_ORDER = ['normal','especial','raro','superraro','uberraro','legendario'];
+const RARITY_META = {
+  normal:{label:'Normal', color:'#cbd5e1', bg:'rgba(203,213,225,.1)'},
+  especial:{label:'Especial', color:'#38bdf8', bg:'rgba(56,189,248,.1)'},
+  raro:{label:'Raro', color:'#facc15', bg:'rgba(250,204,21,.1)'},
+  superraro:{label:'Super Raro', color:'#a855f7', bg:'rgba(168,85,247,.1)'},
+  uberraro:{label:'Uber Raro', color:'#ef4444', bg:'rgba(239,68,68,.1)'},
+  legendario:{label:'Legendario', color:'#e2e8f0', bg:'linear-gradient(135deg,rgba(244,114,182,.18),rgba(34,211,238,.18))'},
+};
+const RARITY_MULT = { normal:1, especial:2, raro:15, superraro:25, uberraro:40, legendario:60 };
+
+const ALL_UNITS = [
+  { id:'u1', name:'Cat', initial:'C', rarity:'normal', cost:75, cooldown:1.3, hp:250, atk:50, range:40, freqFrames:18, speed:8, knockback:1, targets:[], abilities:[], formNames:['Cat','Macho Cat','Mohawk Cat'] },
+  { id:'u2', name:'Tank Cat', initial:'T', rarity:'normal', cost:60, cooldown:1.9, hp:900, atk:20, range:40, freqFrames:26, speed:4, knockback:3, targets:[], abilities:['knockback'], formNames:['Tank Cat','Wall Cat','Eraser Cat'] },
+  { id:'u3', name:'Axe Cat', initial:'X', rarity:'especial', cost:170, cooldown:3.6, hp:600, atk:420, range:50, freqFrames:70, speed:6, knockback:2, targets:['red'], abilities:['massiveDamage'], formNames:['Axe Cat','Brave Cat','Dark Cat'] },
+  { id:'u4', name:'Cow Cat', initial:'V', rarity:'raro', cost:480, cooldown:6.2, hp:520, atk:260, range:300, freqFrames:48, speed:9, knockback:1, targets:[], abilities:['critical'], formNames:['Cow Cat','Giraffe Cat','Lion Cat'] },
+  { id:'u5', name:'Bird Cat', initial:'B', rarity:'superraro', cost:1350, cooldown:10.4, hp:980, atk:180, range:250, freqFrames:54, speed:7, knockback:1, targets:['floating'], abilities:['freeze','slow'], formNames:['Bird Cat','UFO Cat','The Flying Cat'] },
+  { id:'u6', name:'Lizard Cat', initial:'L', rarity:'uberraro', cost:3600, cooldown:19.8, hp:4200, atk:2100, range:200, freqFrames:90, speed:10, knockback:3, targets:['aku'], abilities:['strongAgainst','waveAttack'], formNames:['Lizard Cat','Dragon Cat','King Dragon Cat'] },
+  { id:'u7', name:'Titan Cat', initial:'G', rarity:'legendario', cost:5000, cooldown:25, hp:8000, atk:3500, range:320, freqFrames:80, speed:12, knockback:4, targets:['relic','alien'], abilities:['massiveDamage','curse','surgeAttack'], formNames:['Titan Cat','Mythical Titan Cat','Jamiera Cat'] },
+];
+const PLAYER_UNITS = ALL_UNITS.slice(0, 6);
+const FORM_LABELS = ['Normal', 'Evolucionada', 'Verdadera'];
+const FORM_MULT = [1, 1.3, 1.7];
+
+function levelFactor(level) { return +((2 + level / 2) / 2.5).toFixed(2); }
+function naturalMax(rarity) { return (rarity === 'uberraro' || rarity === 'legendario') ? 30 : 20; }
+const PLUS_MAX = 10;
+function naturalCost(level, rarity) { return Math.round(200 * Math.pow(level + 1, 1.8) * (RARITY_MULT[rarity] || 1)); }
+function plusCost(rarity) { return Math.round(800 * (RARITY_MULT[rarity] || 1)); }
+function baseUpgradeCost(level) { return Math.round(300 * Math.pow(level + 1, 1.6)); }
+function baseUpgradeMax(id) { return id === 'cannonRange' ? 10 : 30; }
+
+function unitEffectiveStats(base, formIdx, levelObj) {
+  const totalLevel = (levelObj.natural || 1) + (levelObj.plus || 0);
+  const factor = levelFactor(totalLevel);
+  const formMult = FORM_MULT[formIdx];
+  const atk = Math.round(base.atk * formMult * factor);
+  const freqSec = +(base.freqFrames / 30).toFixed(2);
+  return {
+    hp: Math.round(base.hp * formMult * factor),
+    atk, freqSec, dps: +(atk / freqSec).toFixed(1),
+    range: Math.round(base.range * (1 + formIdx * 0.05)),
+    speed: base.speed, knockback: base.knockback,
+    cost: Math.round(base.cost * formMult),
+    cooldown: +(base.cooldown * (1 - formIdx * 0.05)).toFixed(1),
+  };
+}
+
+const TRAITS = [
+  { id:'traitless', label:'Sin Rasgo', color:'#f8fafc', textColor:'#f8fafc', ring:'none' },
+  { id:'red', label:'Rojo', color:'#ef4444', textColor:'#ef4444', ring:'none' },
+  { id:'floating', label:'Flotante', color:'#86efac', textColor:'#86efac', ring:'none' },
+  { id:'black', label:'Negro', color:'#334155', textColor:'#94a3b8', ring:'1px solid #94a3b8' },
+  { id:'metal', label:'Metálico', color:'#94a3b8', textColor:'#94a3b8', ring:'none' },
+  { id:'angel', label:'Ángel', color:'#fef08a', textColor:'#fef08a', ring:'none' },
+  { id:'alien', label:'Alienígena', color:'#06b6d4', textColor:'#06b6d4', ring:'none' },
+  { id:'zombie', label:'Zombi', color:'#a855f7', textColor:'#a855f7', ring:'none' },
+  { id:'relic', label:'Reliquia', color:'#15803d', textColor:'#4ade80', ring:'none' },
+  { id:'aku', label:'Aku', color:'#3b82f6', textColor:'#3b82f6', ring:'none' },
+];
+const ABILITIES = [
+  { id:'weaken', label:'Debilitar' }, { id:'freeze', label:'Congelar' }, { id:'slow', label:'Ralentizar' },
+  { id:'knockback', label:'Retroceso' }, { id:'critical', label:'Crítico' }, { id:'strongAgainst', label:'Fuerte Contra' },
+  { id:'massiveDamage', label:'Daño Masivo' }, { id:'zombieKiller', label:'Exterm. Zombi' }, { id:'waveAttack', label:'Ataque de Onda' },
+  { id:'surgeAttack', label:'Surge Attack' }, { id:'dodge', label:'Esquivar' }, { id:'curse', label:'Maldición' },
+];
+const UNIT_LORE = {
+  u1: ['El primer recluta de la Base de Gatos, disponible desde el inicio.', 'Tras cientos de golpes, aprendió a no cerrar los ojos.', 'La cresta le da tres centímetros más de valor.'],
+  u2: ['Se planta en el sitio y no piensa moverse.', 'El muro aprendió a devolver el golpe.', 'Ni las balas de cañón lo hacen retroceder.'],
+  u3: ['Encontró un hacha oxidada y decidió que era su destino.', 'Ahora afila el hacha todas las noches, por si acaso.', 'La leyenda dice que talló su propio mango con los dientes.'],
+  u4: ['Pace tranquilo entre las líneas enemigas, ajeno al caos.', 'Su cuello alargado le da un alcance que nadie esperaba.', 'Ruge como si fuera el rey de la sabana, y casi lo es.'],
+  u5: ['Nunca aprendió a volar del todo, pero lo intenta.', 'Encontró un platillo volador abandonado y se subió sin pensarlo.', 'Surca el cielo del campo de batalla sin mirar atrás.'],
+  u6: ['Encontró unas alas en una tienda de disfraces.', 'Las alas resultaron ser reales.', 'Ahora escupe fuego de verdad, para su propia sorpresa.'],
+  u7: ['Nadie sabe de dónde vino, y él tampoco lo dice.', 'Su presencia dobla las luces del escenario.', 'Cuando aparece, hasta los jefes se lo piensan dos veces.'],
+};
+function traitColor(id) { return (TRAITS.find(t => t.id === id) || TRAITS[0]).color; }
+
+const ENEMY_TYPES = [
+  { name:'Doge', initial:'D', hp:90, atk:8, speed:9, traitId:'traitless' },
+  { name:'Gory', initial:'G', hp:1000, atk:80, speed:6, traitId:'red' },
+  { name:'Baa Baa', initial:'B', hp:500, atk:50, speed:10, traitId:'floating' },
+  { name:'Aullador Nocturno', initial:'A', hp:1000, atk:80, speed:4, traitId:'black' },
+  { name:'Centinela Metálico', initial:'M', hp:1500, atk:40, speed:3, traitId:'metal' },
+  { name:'Espectro Morado', initial:'Z', hp:400, atk:60, speed:8, traitId:'zombie' },
+];
+const BOSS = { name:'The Face', initial:'F', hp:9999, atk:280, speed:2, traitId:'traitless' };
+
+const GACHA_BANNERS = [
+  { id:'uberfest', name:'UBERFEST', tagline:'Tasa aumentada de Uber Raros, con posibilidad de Legendarios (Sección 12.3).', legend:0.3, uber:9, sr:26, rare:64.7, accent:'linear-gradient(135deg,#ef4444,#22d3ee)' },
+  { id:'epicfest', name:'EPICFEST', tagline:'Tasa aumentada de Uber Raros frente al banner estándar.', legend:0, uber:9, sr:26, rare:65, accent:'linear-gradient(135deg,#a855f7,#facc15)' },
+  { id:'standard', name:'Banner Estándar', tagline:'Pool regular; Uber Raro ≈5%, resto variable según manual.', legend:0, uber:5, sr:15, rare:80, accent:'linear-gradient(135deg,#38bdf8,#0ea5e9)' },
+];
+const GACHA_POOL = {
+  raro: ['Neko Arquero','Neko Explorador','Neko Vigía','Neko Templario'],
+  superraro: ['Neko Gélido','Neko Tormenta','Neko Sombra','Neko Fénix'],
+  uberraro: ['Neko Dragón','Neko Titán','Neko Eclipse','Neko Kraken'],
+  legendario: ['Neko Legendario','Neko Supremo'],
+};
+function rollRarity(banner) {
+  const roll = Math.random() * 100;
+  let cum = 0;
+  const tiers = [['legendario', banner.legend], ['uberraro', banner.uber], ['superraro', banner.sr], ['raro', banner.rare]];
+  for (const [id, pct] of tiers) { cum += pct; if (roll <= cum) return id; }
+  return 'raro';
+}
+function rollOne(banner) {
+  const rarity = rollRarity(banner);
+  const pool = GACHA_POOL[rarity];
+  const name = pool[Math.floor(Math.random() * pool.length)];
+  return { rarity, name };
+}
+
+const BASE_UPGRADE_DEFS = [
+  { id:'cannonPower', name:'Potencia del Cañón', effect:'Aumenta el daño del Cat Cannon; también incrementa su tiempo de recarga.', example:'1.550–4.550 de daño a nivel 20+10 según Tesoros' },
+  { id:'cannonRange', name:'Alcance del Cañón', effect:'Aumenta la distancia que cubre el disparo.', example:'Hasta 6.000 de alcance máximo' },
+  { id:'cannonCharge', name:'Recarga del Cañón', effect:'Reduce el tiempo entre disparos.', example:'-50 fotogramas (~0,16s) por nivel' },
+  { id:'workerRate', name:'Ritmo del Trabajador', effect:'Aumenta la velocidad de generación de dinero en batalla.', example:'+3¢ por segundo por nivel' },
+  { id:'workerWallet', name:'Cartera del Trabajador', effect:'Aumenta el dinero máximo acumulable en batalla.', example:'+100 inicial, +50 por nivel' },
+  { id:'baseDefense', name:'Defensa de Base', effect:'Aumenta la salud máxima de la Base de Gatos.', example:'+1.000 HP por nivel' },
+  { id:'research', name:'Investigación', effect:'Reduce el tiempo de recarga de las unidades propias.', example:'-0,2s por nivel desde nivel 2 (hasta -5,8s en 20+10)' },
+  { id:'accounting', name:'Contabilidad', effect:'Aumenta el dinero obtenido al eliminar enemigos.', example:'+5% por nivel (hasta +145% en 20+10)' },
+  { id:'study', name:'Estudio', effect:'Aumenta la XP obtenida al completar una etapa.', example:'+5% por nivel (hasta +145% en 20+10)' },
+  { id:'catEnergy', name:'Energía', effect:'Aumenta la capacidad máxima de energía del jugador.', example:'+10 de energía máxima por nivel' },
+];
+
+const SAGAS = [
+  { id:'empire', name:'Imperio de los Gatos' },
+  { id:'future', name:'Hacia el Futuro' },
+  { id:'cosmos', name:'Gatos del Cosmos' },
+  { id:'aku', name:'Los Reinos de Aku' },
+];
+const NODE_POS = [
+  [10,72],[22,50],[34,68],[46,38],[58,58],[70,32],[80,55],[62,78],[42,84],[18,30],
+];
+const BATTLE_ITEMS = [
+  { id:'speedup', label:'Speed Up', icon:'⏩' },
+  { id:'radar', label:'Treasure Radar', icon:'📡' },
+  { id:'richcat', label:'Rich Cat', icon:'💰' },
+  { id:'cpu', label:'Cat CPU', icon:'🧠' },
+  { id:'sniper', label:'Sniper the Cat', icon:'🎯' },
+];
+const TREASURE_FESTIVAL = { multiplier: '×3', timeRemaining: '02:14:37' };
+const TREASURE_PROGRESS = { empire: { inferior: 62, superior: 18 }, future: { inferior: 10, superior: 0 }, cosmos: { inferior: 0, superior: 0 }, aku: { inferior: 0, superior: 0 } };
+const PLAYER_PROFILE = { name: 'Comandante Mochi', rank: 312, xp: 41200, xpNext: 60000, leadershipReady: true, medals: 27 };
+const STAGES = {
+  empire: [
+    { id:'s1', name:'Corea', energy:1, stars:1, unlocked:true, note:'Tutorial de combate. Introduce a Tank Cat y a Doge, el primer enemigo del juego.' },
+    { id:'s2', name:'Mongolia', energy:1, stars:1, unlocked:true, note:'Continúa el tutorial de despliegue de unidades.' },
+    { id:'s3', name:'China', energy:2, stars:1, unlocked:true, note:'Aparece Gory, el primer enemigo de rasgo Rojo.' },
+    { id:'s4', name:'Japón', energy:2, stars:1, unlocked:true, note:'Desbloquea la Cápsula de Gatos y un ticket gratuito.' },
+    { id:'s5', name:'India', energy:3, stars:2, unlocked:true, note:'Progresión intermedia del capítulo.' },
+    { id:'s6', name:'Madagascar', energy:3, stars:2, unlocked:true, note:'Desbloquea el Cat Guide.' },
+    { id:'s7', name:'Grecia', energy:4, stars:2, unlocked:false, note:'Progresión avanzada del capítulo.' },
+    { id:'s8', name:'Italia', energy:4, stars:3, unlocked:false, note:'Recompensa de 8.000 XP al completarla.' },
+    { id:'s9', name:'Groenlandia', energy:5, stars:3, unlocked:false, note:'Tramo final antes del jefe.' },
+    { id:'s10', name:'Luna', energy:6, stars:3, unlocked:false, note:'Jefe final: The Face.' },
+  ],
+  future: [{ id:'f1', name:'Ciudad en Ruinas', energy:5, stars:4, unlocked:false, note:'Introduce el rasgo Alienígena y una magnificación de fuerza mucho mayor.' }],
+  cosmos: [{ id:'c1', name:'Estación Estelar', energy:7, stars:5, unlocked:false, note:'Alienígenas "Estelares" con estadísticas base muy elevadas.' }],
+  aku: [{ id:'k1', name:'Portal de Aku', energy:8, stars:5, unlocked:false, note:'Contenido de fin de juego centrado en el rasgo Aku.' }],
+};
+const DAILY_MISSIONS = [
+  { id:'d1', name:'Despliega 20 gatos', target:20, progress:20 },
+  { id:'d2', name:'Elimina 50 enemigos', target:50, progress:32 },
+  { id:'d3', name:'Completa 1 etapa', target:1, progress:1 },
+];
+const ACH_MISSIONS = [
+  { id:'a1', name:'Derrota a un jefe', target:1, progress:0 },
+  { id:'a2', name:'Alcanza Rango 500', target:500, progress:312 },
+  { id:'a3', name:'Obtén un Uber Raro', target:1, progress:0 },
+];
+
+const ACCENT = '#22d3ee';
+const GRAD = 'linear-gradient(135deg,#fb923c,#ef4444)';
+const GLASS = 'rgba(255,255,255,.05)';
+const BORDER_SOFT = 'rgba(255,255,255,.14)';
+const NEWS_ITEMS = [
+  { title: 'Mantenimiento programado', date: '05/08', body: 'El servidor estará en mantenimiento el 10 de agosto de 02:00 a 04:00. Recompensa de disculpa: 1 Ticket de Cápsula.' },
+  { title: 'Nuevo evento: Festival de Tesoros', date: '01/08', body: 'Multiplicador de tesoros x2 activo por tiempo limitado en todas las sagas.' },
+  { title: 'Actualización 15.5.0', date: '28/07', body: 'Nuevas Unidades Uber Raras y ajustes de equilibrio en varias formas evolutivas.' },
+];
+
+class Component extends DCLogic {
+  state = {
+    screen: 'title',
+    codeRevealed: false,
+    showNews: false, newsRead: false,
+    saga: 'empire', selectedStageId: 's1',
+    rows: Number(this.props.deployRows) || 1,
+    money: 300, allyBaseHp: 5000, allyBaseMaxHp: 5000, enemyBaseHp: 6000, enemyBaseMaxHp: 6000,
+    cannonCharge: 0, cannonReady: false, speed: 1, paused: false,
+    cooldowns: {}, allyTokens: [], enemyTokens: [], bossSpawned: false, battleOver: null,
+    spawnTimer: 2.5, nextTokenId: 1,
+    catFood: 1240, xp: 60000,
+    showEquip: false, showMissions: false, showUpgrade: false, showGacha: false,
+    equipSlots: [ 'u1','u2','u3','u4','u5','u6', null, null, null, null ],
+    selectedSlotIndex: 0, equipRarityFilter: 'all',
+    unitFormIndex: {}, unitLevels: {},
+    missionsTab: 'daily', claimedIds: {},
+    upgradeTab: 'units', upgradeUnitId: 'u1', baseUpgradeLevels: {},
+    gachaBanner: 'uberfest', gachaRevealOpen: false, gachaResults: null,
+    showGuide: false, guideTab: 'cats', showFilter: false,
+    filterRarities: [], filterTraits: [], filterAbilities: [], filterMode: 'OR', filterMaxOnly: false,
+    profileUnitId: null, profileFormIndex: 0, profileEnemyName: null,
+    showPlayerProfile: false, showTreasureMenu: false, activeBattleItems: {},
+    gachaTickets: 3,
+    showGamatoto: false, gamatotoWorkers: { 0: null, 1: null, 2: null },
+    showStorage: false, capsuleQueue: [], nextCapsuleId: 1, nyankoPoints: 0,
+    showShop: false,
+    showSettings: false, musicVolume: 70, sfxVolume: 80, language: 'es',
+  };
+
+  componentWillUnmount() { this.stopBattleLoop(); }
+
+  resetBattle() {
+    this.setState({
+      money: 300, allyBaseHp: 5000, allyBaseMaxHp: 5000, enemyBaseHp: 6000, enemyBaseMaxHp: 6000,
+      cannonCharge: 0, cannonReady: false, speed: 1, paused: false,
+      cooldowns: {}, allyTokens: [], enemyTokens: [], bossSpawned: false, battleOver: null,
+      spawnTimer: 2.5, nextTokenId: 1,
+    });
+  }
+  startBattleLoop() { this.stopBattleLoop(); this._timer = setInterval(() => this.tick(), 200); }
+  stopBattleLoop() { if (this._timer) clearInterval(this._timer); this._timer = null; }
+  jitterY() { return Math.round(5 + Math.random() * 20); }
+
+  tick() {
+    const s = this.state;
+    if (s.paused || s.battleOver) return;
+    const dt = 0.2 * s.speed;
+    const cooldowns = { ...s.cooldowns };
+    Object.keys(cooldowns).forEach(k => { cooldowns[k] = Math.max(0, cooldowns[k] - dt); });
+    const money = s.money + 40 * dt;
+    let cannonCharge = Math.min(10, s.cannonCharge + dt * (10 / 12));
+    const cannonReady = s.cannonReady || cannonCharge >= 10;
+    let spawnTimer = s.spawnTimer - dt;
+    let enemyTokens = s.enemyTokens.map(t => ({ ...t }));
+    let bossSpawned = s.bossSpawned;
+    let nextTokenId = s.nextTokenId;
+    if (spawnTimer <= 0) {
+      spawnTimer = 2.2 + Math.random() * 1.6;
+      const def = ENEMY_TYPES[Math.floor(Math.random() * ENEMY_TYPES.length)];
+      enemyTokens.push({ id: 'e' + nextTokenId, initial: def.initial, hp: def.hp, maxHp: def.hp, atk: def.atk, speed: def.speed, pos: 4, boss: false, color: traitColor(def.traitId), yJitter: this.jitterY() });
+      nextTokenId += 1;
+    }
+    let enemyBaseHp = s.enemyBaseHp;
+    if (!bossSpawned && enemyBaseHp <= s.enemyBaseMaxHp * 0.3) {
+      bossSpawned = true;
+      enemyTokens.push({ id: 'boss1', initial: BOSS.initial, hp: BOSS.hp, maxHp: BOSS.hp, atk: BOSS.atk, speed: BOSS.speed, pos: 4, boss: true, color: traitColor(BOSS.traitId), yJitter: this.jitterY() });
+    }
+    let allyTokens = s.allyTokens.map(t => ({ ...t }));
+    let allyBaseHp = s.allyBaseHp;
+    const engageRange = 3;
+    allyTokens.sort((a, b) => b.pos - a.pos);
+    enemyTokens.sort((a, b) => a.pos - b.pos);
+    allyTokens.forEach(u => {
+      const foe = enemyTokens.find(e => Math.abs(e.pos - u.pos) <= engageRange);
+      if (foe) { foe.hp -= u.atk * dt * 0.6; u.hp -= foe.atk * dt * 0.6; }
+      else if (u.pos <= 2) { enemyBaseHp -= u.atk * dt * 0.5; }
+      else { u.pos = Math.max(0, u.pos - 6 * dt); }
+    });
+    enemyTokens.forEach(e => {
+      const foe = allyTokens.find(u => Math.abs(u.pos - e.pos) <= engageRange);
+      if (!foe) {
+        if (e.pos >= 98) { allyBaseHp -= e.atk * dt * 0.5; }
+        else { e.pos = Math.min(100, e.pos + (e.boss ? 2 : e.speed * 0.6) * dt); }
+      }
+    });
+    allyTokens = allyTokens.filter(u => u.hp > 0);
+    enemyTokens = enemyTokens.filter(e => e.hp > 0);
+    let battleOver = s.battleOver;
+    if (enemyBaseHp <= 0) { enemyBaseHp = 0; battleOver = 'win'; }
+    if (allyBaseHp <= 0) { allyBaseHp = 0; battleOver = 'lose'; }
+    this.setState({ money, cannonCharge, cannonReady, spawnTimer, enemyTokens, allyTokens, enemyBaseHp, allyBaseHp, cooldowns, bossSpawned, nextTokenId, battleOver });
+    if (battleOver) this.stopBattleLoop();
+  }
+
+  deploy(unitId) {
+    const def = PLAYER_UNITS.find(u => u.id === unitId);
+    const s = this.state;
+    if (s.battleOver) return;
+    const cd = s.cooldowns[unitId] || 0;
+    if (cd > 0 || s.money < def.cost) return;
+    const allyTokens = [...s.allyTokens, { id: 'a' + s.nextTokenId, initial: def.initial, hp: def.hp, maxHp: def.hp, atk: def.atk, pos: 96, yJitter: this.jitterY() }];
+    const cooldowns = { ...s.cooldowns, [unitId]: def.cooldown };
+    this.setState({ allyTokens, cooldowns, money: s.money - def.cost, nextTokenId: s.nextTokenId + 1 });
+  }
+  fireCannon() {
+    if (!this.state.cannonReady) return;
+    const enemyTokens = this.state.enemyTokens.map(t => ({ ...t, hp: t.hp - 1800, pos: Math.min(100, t.pos + 8) })).filter(t => t.hp > 0);
+    this.setState({ enemyTokens, cannonCharge: 0, cannonReady: false });
+  }
+  goHub() { this.stopBattleLoop(); this.setState({ screen: 'hub' }); }
+  goTitle() { this.stopBattleLoop(); this.setState({ screen: 'title' }); }
+  toggleCode() { this.setState({ codeRevealed: !this.state.codeRevealed }); }
+  openNews() { this.setState({ showNews: true, newsRead: true }); }
+  closeNews() { this.setState({ showNews: false }); }
+  goStages() { this.stopBattleLoop(); this.setState({ screen: 'stages' }); }
+  goBattle() { this.setState({ screen: 'battle' }); this.resetBattle(); this.startBattleLoop(); }
+  selectSaga(id) { this.setState({ saga: id, selectedStageId: STAGES[id][0].id }); }
+  selectStage(id) { this.setState({ selectedStageId: id }); }
+
+  addCatFood() { this.setState({ catFood: this.state.catFood + 300 }); }
+
+  openEquip() { this.setState({ showEquip: true }); }
+  closeEquip() { this.setState({ showEquip: false }); }
+  openMissions() { this.setState({ showMissions: true }); }
+  closeMissions() { this.setState({ showMissions: false }); }
+  selectSlot(i) { this.setState({ selectedSlotIndex: i }); }
+  assignUnit(unitId) {
+    const slots = [...this.state.equipSlots];
+    slots[this.state.selectedSlotIndex] = unitId;
+    this.setState({ equipSlots: slots });
+  }
+  setForm(unitId, idx) { this.setState({ unitFormIndex: { ...this.state.unitFormIndex, [unitId]: idx } }); }
+  setEquipRarityFilter(id) { this.setState({ equipRarityFilter: id }); }
+  setTabDaily() { this.setState({ missionsTab: 'daily' }); }
+  setTabAch() { this.setState({ missionsTab: 'ach' }); }
+  claimMission(id) {
+    if (this.state.claimedIds[id]) return;
+    this.setState({ claimedIds: { ...this.state.claimedIds, [id]: true } });
+  }
+
+  getLevel(unitId) { return this.state.unitLevels[unitId] || { natural: 1, plus: 0 }; }
+  openUpgrade() { this.setState({ showUpgrade: true }); }
+  closeUpgrade() { this.setState({ showUpgrade: false }); }
+  setUpgradeTabUnits() { this.setState({ upgradeTab: 'units' }); }
+  setUpgradeTabBase() { this.setState({ upgradeTab: 'base' }); }
+  selectUpgradeUnit(id) { this.setState({ upgradeUnitId: id }); }
+  levelUpNatural(unitId) {
+    const s = this.state;
+    const unit = ALL_UNITS.find(u => u.id === unitId);
+    const lvl = this.getLevel(unitId);
+    const max = naturalMax(unit.rarity);
+    if (lvl.natural >= max) return;
+    const cost = naturalCost(lvl.natural, unit.rarity);
+    if (s.xp < cost) return;
+    this.setState({ xp: s.xp - cost, unitLevels: { ...s.unitLevels, [unitId]: { ...lvl, natural: lvl.natural + 1 } } });
+  }
+  levelUpPlus(unitId) {
+    const s = this.state;
+    const unit = ALL_UNITS.find(u => u.id === unitId);
+    const lvl = this.getLevel(unitId);
+    if (lvl.plus >= PLUS_MAX) return;
+    const cost = plusCost(unit.rarity);
+    if (s.xp < cost) return;
+    this.setState({ xp: s.xp - cost, unitLevels: { ...s.unitLevels, [unitId]: { ...lvl, plus: lvl.plus + 1 } } });
+  }
+  levelUpBase(id) {
+    const s = this.state;
+    const level = s.baseUpgradeLevels[id] || 1;
+    const max = baseUpgradeMax(id);
+    if (level >= max) return;
+    const cost = baseUpgradeCost(level);
+    if (s.xp < cost) return;
+    this.setState({ xp: s.xp - cost, baseUpgradeLevels: { ...s.baseUpgradeLevels, [id]: level + 1 } });
+  }
+
+  openGacha() { this.setState({ showGacha: true }); }
+  closeGacha() { this.setState({ showGacha: false, gachaRevealOpen: false, gachaResults: null }); }
+  selectBanner(id) { this.setState({ gachaBanner: id }); }
+  rollSingle() {
+    const s = this.state;
+    if (s.catFood < 150) return;
+    const banner = GACHA_BANNERS.find(b => b.id === s.gachaBanner);
+    const result = rollOne(banner);
+    this.queueCapsules([result]);
+    this.setState({ catFood: s.catFood - 150, gachaResults: [result], gachaRevealOpen: true });
+  }
+  rollMulti() {
+    const s = this.state;
+    if (s.catFood < 1500) return;
+    const banner = GACHA_BANNERS.find(b => b.id === s.gachaBanner);
+    const results = Array.from({ length: 11 }, () => rollOne(banner));
+    this.queueCapsules(results);
+    this.setState({ catFood: s.catFood - 1500, gachaResults: results, gachaRevealOpen: true });
+  }
+  closeReveal() { this.setState({ gachaRevealOpen: false, gachaResults: null }); }
+  queueCapsules(results) {
+    let nextId = this.state.nextCapsuleId;
+    const newCapsules = results.map(r => ({ id: nextId++, rarity: r.rarity, name: r.name }));
+    this.setState({ capsuleQueue: [...this.state.capsuleQueue, ...newCapsules], nextCapsuleId: nextId });
+  }
+
+  openGuide() { this.setState({ showGuide: true }); }
+  closeGuide() { this.setState({ showGuide: false }); }
+  setGuideTabCats() { this.setState({ guideTab: 'cats' }); }
+  setGuideTabEnemies() { this.setState({ guideTab: 'enemies' }); }
+  openFilter() { this.setState({ showFilter: true }); }
+  closeFilter() { this.setState({ showFilter: false }); }
+  toggleFilterRarity(id) {
+    const s = this.state; const set = s.filterRarities.includes(id) ? s.filterRarities.filter(x => x !== id) : [...s.filterRarities, id];
+    this.setState({ filterRarities: set });
+  }
+  toggleFilterTrait(id) {
+    const s = this.state; const set = s.filterTraits.includes(id) ? s.filterTraits.filter(x => x !== id) : [...s.filterTraits, id];
+    this.setState({ filterTraits: set });
+  }
+  toggleFilterAbility(id) {
+    const s = this.state; const set = s.filterAbilities.includes(id) ? s.filterAbilities.filter(x => x !== id) : [...s.filterAbilities, id];
+    this.setState({ filterAbilities: set });
+  }
+  clearFilters() { this.setState({ filterRarities: [], filterTraits: [], filterAbilities: [], filterMaxOnly: false }); }
+  setFilterMode(mode) { this.setState({ filterMode: mode }); }
+  toggleMaxOnly() { this.setState({ filterMaxOnly: !this.state.filterMaxOnly }); }
+
+  openProfile(unitId) { this.setState({ profileUnitId: unitId, profileFormIndex: this.state.unitFormIndex[unitId] || 0 }); }
+  closeProfile() { this.setState({ profileUnitId: null }); }
+  setProfileForm(idx) {
+    const id = this.state.profileUnitId;
+    this.setState({ profileFormIndex: idx, unitFormIndex: { ...this.state.unitFormIndex, [id]: idx } });
+  }
+  openEnemyProfile(name) { this.setState({ profileEnemyName: name }); }
+  closeEnemyProfile() { this.setState({ profileEnemyName: null }); }
+
+  openPlayerProfile() { this.setState({ showPlayerProfile: true }); }
+  closePlayerProfile() { this.setState({ showPlayerProfile: false }); }
+  openTreasureMenu() { this.setState({ showTreasureMenu: true }); }
+  closeTreasureMenu() { this.setState({ showTreasureMenu: false }); }
+
+  openGamatoto() { this.setState({ showGamatoto: true }); }
+  closeGamatoto() { this.setState({ showGamatoto: false }); }
+  sendWorker(i) { this.setState({ gamatotoWorkers: { ...this.state.gamatotoWorkers, [i]: { pct: 0 } } }); }
+  collectWorker(i) {
+    this.setState({ gamatotoWorkers: { ...this.state.gamatotoWorkers, [i]: null }, catFood: this.state.catFood + 60, xp: this.state.xp + 4000 });
+  }
+
+  openStorage() { this.setState({ showStorage: true }); }
+  closeStorage() { this.setState({ showStorage: false }); }
+  activateCapsule(id) { this.setState({ capsuleQueue: this.state.capsuleQueue.filter(c => c.id !== id) }); }
+  exchangeCapsuleForXp(id) {
+    const c = this.state.capsuleQueue.find(c => c.id === id); if (!c) return;
+    const gain = RARITY_MULT[c.rarity] * 200;
+    this.setState({ capsuleQueue: this.state.capsuleQueue.filter(x => x.id !== id), xp: this.state.xp + gain });
+  }
+  exchangeCapsuleForNp(id) {
+    const c = this.state.capsuleQueue.find(c => c.id === id); if (!c) return;
+    const gain = RARITY_MULT[c.rarity];
+    this.setState({ capsuleQueue: this.state.capsuleQueue.filter(x => x.id !== id), nyankoPoints: this.state.nyankoPoints + gain });
+  }
+
+  openShop() { this.setState({ showShop: true }); }
+  closeShop() { this.setState({ showShop: false }); }
+  buyCatFood(amount) { this.setState({ catFood: this.state.catFood + amount }); }
+  buyXp(amount) { this.setState({ xp: this.state.xp + amount }); }
+  buyTicket() { this.setState({ gachaTickets: this.state.gachaTickets + 1 }); }
+
+  openSettings() { this.setState({ showSettings: true }); }
+  closeSettings() { this.setState({ showSettings: false }); }
+  setMusicVolume(e) { this.setState({ musicVolume: Number(e.target.value) }); }
+  setSfxVolume(e) { this.setState({ sfxVolume: Number(e.target.value) }); }
+  setLanguage(id) { this.setState({ language: id }); }
+  goHomeFromSettings() { this.setState({ showSettings: false }); this.goTitle(); }
+  toggleBattleItem(id) {
+    const cur = this.state.activeBattleItems;
+    this.setState({ activeBattleItems: { ...cur, [id]: !cur[id] } });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const stageList = (STAGES[s.saga] || []).map(st => ({
+      ...st,
+      bg: st.id === s.selectedStageId ? 'rgba(34,211,238,.12)' : 'transparent',
+      opacity: st.unlocked ? 1 : 0.4,
+      select: () => this.selectStage(st.id),
+    }));
+    const selectedStage = stageList.find(st => st.id === s.selectedStageId) || stageList[0];
+    const sagaTabs = SAGAS.map(sg => {
+      const active = sg.id === s.saga;
+      return { ...sg, bg: active ? GRAD : GLASS, color: active ? '#050505' : '#c8cdd6', borderColor: active ? '#fb923c' : BORDER_SOFT, select: () => this.selectSaga(sg.id) };
+    });
+    const deployUnits = PLAYER_UNITS.map(u => {
+      const cd = s.cooldowns[u.id] || 0;
+      const cooldownPct = Math.min(100, (cd / u.cooldown) * 100);
+      const enabled = cd <= 0 && s.money >= u.cost && !s.battleOver;
+      return { ...u, cooldownPct, cursor: enabled ? 'pointer' : 'default', opacity: enabled ? 1 : 0.4, borderColor: enabled ? BORDER_SOFT : 'rgba(255,255,255,.06)', deploy: () => this.deploy(u.id) };
+    });
+    const allyTokens = s.allyTokens.map(t => ({ ...t, leftPct: t.pos, hpPct: Math.max(0, (t.hp / t.maxHp) * 100), bottomPx: 8 + (t.yJitter || 10) }));
+    const enemyTokens = s.enemyTokens.map(t => {
+      const size = t.boss ? 40 : 26;
+      return { ...t, leftPct: t.pos, hpPct: Math.max(0, (t.hp / t.maxHp) * 100), size, bottomPx: 8 + (t.yJitter || 10), shadowW: size - 4 };
+    });
+
+    const traitBadges = TRAITS.map(t => ({ ...t }));
+    const stageEnemies = ENEMY_TYPES.map(e => ({ ...e, color: traitColor(e.traitId) }));
+
+    const rarityFilterList = ['all', ...RARITY_ORDER];
+    const equipRarityFilters = rarityFilterList.map(id => {
+      const meta = id === 'all' ? { label: 'Todas', color: BORDER_SOFT, bg: GLASS } : RARITY_META[id];
+      const active = s.equipRarityFilter === id;
+      return { id, label: meta.label, color: meta.color, bg: active ? meta.color : 'transparent', textColor: active ? '#050505' : meta.color, select: () => this.setEquipRarityFilter(id) };
+    });
+
+    const equipSlots = s.equipSlots.map((unitId, i) => {
+      const unit = unitId ? ALL_UNITS.find(u => u.id === unitId) : null;
+      const selected = i === s.selectedSlotIndex;
+      return { label: unit ? unit.initial : (i + 1), unit, borderColor: selected ? ACCENT : BORDER_SOFT, bg: unit ? 'rgba(34,211,238,.12)' : 'rgba(255,255,255,.04)', select: () => this.selectSlot(i) };
+    });
+    const rosterUnits = ALL_UNITS.filter(u => s.equipRarityFilter === 'all' || u.rarity === s.equipRarityFilter)
+      .map(u => ({ ...u, rarityColor: RARITY_META[u.rarity].color, rarityLabel: RARITY_META[u.rarity].label, assign: () => this.assignUnit(u.id) }));
+    const detailSlotUnitId = s.equipSlots[s.selectedSlotIndex];
+    const detailUnit = detailSlotUnitId ? (() => {
+      const base = ALL_UNITS.find(u => u.id === detailSlotUnitId);
+      const formIdx = s.unitFormIndex[detailSlotUnitId] || 0;
+      const lvl = this.getLevel(detailSlotUnitId);
+      const stats = unitEffectiveStats(base, formIdx, lvl);
+      return {
+        ...base, ...stats, name: (base.formNames || [base.name])[formIdx] || base.name,
+        rarityColor: RARITY_META[base.rarity].color, rarityLabel: RARITY_META[base.rarity].label,
+        levelLabel: `${lvl.natural}+${lvl.plus}`,
+        forms: FORM_LABELS.map((label, idx) => {
+          const active = idx === formIdx;
+          const formName = (base.formNames || [])[idx];
+          return { label: formName || label, bg: active ? GRAD : GLASS, color: active ? '#050505' : '#c8cdd6', borderColor: active ? '#fb923c' : BORDER_SOFT, select: () => this.setForm(detailSlotUnitId, idx) };
+        }),
+      };
+    })() : null;
+
+    const upgradeRosterUnits = ALL_UNITS.map(u => {
+      const active = u.id === s.upgradeUnitId;
+      return { ...u, rarityColor: RARITY_META[u.rarity].color, borderColor: active ? ACCENT : BORDER_SOFT, bg: active ? 'rgba(34,211,238,.12)' : 'rgba(255,255,255,.04)', select: () => this.selectUpgradeUnit(u.id) };
+    });
+    const upgradeBase = ALL_UNITS.find(u => u.id === s.upgradeUnitId) || ALL_UNITS[0];
+    const upgradeLvl = this.getLevel(upgradeBase.id);
+    const upgradeStats = unitEffectiveStats(upgradeBase, s.unitFormIndex[upgradeBase.id] || 0, upgradeLvl);
+    const upgradeNaturalMax = naturalMax(upgradeBase.rarity);
+    const upgradeNaturalCost = naturalCost(upgradeLvl.natural, upgradeBase.rarity);
+    const upgradePlusCost = plusCost(upgradeBase.rarity);
+    const canNatural = upgradeLvl.natural < upgradeNaturalMax && s.xp >= upgradeNaturalCost;
+    const canPlus = upgradeLvl.plus < PLUS_MAX && s.xp >= upgradePlusCost;
+    const upgradeUnit = {
+      ...upgradeBase, hp: upgradeStats.hp, atk: upgradeStats.atk,
+      rarityColor: RARITY_META[upgradeBase.rarity].color, rarityLabel: RARITY_META[upgradeBase.rarity].label,
+      levelLabel: `${upgradeLvl.natural}+${upgradeLvl.plus}`, natural: upgradeLvl.natural, plus: upgradeLvl.plus,
+      naturalMax: upgradeNaturalMax, plusMax: PLUS_MAX,
+      naturalCost: upgradeNaturalCost, plusCost: upgradePlusCost,
+      naturalCursor: canNatural ? 'pointer' : 'default', naturalBg: canNatural ? GRAD : 'rgba(255,255,255,.06)', naturalColor: canNatural ? '#fff' : '#5b6577',
+      plusCursor: canPlus ? 'pointer' : 'default', plusBg: canPlus ? 'linear-gradient(135deg,#a855f7,#7c3aed)' : 'rgba(255,255,255,.06)', plusColor: canPlus ? '#fff' : '#5b6577',
+      levelUpNatural: () => this.levelUpNatural(upgradeBase.id), levelUpPlus: () => this.levelUpPlus(upgradeBase.id),
+    };
+
+    const baseUpgradesList = BASE_UPGRADE_DEFS.map(def => {
+      const level = s.baseUpgradeLevels[def.id] || 1;
+      const max = baseUpgradeMax(def.id);
+      const cost = baseUpgradeCost(level);
+      const natural = Math.min(level, 20);
+      const plus = Math.max(0, level - 20);
+      const capLabel = def.id === 'cannonRange' ? '10' : '20+10';
+      const canUp = level < max && s.xp >= cost;
+      return {
+        ...def, levelLabel: def.id === 'cannonRange' ? `${level}` : `${natural}+${plus}`, capLabel, cost,
+        cursor: canUp ? 'pointer' : 'default', bg: canUp ? GRAD : 'rgba(255,255,255,.06)', color: canUp ? '#fff' : '#5b6577',
+        upgrade: () => this.levelUpBase(def.id),
+      };
+    });
+
+    const activeBannerDef = GACHA_BANNERS.find(b => b.id === s.gachaBanner) || GACHA_BANNERS[0];
+    const gachaBannersList = GACHA_BANNERS.map(b => {
+      const active = b.id === s.gachaBanner;
+      return { ...b, borderColor: active ? '#a855f7' : BORDER_SOFT, bg: active ? b.accent : GLASS, textColor: active ? '#050505' : '#c8cdd6', select: () => this.selectBanner(b.id) };
+    });
+    const oddsRows = [
+      { key:'legend', label:'Legendario', pct: activeBannerDef.legend, color: RARITY_META.legendario.color },
+      { key:'uber', label:'Uber Raro', pct: activeBannerDef.uber, color: RARITY_META.uberraro.color },
+      { key:'sr', label:'Super Raro', pct: activeBannerDef.sr, color: RARITY_META.superraro.color },
+      { key:'rare', label:'Raro', pct: activeBannerDef.rare, color: RARITY_META.raro.color },
+    ].filter(o => o.pct > 0).map(o => ({ ...o, pctLabel: `${o.pct}%`, barPct: Math.min(100, o.pct * 1.4) }));
+    const activeBanner = { ...activeBannerDef, odds: oddsRows };
+
+    function orbFor(rarity) {
+      if (rarity === 'legendario') return { orbBg: 'linear-gradient(135deg,#e2e8f0,#f472b6,#22d3ee,#e2e8f0)', shadow: '0 0 30px 10px rgba(226,232,240,.7)' };
+      if (rarity === 'uberraro') return { orbBg: 'linear-gradient(135deg,#ef4444,#22d3ee)', shadow: '0 0 26px 8px rgba(239,68,68,.55), 0 0 40px 14px rgba(34,211,238,.35)' };
+      if (rarity === 'superraro') return { orbBg: 'linear-gradient(135deg,#a855f7,#7c3aed)', shadow: '0 0 22px 8px rgba(168,85,247,.6)' };
+      return { orbBg: 'linear-gradient(135deg,#facc15,#f59e0b)', shadow: '0 0 22px 8px rgba(250,204,21,.6)' };
+    }
+    const singleResult = s.gachaResults && s.gachaResults.length === 1 ? (() => {
+      const r = s.gachaResults[0];
+      const meta = RARITY_META[r.rarity];
+      return { ...r, ...orbFor(r.rarity), color: meta.color, rarityLabel: meta.label, initial: r.name.split(' ').pop()[0] };
+    })() : null;
+    const multiResults = s.gachaResults && s.gachaResults.length > 1 ? s.gachaResults.map((r, i) => {
+      const meta = RARITY_META[r.rarity];
+      return { ...r, ...orbFor(r.rarity), color: meta.color, initial: r.name.split(' ').pop()[0], delay: i * 0.08 };
+    }) : null;
+
+    const passesFilter = (unit) => {
+      if (s.filterRarities.length && !s.filterRarities.includes(unit.rarity)) return false;
+      if (s.filterMaxOnly && (this.getLevel(unit.id).natural || 1) < 20) return false;
+      const critSel = [...s.filterTraits, ...s.filterAbilities];
+      if (!critSel.length) return true;
+      const has = (id) => unit.targets.includes(id) || unit.abilities.includes(id);
+      return s.filterMode === 'AND' ? critSel.every(has) : critSel.some(has);
+    };
+    const guideCatCards = ALL_UNITS.filter(passesFilter).map(u => ({
+      ...u, rarityColor: RARITY_META[u.rarity].color, rarityLabel: RARITY_META[u.rarity].label,
+      traitBadges: u.targets.map(id => ({ color: traitColor(id) })),
+      abilityLabels: u.abilities.map(id => (ABILITIES.find(a => a.id === id) || {}).label).join(' · '),
+      openProfile: () => this.openProfile(u.id),
+    }));
+    const guideEnemyCards = [...ENEMY_TYPES, BOSS].map(e => ({
+      ...e, color: traitColor(e.traitId), traitLabel: (TRAITS.find(t => t.id === e.traitId) || {}).label,
+      openEnemyProfile: () => this.openEnemyProfile(e.name),
+    }));
+    const filterRarityChips = RARITY_ORDER.map(id => {
+      const active = s.filterRarities.includes(id);
+      const meta = RARITY_META[id];
+      return { id, label: meta.label, bg: active ? meta.color : 'transparent', color: active ? '#050505' : meta.color, borderColor: meta.color, toggle: () => this.toggleFilterRarity(id) };
+    });
+    const filterTraitChips = TRAITS.map(t => {
+      const active = s.filterTraits.includes(t.id);
+      return { ...t, bg: active ? t.color : 'transparent', textColorActive: active ? '#050505' : t.textColor, toggle: () => this.toggleFilterTrait(t.id) };
+    });
+    const filterAbilityChips = ABILITIES.map(a => {
+      const active = s.filterAbilities.includes(a.id);
+      return { ...a, bg: active ? GRAD : 'rgba(255,255,255,.05)', color: active ? '#fff' : '#c8cdd6', toggle: () => this.toggleFilterAbility(a.id) };
+    });
+    const andActive = s.filterMode === 'AND';
+
+    const profileBase = s.profileUnitId ? ALL_UNITS.find(u => u.id === s.profileUnitId) : null;
+    const profileUnit = profileBase ? (() => {
+      const lvl = this.getLevel(profileBase.id);
+      const stats = unitEffectiveStats(profileBase, s.profileFormIndex, lvl);
+      const meta = RARITY_META[profileBase.rarity];
+      return {
+        ...profileBase, ...stats, rarityColor: meta.color, rarityLabel: meta.label,
+        name: (profileBase.formNames || [profileBase.name])[s.profileFormIndex] || profileBase.name,
+        levelLabel: `${lvl.natural}+${lvl.plus}`,
+        lore: (UNIT_LORE[profileBase.id] || ['—', '—', '—'])[s.profileFormIndex],
+        hpPct: Math.min(100, stats.hp / 100), atkPct: Math.min(100, stats.atk / 40),
+        forms: FORM_LABELS.map((label, idx) => {
+          const active = idx === s.profileFormIndex;
+          const formName = (profileBase.formNames || [])[idx];
+          return { label: formName || label, bg: active ? GRAD : GLASS, color: active ? '#050505' : '#c8cdd6', borderColor: active ? '#fb923c' : BORDER_SOFT, select: () => this.setProfileForm(idx) };
+        }),
+      };
+    })() : null;
+    const profileEnemy = s.profileEnemyName ? (() => {
+      const e = [...ENEMY_TYPES, BOSS].find(x => x.name === s.profileEnemyName);
+      const trait = TRAITS.find(t => t.id === e.traitId);
+      return { ...e, color: trait.color, traitLabel: trait.label, dps: +(e.atk / 1.5).toFixed(1) };
+    })() : null;
+
+    const stageNodes = (STAGES[s.saga] || []).map((st, i) => {
+      const [x, y] = NODE_POS[i % NODE_POS.length];
+      const selected = st.id === s.selectedStageId;
+      return { ...st, x, y, selected, fill: st.unlocked ? (selected ? '#facc15' : '#22d3ee') : '#3f3f46', anim: selected ? 'bc-gold 1.8s ease-in-out infinite' : 'none', select: () => this.selectStage(st.id) };
+    });
+    const nodeLines = stageNodes.slice(1).map((n, i) => ({ x1: stageNodes[i].x, y1: stageNodes[i].y, x2: n.x, y2: n.y }));
+    const pendingMissions = DAILY_MISSIONS.filter(m => m.progress >= m.target && !s.claimedIds[m.id]).length + ACH_MISSIONS.filter(m => m.progress >= m.target && !s.claimedIds[m.id]).length;
+    const battleItemsList = BATTLE_ITEMS.map(it => {
+      const active = !!s.activeBattleItems[it.id];
+      return { ...it, bg: active ? GRAD : GLASS, color: active ? '#fff' : '#c8cdd6', borderColor: active ? '#fb923c' : BORDER_SOFT, toggle: () => this.toggleBattleItem(it.id) };
+    });
+    const treasureProg = TREASURE_PROGRESS[s.saga] || { inferior: 0, superior: 0 };
+
+    const missionsSource = s.missionsTab === 'daily' ? DAILY_MISSIONS : ACH_MISSIONS;
+    const missionsList = missionsSource.map(m => {
+      const claimable = m.progress >= m.target;
+      const claimed = !!s.claimedIds[m.id];
+      return {
+        ...m, pct: Math.min(100, (m.progress / m.target) * 100), claimable, claimed,
+        claimBg: claimed ? 'rgba(255,255,255,.06)' : (claimable ? 'linear-gradient(135deg,#facc15,#f59e0b)' : 'rgba(255,255,255,.06)'),
+        claimColor: claimed ? '#5b6577' : (claimable ? '#1a1200' : '#5b6577'),
+        claimAnim: (claimable && !claimed) ? 'bc-gold 1.4s ease-in-out infinite' : 'bc-none 1s',
+        claimLabel: claimed ? 'Reclamado' : 'Reclamar',
+        cursor: claimable && !claimed ? 'pointer' : 'default',
+        claim: () => this.claimMission(m.id),
+      };
+    });
+
+    const dailyActive = s.missionsTab === 'daily';
+    const speed1 = s.speed === 1;
+    const speed2 = s.speed === 2;
+    const nav = (active) => ({ bg: active ? GRAD : GLASS, color: active ? '#050505' : '#c8cdd6' });
+    const navHub = nav(s.screen === 'hub'); const navStages = nav(s.screen === 'stages'); const navBattle = nav(s.screen === 'battle');
+    const unitsActive = s.upgradeTab === 'units';
+    const canRollSingle = s.catFood >= 150, canRollMulti = s.catFood >= 1500;
+
+    const gamatotoSlots = [0, 1, 2].map(i => {
+      const w = s.gamatotoWorkers[i];
+      if (!w) return { title: `Gato Trabajador ${i + 1}`, subtitle: 'Disponible para expedición', busy: false, pct: 0, iconBg: 'rgba(74,222,128,.12)', iconColor: '#4ade80', btnLabel: 'Enviar', btnBg: GRAD, btnColor: '#050505', action: () => this.sendWorker(i) };
+      return { title: `Gato Trabajador ${i + 1}`, subtitle: 'Explorando... vuelve con XP y Cat Food', busy: true, pct: 65, iconBg: 'rgba(74,222,128,.12)', iconColor: '#4ade80', btnLabel: 'Recoger', btnBg: 'linear-gradient(135deg,#4ade80,#16a34a)', btnColor: '#052e16', action: () => this.collectWorker(i) };
+    });
+    const gamatotoReadyBadge = Object.values(s.gamatotoWorkers).some(w => !!w);
+
+    const storageCapsules = s.capsuleQueue.map(cap => {
+      const meta = RARITY_META[cap.rarity];
+      return {
+        ...cap, borderColor: meta.color, bg: meta.color, rarityLabel: meta.label, initial: cap.name.split(' ').pop()[0],
+        activate: () => this.activateCapsule(cap.id), exchangeXp: () => this.exchangeCapsuleForXp(cap.id), exchangeNp: () => this.exchangeCapsuleForNp(cap.id),
+      };
+    });
+    const storageCountLabel = `${storageCapsules.length} cápsulas pendientes`;
+
+    const shopItems = [
+      { name: '30 Cat Food', desc: 'Paquete pequeño de Cat Food.', price: '2.99€', btnBg: GRAD, btnColor: '#050505', buy: () => this.buyCatFood(30) },
+      { name: '150 Cat Food', desc: 'Suficiente para una tirada de Cápsula.', price: '9.99€', btnBg: GRAD, btnColor: '#050505', buy: () => this.buyCatFood(150) },
+      { name: '1500 Cat Food', desc: 'Suficiente para una tirada x11.', price: '49.99€', btnBg: GRAD, btnColor: '#050505', buy: () => this.buyCatFood(1500) },
+      { name: 'Paquete de XP', desc: '20 000 XP para mejorar unidades y base.', price: '4.99€', btnBg: 'linear-gradient(135deg,#22d3ee,#0891b2)', btnColor: '#050505', buy: () => this.buyXp(20000) },
+      { name: 'Ticket de Cápsula', desc: 'Un ticket extra para el gachapon.', price: '1.99€', btnBg: 'linear-gradient(135deg,#a855f7,#7c3aed)', btnColor: '#fff', buy: () => this.buyTicket() },
+      { name: 'Suscripción Officers\' Club', desc: 'Cat Food diario y recompensas exclusivas.', price: '4.99€/mes', btnBg: 'rgba(255,255,255,.08)', btnColor: '#c8cdd6', buy: () => this.buyCatFood(15) },
+    ];
+
+    const languageOptions = [
+      { id: 'es', label: 'ES' }, { id: 'en', label: 'EN' }, { id: 'ja', label: 'JA' },
+    ].map(l => { const active = s.language === l.id; return { ...l, border: active ? ACCENT : BORDER_SOFT, bg: active ? 'rgba(34,211,238,.14)' : 'transparent', color: active ? '#22d3ee' : '#c8cdd6', select: () => this.setLanguage(l.id) }; });
+
+    return {
+      deviceW: 874, deviceH: 402,
+      screen: s.screen, isHub: s.screen === 'hub', isStages: s.screen === 'stages', isBattle: s.screen === 'battle',
+      isTitle: s.screen === 'title', titleGrad: GRAD,
+      codeDisplay: s.codeRevealed ? 'BC-4F8K-2QRX' : '••••-••••-••••',
+      toggleCode: () => this.toggleCode(),
+      tipMessage: 'Consejo: toca dos veces un gato en Equipar para ir directo a sus estadísticas.',
+      showNews: s.showNews, openNews: () => this.openNews(), closeNews: () => this.closeNews(),
+      newsList: NEWS_ITEMS, newsUnreadBadge: !s.newsRead, newsUnreadCount: NEWS_ITEMS.length,
+      goHub: () => this.goHub(), goStages: () => this.goStages(), goBattle: () => this.goBattle(),
+      sagaTabs, stageList, selectedStage, activeSagaName: (SAGAS.find(sg => sg.id === s.saga) || {}).name,
+      traitBadges, stageEnemies,
+      moneyLabel: Math.floor(s.money), speed: s.speed,
+      catFoodLabel: Math.floor(s.catFood), addCatFood: () => this.addCatFood(), xpLabel: Math.floor(s.xp),
+      speed1Bg: speed1 ? ACCENT : 'rgba(255,255,255,.06)', speed1Color: speed1 ? '#05070d' : '#c8cdd6',
+      speed2Bg: speed2 ? ACCENT : 'rgba(255,255,255,.06)', speed2Color: speed2 ? '#05070d' : '#c8cdd6',
+      setSpeed1: () => this.setState({ speed: 1 }), setSpeed2: () => this.setState({ speed: 2 }),
+      togglePause: () => this.setState({ paused: !s.paused }), pauseLabel: s.paused ? '▶' : '❚❚',
+      cannonReady: s.cannonReady,
+      cannonCursor: s.cannonReady ? 'pointer' : 'default',
+      cannonAnim: s.cannonReady ? 'bc-glow 1.1s ease-in-out infinite' : 'bc-none 1s',
+      cannonStroke: s.cannonReady ? '#fb923c' : '#22d3ee',
+      cannonIconFill: s.cannonReady ? '#fb923c' : '#5b6577',
+      cannonRingOffset: 106.8 * (1 - Math.min(1, s.cannonCharge / 10)), fireCannon: () => this.fireCannon(),
+      allyHpPct: Math.max(0, (s.allyBaseHp / s.allyBaseMaxHp) * 100), enemyHpPct: Math.max(0, (s.enemyBaseHp / s.enemyBaseMaxHp) * 100),
+      allyTokens, enemyTokens, deployUnits,
+      rowsLabel: s.rows === 1 ? '2 filas' : '1 fila', toggleRows: () => this.setState({ rows: s.rows === 1 ? 2 : 1 }),
+      battleOver: s.battleOver, resultLabel: s.battleOver === 'win' ? '¡VICTORIA!' : (s.battleOver === 'lose' ? 'DERROTA' : ''),
+      resultColor: s.battleOver === 'win' ? '#facc15' : '#ef4444',
+      showEquip: s.showEquip, openEquip: () => this.openEquip(), closeEquip: () => this.closeEquip(),
+      equipSlots, rosterUnits, detailUnit, noDetailUnit: !detailUnit, equipRarityFilters,
+      showUpgrade: s.showUpgrade, openUpgrade: () => this.openUpgrade(), closeUpgrade: () => this.closeUpgrade(),
+      isUpgradeUnits: unitsActive, isUpgradeBase: !unitsActive,
+      setUpgradeTabUnits: () => this.setUpgradeTabUnits(), setUpgradeTabBase: () => this.setUpgradeTabBase(),
+      unitsTabColor: unitsActive ? ACCENT : '#5b6577', unitsTabBorder: unitsActive ? ACCENT : 'transparent',
+      baseTabColor: !unitsActive ? ACCENT : '#5b6577', baseTabBorder: !unitsActive ? ACCENT : 'transparent',
+      upgradeRosterUnits, upgradeUnit, baseUpgradesList,
+      showGacha: s.showGacha, openGacha: () => this.openGacha(), closeGacha: () => this.closeGacha(),
+      gachaBannersList, activeBanner,
+      singleCursor: canRollSingle ? 'pointer' : 'default', multiCursor: canRollMulti ? 'pointer' : 'default',
+      rollSingle: () => this.rollSingle(), rollMulti: () => this.rollMulti(),
+      gachaRevealOpen: s.gachaRevealOpen, isSingleReveal: !!singleResult, isMultiReveal: !!multiResults,
+      singleResult, multiResults, closeReveal: () => this.closeReveal(),
+      showGuide: s.showGuide, openGuide: () => this.openGuide(), closeGuide: () => this.closeGuide(),
+      guideTab: s.guideTab, isGuideCats: s.guideTab === 'cats', isGuideEnemies: s.guideTab === 'enemies',
+      setGuideTabCats: () => this.setGuideTabCats(), setGuideTabEnemies: () => this.setGuideTabEnemies(),
+      guideCatCards, guideEnemyCards,
+      showFilter: s.showFilter, openFilter: () => this.openFilter(), closeFilter: () => this.closeFilter(),
+      filterRarityChips, filterTraitChips, filterAbilityChips, clearFilters: () => this.clearFilters(),
+      andActive, andBg: andActive ? ACCENT : 'rgba(255,255,255,.06)', andColor: andActive ? '#050505' : '#c8cdd6',
+      orBg: !andActive ? ACCENT : 'rgba(255,255,255,.06)', orColor: !andActive ? '#050505' : '#c8cdd6',
+      setModeAnd: () => this.setFilterMode('AND'), setModeOr: () => this.setFilterMode('OR'),
+      filterMaxOnly: s.filterMaxOnly, toggleMaxOnly: () => this.toggleMaxOnly(),
+      profileUnit, isProfileOpen: !!profileUnit, closeProfile: () => this.closeProfile(),
+      profileEnemy, isEnemyProfileOpen: !!profileEnemy, closeEnemyProfile: () => this.closeEnemyProfile(),
+      showMissions: s.showMissions, openMissions: () => this.openMissions(), closeMissions: () => this.closeMissions(),
+      missionsTab: s.missionsTab, setTabDaily: () => this.setTabDaily(), setTabAch: () => this.setTabAch(), missionsList,
+      dailyTabColor: dailyActive ? ACCENT : '#5b6577', dailyTabBorder: dailyActive ? ACCENT : 'transparent',
+      achTabColor: !dailyActive ? ACCENT : '#5b6577', achTabBorder: !dailyActive ? ACCENT : 'transparent',
+      navHubBg: navHub.bg, navHubColor: navHub.color, navStagesBg: navStages.bg, navStagesColor: navStages.color, navBattleBg: navBattle.bg, navBattleColor: navBattle.color,
+      stageNodes, nodeLines, pendingMissions, pendingBadge: pendingMissions > 0,
+      battleItemsList, festivalMult: TREASURE_FESTIVAL.multiplier, festivalTime: TREASURE_FESTIVAL.timeRemaining,
+      showTreasureMenu: s.showTreasureMenu, openTreasureMenu: () => this.openTreasureMenu(), closeTreasureMenu: () => this.closeTreasureMenu(),
+      treasureInferior: treasureProg.inferior, treasureSuperior: treasureProg.superior,
+      gachaTicketsLabel: s.gachaTickets,
+      showPlayerProfile: s.showPlayerProfile, openPlayerProfile: () => this.openPlayerProfile(), closePlayerProfile: () => this.closePlayerProfile(),
+      profileName: PLAYER_PROFILE.name, profileRank: PLAYER_PROFILE.rank,
+      profileXpPct: Math.round((PLAYER_PROFILE.xp / PLAYER_PROFILE.xpNext) * 100),
+      profileXpLabel: `${PLAYER_PROFILE.xp} / ${PLAYER_PROFILE.xpNext}`,
+      leadershipLabel: PLAYER_PROFILE.leadershipReady ? 'Disponible' : 'Recargando',
+      leadershipColor: PLAYER_PROFILE.leadershipReady ? '#4ade80' : '#5b6577',
+      collectionLabel: `${ALL_UNITS.length} / ${ALL_UNITS.length}`, medalsLabel: PLAYER_PROFILE.medals,
+
+      showGamatoto: s.showGamatoto, openGamatoto: () => this.openGamatoto(), closeGamatoto: () => this.closeGamatoto(),
+      gamatotoSlots, gamatotoReadyBadge,
+
+      showStorage: s.showStorage, openStorage: () => this.openStorage(), closeStorage: () => this.closeStorage(),
+      storageCapsules, storageCountLabel, storageEmpty: storageCapsules.length === 0, nyankoPointsLabel: s.nyankoPoints,
+
+      showShop: s.showShop, openShop: () => this.openShop(), closeShop: () => this.closeShop(),
+      shopItems, catFoodLabel: s.catFood, xpLabel: s.xp,
+
+      showSettings: s.showSettings, openSettings: () => this.openSettings(), closeSettings: () => this.closeSettings(),
+      musicVolume: s.musicVolume, sfxVolume: s.sfxVolume, languageOptions,
+      setMusicVolume: (e) => this.setMusicVolume(e), setSfxVolume: (e) => this.setSfxVolume(e),
+      goHomeFromSettings: () => this.goHomeFromSettings(),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

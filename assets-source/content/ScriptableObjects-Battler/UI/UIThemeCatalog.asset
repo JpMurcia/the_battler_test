@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6158f5f460d2d974e9745a96003e16eb, type: 3}
+  m_Name: UIThemeCatalog
+  m_EditorClassIdentifier: 
+  m_AccentCyan: {r: 0.133, g: 0.827, b: 0.933, a: 1}
+  m_AccentOrange: {r: 0.984, g: 0.573, b: 0.235, a: 1}
+  m_AccentPurple: {r: 0.659, g: 0.333, b: 0.969, a: 1}
+  m_PrimaryGradientStart: {r: 0.984, g: 0.573, b: 0.235, a: 1}
+  m_PrimaryGradientEnd: {r: 0.937, g: 0.267, b: 0.267, a: 1}
+  m_PanelFillColor: {r: 0.078, g: 0.086, b: 0.118, a: 0.85}
+  m_PanelBorderColor: {r: 1, g: 1, b: 1, a: 0.14}
+  m_CornerRadiusSmall: 10
+  m_CornerRadiusMedium: 14
+  m_HeadingFont: {fileID: 11400000, guid: d393f12bd75574ef991a7a2c74b29c69, type: 2}
+  m_BodyFont: {fileID: 11400000, guid: a7f3c2b7e5ffbe14e92cfd9890df2a3d, type: 2}

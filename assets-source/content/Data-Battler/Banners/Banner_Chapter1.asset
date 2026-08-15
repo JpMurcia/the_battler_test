@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 298d2f4e425028d478d6570abf059d2e, type: 3}
+  m_Name: Banner_Chapter1
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.ChapterBannerDefinition
+  m_LinkedChapter: {fileID: 11400000, guid: a055d4e6bb874234386618d03272507c, type: 2}
+  m_TargetSceneName: Chapter1_Battle
+  m_DisplayNameKey: banner.chapter1.name
+  m_BannerArt: {fileID: 21300000, guid: fd00b29c3d9553d4c8e0ab3b572af409, type: 3}
+  m_EnergyCost: 0
+  m_Region: {fileID: 0}
+  m_DifficultyRank: 0

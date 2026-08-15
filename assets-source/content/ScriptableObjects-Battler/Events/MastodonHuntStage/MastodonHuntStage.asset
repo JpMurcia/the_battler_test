@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbea4efb0c250644d883894a427ea603, type: 3}
+  m_Name: MastodonHuntStage
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.ChapterDefinition
+  m_ChapterId: event_fantasy_stages_mastodon_hunt
+  m_PreBattleDialogue:
+  - {fileID: 11400000, guid: 214e52efbcbdb5e4683b16f343ad4177, type: 2}
+  - {fileID: 11400000, guid: 91c22e7dc2f82e24984d2ab5adb03ae2, type: 2}
+  m_PostBattleDialogue:
+  - {fileID: 11400000, guid: 8916e515b434af64091dc07b1c00aa06, type: 2}
+  - {fileID: 11400000, guid: 5082233a7f21c8b44b8d5e81781cf720, type: 2}
+  m_AvailableUnits:
+  - {fileID: 11400000, guid: f0061d1f348fe934fb8d0ed4c7f5514c, type: 2}
+  - {fileID: 11400000, guid: 8a08fc5dd595aa74b8b69f10ac721c99, type: 2}
+  - {fileID: 11400000, guid: 4c1babdc65d4deb4bb843503049286b0, type: 2}
+  - {fileID: 11400000, guid: 97309e995ec6cf2459af3805e53bb9ff, type: 2}
+  - {fileID: 11400000, guid: 9b5ba2f1dcdebe84ca3a555a40ce34f9, type: 2}
+  m_EnemyWaves: {fileID: 11400000, guid: 29f0ef32245dcd4428708731bc8170c4, type: 2}
+  m_PlayerBaseMaxHealth: 30
+  m_EnemyBaseMaxHealth: 80
+  m_MaxSimultaneousEnemies: 0
+  m_HealthThresholdWaveTriggers: []
+  m_TreasureRewardId: reliquia_mastodonte
+  m_XpReward: 1500
+  m_FirstClearUnitUnlock: {fileID: 0}
+  m_ZombieOutbreakWave: {fileID: 0}
+  m_LevelWidth: 10
+  m_BattleItemReward: {fileID: 0}
+  m_BattleItemRewardCount: 0

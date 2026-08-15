@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbea4efb0c250644d883894a427ea603, type: 3}
+  m_Name: Mongolia
+  m_EditorClassIdentifier: TheBattler.Model::TheBattler.Model.ChapterDefinition
+  m_ChapterId: mongolia
+  m_PreBattleDialogue:
+  - {fileID: 11400000, guid: de168b4dcff840344afb23f33f21b4cc, type: 2}
+  - {fileID: 11400000, guid: 0147b3898dcc9c84bafb74bbfddb63e2, type: 2}
+  m_PostBattleDialogue:
+  - {fileID: 11400000, guid: 832542610456bf64a89279f4a974dc1d, type: 2}
+  - {fileID: 11400000, guid: 1e50d91d69260854cad20a4f0f3313a7, type: 2}
+  m_AvailableUnits:
+  - {fileID: 11400000, guid: e3f24c47ce8747d43aa52940a5a0e6f0, type: 2}
+  m_EnemyWaves: {fileID: 11400000, guid: 6ad03aac55723e1479b13be675201450, type: 2}
+  m_PlayerBaseMaxHealth: 36
+  m_EnemyBaseMaxHealth: 60
+  m_MaxSimultaneousEnemies: 4
+  m_HealthThresholdWaveTriggers:
+  - m_ThresholdPercent: 0.5
+    m_ReinforcementWave: {fileID: 11400000, guid: c1772c1ebb6c34b47aad7b812f4a9bec,
+      type: 2}
+  m_TreasureRewardId: tienda_de_campana
+  m_XpReward: 1300
+  m_FirstClearUnitUnlock: {fileID: 0}
+  m_ZombieOutbreakWave: {fileID: 11400000, guid: ecb5da7027b22a24e916e97f47de9608,
+    type: 2}
+  m_LevelWidth: 18
+  m_BattleItemReward: {fileID: 0}
+  m_BattleItemRewardCount: 0

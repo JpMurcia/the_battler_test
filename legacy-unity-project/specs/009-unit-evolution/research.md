@@ -1,0 +1,48 @@
+# Research: Sistema de Evolución de Unidad
+
+## 1. Datos de forma anidados en `UnitDefinition`, no un `ScriptableObject` de evolución separado
+
+**Decision**: `UnitEvolutionStageData[]` (0 a 2 entradas) es un campo nuevo, directamente en `UnitDefinition` (`TheBattler.Model`), como clase `[Serializable]` anidada — mismo patrón que `EnemyWaveDefinition.WaveEntry` (001) y que `TraitTargetingAbility`/`NeutralAbility`/`Immunity` (008) ya usan para datos de configuración propios de una única unidad, sin ser un asset independiente.
+
+**Rationale**: cada `UnitEvolutionStageData` (nivel requerido, animaciones, variante visual, daño, vida máxima de esa forma) pertenece únicamente a la `UnitDefinition` que la declara — ninguna Acceptance Scenario ni FR de spec.md sugiere reutilizar la misma forma de evolución entre dos unidades distintas. Mantenerlo como campo de `UnitDefinition` conserva el criterio ya establecido por 001/007/008 de "todo sobre una unidad vive en su `UnitDefinition`" (ver plan.md, Project Structure): un diseñador abre un único asset por unidad y ve ahí su Forma Base (campos ya existentes) y sus formas de evolución (el array nuevo), sin saltar entre assets para entender una sola unidad.
+
+**Alternatives considered**:
+- Un `ScriptableObject` de evolución independiente por unidad (p. ej. `UnitEvolutionDefinition.asset`, referenciado desde `UnitDefinition`): rechazado — introduce un segundo asset a mantener sincronizado por cada unidad con evolución (hasta 5 assets nuevos sobre el roster actual de 001), una referencia cruzada nueva sin beneficio de reutilización o versionado independiente (ninguna forma de evolución se comparte entre unidades), y una segunda ubicación donde `HasValidVisualIdentity`-style de validación tendría que replicarse. Viola Principio VI (YAGNI) sin que ningún FR lo exija — ver Complexity Tracking de plan.md.
+- Un array de `UnitDefinition` completas (una "sub-unidad" por forma, reutilizando toda la clase existente): rechazado — duplicaría campos que no varían por forma (`unitId`, `cost`, `cooldownSeconds`, `range`, `team`), obligando a mantenerlos sincronizados manualmente entre 3 assets por unidad; ninguna FR pide que el costo de despliegue o el alcance cambien por forma.
+
+## 2. `EvolutionItem` como `int` simple en `UnitProgress` (005), no un sistema de inventario
+
+**Decision**: la disponibilidad del ítem de evolución se representa como un único campo entero, `m_EvolutionItemCount` (`>= 0`), dentro del mismo `UnitProgress` que 005 ya diseñó para nivel/experiencia por unidad — no como una entrada en un inventario general de ítems.
+
+**Rationale**: spec.md Assumptions lo descarta explícitamente ("no se introduce aquí un sistema de inventario o ítems general"); FR-003/FR-006 solo exigen que exista *algo* que se pueda tener o no tener, y que se consuma al evolucionar a Forma Verdadera — un contador entero por unidad es la superficie mínima que cumple ambos FR sin construir tipos de ítem, apilado, ni UI de inventario que ningún Acceptance Scenario pide. Vive en `UnitProgress` (no en un nuevo agregado) porque es progreso de una unidad concreta, exactamente igual que `level`/`experienceInvested` (005) — mismo criterio de "un solo agregado de progreso de jugador", sin archivo de guardado paralelo (FR-010).
+
+**Alternatives considered**:
+- Sistema de inventario general (`InventoryItem[]` con tipo, cantidad apilable, UI de inventario propia): rechazado explícitamente por spec.md Assumptions — sobre-ingeniería para un requisito que solo necesita "¿tiene o no tiene el ítem de esta unidad, y cuántos?" (Principio VI).
+- Un `bool m_HasEvolutionItem` en vez de un contador: rechazado — spec.md Assumptions habla de "ítem" como recurso obtenible (p. ej. de misiones, 006), lo cual sugiere acumulación natural entre sesiones antes de alcanzar el nivel requerido; un contador entero es igual de simple de serializar y de validar (`>= 0`) que un booleano, pero no descarta información si el jugador obtiene el ítem antes de tener el nivel, ni obliga a decidir ahora un tope máximo arbitrario.
+
+## 3. Stats por forma como valores absolutos, no multiplicadores
+
+**Decision**: `UnitEvolutionStageData.damage`/`maxHealth` son valores absolutos autorados por el diseñador para esa forma concreta — no un `float` multiplicador aplicado sobre los valores base de `UnitDefinition`.
+
+**Rationale**: FR-009 exige "una mejora significativa... definida en sus datos" y spec.md Assumptions descarta explícitamente exigir una fórmula universal ("el multiplicador exacto... se define por unidad en los datos... no exige una fórmula universal"). Un valor absoluto es consistente con que `damage`/`maxHealth` en `UnitDefinition` (001) ya son valores absolutos, no multiplicadores — mantiene una única convención de autoría en todo el asset. Además, un valor absoluto es estrictamente más expresivo: el diseñador de contenido puede lograr "duplicar" escribiendo el doble a mano, pero también puede autorar una mejora no lineal (p. ej. Segunda Forma +50%, Forma Verdadera +150%) sin que el sistema necesite soportar una fórmula distinta para cada caso.
+
+**Alternatives considered**:
+- Multiplicador `float` (`damageMultiplier`, `maxHealthMultiplier`) aplicado en tiempo de resolución sobre los campos base de `UnitDefinition`: rechazado — añade una capa de cálculo (multiplicación, redondeo para `int MaxHealth`/`int Damage`, validación de rango del multiplicador) sin beneficio real dado que spec.md ya renuncia explícitamente a exigir una fórmula universal; también introduce una pregunta de redondeo (¿`Mathf.RoundToInt`? ¿trunca?) que un valor absoluto autorado no necesita responder nunca.
+
+## 4. Secuencialidad resuelta estructuralmente, no por una tabla de validación
+
+**Decision**: `UnitEvolutionController.TryEvolve` solo evalúa la transición desde la forma persistida actual (`UnitProgress.evolutionStage`) hacia `forma actual + 1` — nunca "la forma más avanzada que ya cumple sus requisitos". No existe una tabla ni lista separada de "transiciones válidas" que haya que mantener sincronizada con el enum `UnitEvolutionStage`.
+
+**Rationale**: FR-007 exige explícitamente que una unidad no pueda saltar a Forma Verdadera sin pasar antes por Segunda Forma, incluso si ya cumple ambos niveles (Edge Case de spec.md). Modelar `UnitEvolutionStage` como un enum ordinal (`FormaBase = 0`, `SegundaForma = 1`, `FormaVerdadera = 2`) y definir la única operación de evolución como "avanzar exactamente un paso desde el valor actual" hace que "saltarse una forma" sea estructuralmente irrepresentable — no hay ninguna combinación de nivel/ítem que produzca un salto de 2 pasos, porque `TryEvolve` nunca evalúa `forma actual + 2`. Esto es más simple de razonar y de testear que una tabla de validación explícita ("¿es válido pasar de X a Y?"), que además introduciría un segundo lugar donde la secuencialidad podría desincronizarse del enum si alguien añadiera una forma nueva en el futuro.
+
+**Alternatives considered**:
+- Tabla/diccionario explícito de transiciones válidas (`Dictionary<(UnitEvolutionStage, UnitEvolutionStage), bool>` o similar) consultada antes de aplicar la evolución: rechazado — es una segunda fuente de verdad sobre el orden de las formas, redundante con el propio orden ordinal del enum; cualquier forma nueva añadida en el futuro exigiría recordar actualizar ambos (el enum y la tabla), mientras que la resolución estructural (`forma actual + 1`) no requiere ningún cambio salvo añadir el nuevo valor al enum.
+- Permitir evolución directa a cualquier forma cuyos requisitos ya se cumplan (sin exigir pasar por las intermedias), con una advertencia de UI: rechazado — contradice FR-007 literalmente y el Edge Case explícito de spec.md ("no puede saltar directamente a forma verdadera... aunque ya cumpla el nivel de ambas").
+
+## 5. Estrategia de testing
+
+**Decision**: mismo split EditMode/PlayMode que 001-008.
+- EditMode: tests puros de `UnitDefinition.GetEffectiveCombatProfile` (por forma, y su fallback a los campos base de Forma Base cuando `m_EvolutionStages` no tiene la entrada correspondiente — FR-011); de `UnitEvolutionStageResolver.Resolve` (progreso ausente/corrupto/valor fuera de rango → `FormaBase`, FR-013); y de `UnitEvolutionController` (secuencialidad — FR-007, nivel insuficiente, ítem insuficiente, evolución exitosa consume ítem y persiste, sin efectos parciales en cualquier rechazo — SC-002), con una implementación en memoria de `IPlayerProgressStore`, mismo criterio que `UnitLevelingControllerTests` (005).
+- PlayMode: extensión del patrón `ClassificationAbilityBattlePlayModeTests` (008)/`TeamFormationBattleIntegrationPlayModeTests` (005): `ScriptableObject.CreateInstance<UnitDefinition>()` + reflexión sobre campos privados para sembrar `m_EvolutionStages` y `UnitProgress` conocidos, sin depender de assets `.asset` reales, cubriendo que una unidad desplegada refleje animaciones/variante/stats de su forma vigente (FR-012, SC-005) y que cada forma muestre animaciones distintas entre sí (Historia 4).
+
+**Rationale**: continúa el patrón ya validado en 001-008 — `GetEffectiveCombatProfile`/`Resolve` son funciones puras sobre datos/enums (sin motor), perfectas para EditMode igual que `TraitTargetingAbility.MatchesTarget` (008); `UnitEvolutionController` reutiliza el mismo doble en memoria de `IPlayerProgressStore` que 005 ya validó para `UnitLevelingController`/`TeamFormationController`, evitando construir un segundo mecanismo de test doble para el mismo contrato de guardado. El resto (reflejo en batalla) requiere el ciclo `Initialize()` real de `UnitRuntime`, igual que 007/008 lo requirieron para sus propias integraciones.
