@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { CATS } from '../../src/data/cats'
 import { db } from '../../src/db'
 import { useMetaStore } from '../../src/state/useMetaStore'
 
@@ -22,7 +23,7 @@ beforeEach(async () => {
 })
 
 describe('useMetaStore', () => {
-  it('hydrate() sobre una base de datos vacía deja el estado por defecto esperado', async () => {
+  it('hydrate() sobre una base de datos vacía deja el estado por defecto esperado, incluido el gato inicial (FR-011)', async () => {
     await useMetaStore.getState().hydrate()
 
     const state = useMetaStore.getState()
@@ -30,7 +31,7 @@ describe('useMetaStore', () => {
     expect(state.currency).toBe(0)
     expect(state.highestUnlockedLevelIndex).toBe(0)
     expect(state.completedLevelIds).toEqual([])
-    expect(state.ownedCats).toEqual({})
+    expect(state.ownedCats).toEqual({ [CATS[0].id]: { level: 1, experienceInvested: 0 } })
   })
 
   it('spendCurrency rechaza sin efecto si el monto excede la moneda actual', async () => {

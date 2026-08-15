@@ -1,3 +1,8 @@
+export interface EnemyWaveEntry {
+  catId: string
+  spawnAtSeconds: number
+}
+
 export interface Level {
   id: string
   name: string
@@ -6,9 +11,10 @@ export interface Level {
   maxEnergy: number
   energyRegenPerSecond: number
   currencyReward: number
+  enemyWave: EnemyWaveEntry[]
 }
 
-/** Fixture de bootstrap — valores de diseño provisionales, no balanceados (tasks.md Fase 1). */
+/** Fixture de bootstrap — valores de diseño provisionales, no balanceados (tasks.md Fase 1 / specs/002-motor-de-combate). */
 export const LEVELS: Level[] = [
   {
     id: 'level-1',
@@ -18,5 +24,10 @@ export const LEVELS: Level[] = [
     maxEnergy: 100,
     energyRegenPerSecond: 5,
     currencyReward: 100,
+    enemyWave: [
+      { catId: 'basic-cat', spawnAtSeconds: 5 },
+      { catId: 'speed-cat', spawnAtSeconds: 15 },
+      { catId: 'tank-cat', spawnAtSeconds: 30 },
+    ],
   },
 ]

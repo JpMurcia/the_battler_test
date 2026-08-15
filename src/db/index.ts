@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie'
+import { CATS } from '../data/cats'
 
 export interface PlayerProfileRow {
   id: 1 // fila única (singleton)
@@ -51,9 +52,13 @@ const DEFAULT_SETTINGS: Omit<SettingsRow, 'id'> = {
   language: 'es',
 }
 
-/** Crea las filas singleton de playerProfile/settings si no existen — US2 Edge Case (primera sesión). Idempotente. */
+/**
+ * Crea las filas singleton de playerProfile/settings si no existen (US2 Edge Case, primera sesión),
+ * y siembra el gato inicial garantizado en ownedCats si el roster está vacío (FR-011, specs/002-motor-de-combate/spec.md).
+ * Idempotente.
+ */
 export async function ensureDefaultProfile(): Promise<void> {
-  await db.transaction('rw', db.playerProfile, db.settings, async () => {
+  await db.transaction('rw', db.playerProfile, db.settings, db.ownedCats, async () => {
     const profile = await db.playerProfile.get(1)
     if (!profile) {
       await db.playerProfile.put({
@@ -67,6 +72,11 @@ export async function ensureDefaultProfile(): Promise<void> {
     const settings = await db.settings.get(1)
     if (!settings) {
       await db.settings.put({ id: 1, ...DEFAULT_SETTINGS })
+    }
+
+    const ownedCatsCount = await db.ownedCats.count()
+    if (ownedCatsCount === 0 && CATS.length > 0) {
+      await db.ownedCats.put({ catId: CATS[0].id, level: 1, experienceInvested: 0 })
     }
   })
 }

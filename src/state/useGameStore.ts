@@ -1,21 +1,10 @@
 import { create } from 'zustand'
 import { CATS } from '../data/cats'
 import { LEVELS } from '../data/levels'
+import { stepSimulation } from '../engine/simulation'
+import type { BattleUnit } from '../engine/types'
 
-export interface BattleUnit {
-  instanceId: string
-  catId: string
-  team: 'Player' | 'Enemy'
-  x: number
-  width: number
-  hp: number
-  maxHp: number
-  damage: number
-  attackIntervalSeconds: number
-  attackCooldownRemaining: number
-  speed: number
-  state: 'Moving' | 'Engaged' | 'Dead'
-}
+export type { BattleUnit }
 
 interface GameFields {
   status: 'Idle' | 'InProgress' | 'Victory' | 'Defeat'
@@ -25,6 +14,8 @@ interface GameFields {
   enemyBase: { hp: number; maxHp: number }
   units: BattleUnit[]
   deployCooldowns: Record<string, number>
+  elapsedSeconds: number
+  enemiesSpawnedCount: number
 }
 
 interface GameState extends GameFields {
@@ -42,6 +33,8 @@ const IDLE_STATE: GameFields = {
   enemyBase: { hp: 0, maxHp: 0 },
   units: [],
   deployCooldowns: {},
+  elapsedSeconds: 0,
+  enemiesSpawnedCount: 0,
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -59,11 +52,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       enemyBase: { hp: level.enemyBaseHp, maxHp: level.enemyBaseHp },
       units: [],
       deployCooldowns: {},
+      elapsedSeconds: 0,
+      enemiesSpawnedCount: 0,
     })
   },
 
-  // Placeholder — el bucle de combate real se conecta en la siguiente ronda de tareas (plan.md Fase 4).
-  tick: () => {},
+  tick: (deltaSeconds) => {
+    set(stepSimulation(get(), deltaSeconds))
+  },
 
   deployUnit: (catId) => {
     const cat = CATS.find((candidate) => candidate.id === catId)
