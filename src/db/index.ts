@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie'
 import { CATS } from '../data/cats'
+import { computeMissionEnergyMax } from '../data/missionEnergy'
 
 export interface PlayerProfileRow {
   id: 1 // fila única (singleton)
@@ -27,11 +28,25 @@ export interface SettingsRow {
   language: string
 }
 
+export interface TeamFormationRow {
+  id: 1 // fila única (singleton)
+  catIds: string[]
+}
+
+export interface MissionEnergyRow {
+  id: 1 // fila única (singleton)
+  current: number
+  max: number
+  lastUpdatedAt: number
+}
+
 class BattleCatsDB extends Dexie {
   playerProfile!: Table<PlayerProfileRow, number>
   ownedCats!: Table<OwnedCatRow, string>
   levelProgress!: Table<LevelProgressRow, string>
   settings!: Table<SettingsRow, number>
+  teamFormation!: Table<TeamFormationRow, number>
+  missionEnergy!: Table<MissionEnergyRow, number>
 
   constructor() {
     super('BattleCatsDB')
@@ -40,6 +55,12 @@ class BattleCatsDB extends Dexie {
       ownedCats: 'catId',
       levelProgress: 'levelId',
       settings: 'id',
+    })
+    this.version(2).stores({
+      teamFormation: 'id',
+    })
+    this.version(3).stores({
+      missionEnergy: 'id',
     })
   }
 }
@@ -58,7 +79,7 @@ const DEFAULT_SETTINGS: Omit<SettingsRow, 'id'> = {
  * Idempotente.
  */
 export async function ensureDefaultProfile(): Promise<void> {
-  await db.transaction('rw', db.playerProfile, db.settings, db.ownedCats, async () => {
+  await db.transaction('rw', db.playerProfile, db.settings, db.ownedCats, db.missionEnergy, async () => {
     const profile = await db.playerProfile.get(1)
     if (!profile) {
       await db.playerProfile.put({
@@ -77,6 +98,12 @@ export async function ensureDefaultProfile(): Promise<void> {
     const ownedCatsCount = await db.ownedCats.count()
     if (ownedCatsCount === 0 && CATS.length > 0) {
       await db.ownedCats.put({ catId: CATS[0].id, level: 1, experienceInvested: 0 })
+    }
+
+    const missionEnergy = await db.missionEnergy.get(1)
+    if (!missionEnergy) {
+      const max = computeMissionEnergyMax(1)
+      await db.missionEnergy.put({ id: 1, current: max, max, lastUpdatedAt: Date.now() })
     }
   })
 }

@@ -4,6 +4,8 @@ import { GachaScreen } from './screens/GachaScreen'
 import { LevelSelectScreen } from './screens/LevelSelectScreen'
 import { MainMenuScreen } from './screens/MainMenuScreen'
 import { ResultScreen } from './screens/ResultScreen'
+import { SettingsScreen } from './screens/SettingsScreen'
+import { TeamScreen } from './screens/TeamScreen'
 import { TitleScreen } from './screens/TitleScreen'
 import { UpgradeScreen } from './screens/UpgradeScreen'
 import { useMetaStore } from './state/useMetaStore'
@@ -27,12 +29,16 @@ function App() {
       return <TitleScreen onNavigate={setScreen} />
     case 'MainMenu':
       return <MainMenuScreen onNavigate={setScreen} />
+    case 'Settings':
+      return <SettingsScreen onNavigate={setScreen} />
     case 'LevelSelect':
       return <LevelSelectScreen onNavigate={setScreen} />
     case 'Gacha':
       return <GachaScreen onNavigate={setScreen} />
     case 'Upgrade':
       return <UpgradeScreen onNavigate={setScreen} />
+    case 'Team':
+      return <TeamScreen onNavigate={setScreen} />
     case 'Battle':
       return <BattleScreen onNavigate={setScreen} />
     case 'Result':

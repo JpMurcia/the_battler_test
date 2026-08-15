@@ -82,6 +82,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       attackCooldownRemaining: 0,
       speed: cat.speed,
       state: 'Moving',
+      attackType: cat.attackType,
+      attackRange: cat.attackRange,
+      areaRadius: cat.areaRadius,
+      classification: cat.classification,
+      specialClassification: cat.specialClassification,
+      abilities: cat.abilities,
+      immuneEffects: cat.immuneEffects,
+      appliesEffect: cat.appliesEffect,
+      curseRemainingSeconds: 0,
     }
 
     set({

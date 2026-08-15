@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n/useTranslation'
 import { useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
 
@@ -6,15 +7,19 @@ interface MainMenuScreenProps {
 }
 
 export function MainMenuScreen({ onNavigate }: MainMenuScreenProps) {
+  const { t } = useTranslation()
   const currency = useMetaStore((state) => state.currency)
 
   return (
     <main>
-      <h1>Menú Principal</h1>
-      <p>Moneda: {currency}</p>
-      <button onClick={() => onNavigate('LevelSelect')}>Niveles</button>
-      <button onClick={() => onNavigate('Gacha')}>Gacha</button>
-      <button onClick={() => onNavigate('Upgrade')}>Mejorar</button>
+      <h1>{t('menu.heading')}</h1>
+      <p>
+        {t('menu.currency')}: {currency}
+      </p>
+      <button onClick={() => onNavigate('LevelSelect')}>{t('menu.levels')}</button>
+      <button onClick={() => onNavigate('Gacha')}>{t('menu.gacha')}</button>
+      <button onClick={() => onNavigate('Upgrade')}>{t('menu.upgrade')}</button>
+      <button onClick={() => onNavigate('Settings')}>{t('menu.settings')}</button>
     </main>
   )
 }

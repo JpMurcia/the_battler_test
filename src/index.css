@@ -46,3 +46,14 @@ h2 {
 code {
   font-family: var(--mono);
 }
+
+.level-list {
+  max-height: 70vh;
+  overflow-y: auto;
+  list-style: none;
+  padding: 0;
+}
+
+.level-item--locked {
+  opacity: 0.5;
+}

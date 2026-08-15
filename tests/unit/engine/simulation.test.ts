@@ -126,4 +126,91 @@ describe('stepSimulation', () => {
     const next = stepSimulation(state, 5)
     expect(next).toBe(state)
   })
+
+  it('una unidad Area daña a los 3 enemigos agrupados dentro de areaRadius en el mismo tick (specs/008 US1)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      x: 0,
+      width: 16,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'Area',
+      attackRange: 0,
+      areaRadius: 30,
+    })
+    const primary = makeUnit({ instanceId: 'primary', team: 'Enemy', x: 10, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const splashA = makeUnit({ instanceId: 'splash-a', team: 'Enemy', x: 30, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const splashB = makeUnit({ instanceId: 'splash-b', team: 'Enemy', x: 50, width: 16, hp: 50, attackCooldownRemaining: 5 })
+
+    const next = stepSimulation(makeState({ units: [attacker, primary, splashA, splashB] }), 0.1)
+
+    expect(next.units.find((u) => u.instanceId === 'primary')!.hp).toBe(40)
+    expect(next.units.find((u) => u.instanceId === 'splash-a')!.hp).toBe(40)
+    expect(next.units.find((u) => u.instanceId === 'splash-b')!.hp).toBe(40)
+  })
+
+  it('una unidad Single agrupada con varios enemigos solo daña a uno (specs/008 US2)', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', x: 0, width: 16, damage: 10, attackCooldownRemaining: 0 })
+    const near = makeUnit({ instanceId: 'near', team: 'Enemy', x: 10, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const far = makeUnit({ instanceId: 'far', team: 'Enemy', x: 30, width: 16, hp: 50, attackCooldownRemaining: 5 })
+
+    const next = stepSimulation(makeState({ units: [attacker, near, far] }), 0.1)
+
+    expect(next.units.find((u) => u.instanceId === 'near')!.hp).toBe(40)
+    expect(next.units.find((u) => u.instanceId === 'far')!.hp).toBe(50)
+  })
+
+  it('una unidad LongRange daña al enemigo más lejano dentro de attackRange, no al más cercano (specs/008 US3)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      x: 0,
+      width: 16,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'LongRange',
+      attackRange: 100,
+    })
+    const near = makeUnit({ instanceId: 'near', team: 'Enemy', x: 20, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const far = makeUnit({ instanceId: 'far', team: 'Enemy', x: 80, width: 16, hp: 50, attackCooldownRemaining: 5 })
+
+    const next = stepSimulation(makeState({ units: [attacker, near, far] }), 0.1)
+
+    expect(next.units.find((u) => u.instanceId === 'far')!.hp).toBe(40)
+    expect(next.units.find((u) => u.instanceId === 'near')!.hp).toBe(50)
+  })
+
+  it('curseRemainingSeconds decrece por tick y no queda negativo (specs/009 US5)', () => {
+    const cursed = makeUnit({ x: 200, curseRemainingSeconds: 0.15 })
+
+    const next = stepSimulation(makeState({ units: [cursed] }), 0.1)
+    expect(next.units[0].curseRemainingSeconds).toBeCloseTo(0.05)
+
+    const after = stepSimulation(next, 0.1)
+    expect(after.units[0].curseRemainingSeconds).toBe(0)
+  })
+
+  it('un enemigo Area daña a varias unidades del jugador agrupadas, igual que en US1 (specs/008 US4 — simetría)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Enemy',
+      x: 0,
+      width: 16,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'Area',
+      attackRange: 0,
+      areaRadius: 30,
+    })
+    const primary = makeUnit({ instanceId: 'primary', team: 'Player', x: 10, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const splashA = makeUnit({ instanceId: 'splash-a', team: 'Player', x: 30, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const splashB = makeUnit({ instanceId: 'splash-b', team: 'Player', x: 50, width: 16, hp: 50, attackCooldownRemaining: 5 })
+
+    const next = stepSimulation(makeState({ units: [attacker, primary, splashA, splashB] }), 0.1)
+
+    expect(next.units.find((u) => u.instanceId === 'primary')!.hp).toBe(40)
+    expect(next.units.find((u) => u.instanceId === 'splash-a')!.hp).toBe(40)
+    expect(next.units.find((u) => u.instanceId === 'splash-b')!.hp).toBe(40)
+  })
 })

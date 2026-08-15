@@ -39,11 +39,16 @@ function EnemyBaseReadout() {
 
 function DeployBar() {
   const ownedCatsById = useMetaStore((state) => state.ownedCats)
+  const activeTeamCatIds = useMetaStore((state) => state.activeTeamCatIds)
   const energyCurrent = useGameStore((state) => state.energy.current)
   const deployCooldowns = useGameStore((state) => state.deployCooldowns)
   const deployUnit = useGameStore((state) => state.deployUnit)
 
-  const ownedCats = CATS.filter((cat) => cat.id in ownedCatsById)
+  const deployableCats = CATS.filter((cat) => cat.id in ownedCatsById)
+  const ownedCats =
+    activeTeamCatIds.length > 0
+      ? deployableCats.filter((cat) => activeTeamCatIds.includes(cat.id))
+      : deployableCats
 
   return (
     <div className="deploy-bar">
