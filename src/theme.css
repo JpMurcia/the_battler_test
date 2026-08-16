@@ -1,0 +1,423 @@
+/*
+ * Catálogo de tema "Cyber-Modern" — specs/021-reskin-cyber-modern.
+ * Fuente única de verdad para color/tipografía/radio (data-model.md § ThemeTokens).
+ * Ninguna pantalla debe fijar un color/radio/tipografía por valor literal fuera de este archivo.
+ */
+
+:root {
+  --bc-bg: #020308;
+  --bc-surface: rgba(20, 22, 30, 0.9);
+  --bc-border: rgba(255, 255, 255, 0.14);
+
+  --bc-text: #f4f6fb;
+  --bc-text-dim: #94a3b8;
+  --bc-text-faint: #5b6577;
+
+  --bc-cyan: #22d3ee;
+  --bc-orange: #fb923c;
+  --bc-purple: #a855f7;
+  --bc-gold: #facc15;
+  --bc-red: #ef4444;
+  --bc-green: #4ade80;
+  --bc-pink: #f472b6;
+
+  --bc-gradient-primary-start: #fb923c;
+  --bc-gradient-primary-end: #ef4444;
+  --bc-gradient-primary: linear-gradient(135deg, var(--bc-gradient-primary-start), var(--bc-gradient-primary-end));
+
+  --bc-radius-sm: 10px;
+  --bc-radius-md: 14px;
+  --bc-radius-lg: 18px;
+
+  --bc-font-heading: 'Orbitron', sans-serif;
+  --bc-font-body: 'Inter', sans-serif;
+}
+
+/* — fundación de pantalla — */
+.screen {
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  padding: 28px 20px 40px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(34, 211, 238, 0.12), transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(251, 146, 60, 0.12), transparent 45%),
+    radial-gradient(circle at 60% 90%, rgba(168, 85, 247, 0.12), transparent 45%),
+    var(--bc-bg);
+  color: var(--bc-text);
+  font-family: var(--bc-font-body);
+}
+
+.screen h1,
+.screen h2,
+.screen h3 {
+  font-family: var(--bc-font-heading);
+  font-weight: 800;
+  color: var(--bc-text);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.screen h1 {
+  font-size: 26px;
+}
+
+.screen h1.heading-hero {
+  font-size: 42px;
+}
+
+.screen h2 {
+  font-size: 17px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--bc-text-dim);
+}
+
+.screen-kicker {
+  font: 700 11px/1 var(--bc-font-heading);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bc-orange);
+}
+
+.screen-subtitle {
+  font-size: 14px;
+  color: var(--bc-text-dim);
+  margin: 0;
+}
+
+/* — panel de cristal — */
+.glass-panel {
+  background: var(--bc-surface);
+  border: 1px solid var(--bc-border);
+  border-radius: var(--bc-radius-md);
+  padding: 18px;
+  /* fallback si el navegador no soporta backdrop-filter: el fondo semitransparente ya es legible por sí solo */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* — botones — */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: var(--bc-font-heading);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--bc-text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--bc-border);
+  border-radius: var(--bc-radius-sm);
+  padding: 10px 16px;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--bc-cyan);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--bc-gradient-primary);
+  border-color: transparent;
+  color: #050505;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  background: var(--bc-gradient-primary);
+}
+
+.btn-outline {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--bc-cyan);
+  color: var(--bc-cyan);
+}
+
+.btn-outline--cyan {
+  border-color: var(--bc-cyan);
+  color: var(--bc-cyan);
+}
+
+.btn-outline--orange {
+  border-color: var(--bc-orange);
+  color: var(--bc-orange);
+}
+
+.btn-outline--purple {
+  border-color: var(--bc-purple);
+  color: var(--bc-purple);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--bc-text-dim);
+  padding: 8px 10px;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--bc-text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.btn-block {
+  width: 100%;
+  justify-content: center;
+}
+
+/* — HUD — */
+.hud-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--bc-border);
+  border-radius: var(--bc-radius-sm);
+  padding: 6px 10px;
+  font: 700 12px var(--bc-font-heading);
+  color: var(--bc-text);
+}
+
+/* — barras de progreso — */
+.progress-bar {
+  height: 9px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--bc-cyan), #0891b2);
+  transition: width 0.2s ease;
+}
+
+.progress-bar__fill--gold {
+  background: linear-gradient(90deg, var(--bc-gold), #f59e0b);
+}
+
+.progress-bar__fill--danger {
+  background: linear-gradient(90deg, var(--bc-purple), var(--bc-red));
+}
+
+/* — listas de tarjetas (reemplaza <ul>/<li> sin estilo) — */
+.list-card {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bc-surface);
+  border: 1px solid var(--bc-border);
+  border-radius: var(--bc-radius-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.list-card__row--locked {
+  opacity: 0.5;
+}
+
+.list-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.list-card__title {
+  font-weight: 600;
+  color: var(--bc-text);
+}
+
+.list-card__meta {
+  font-size: 12px;
+  color: var(--bc-text-dim);
+}
+
+/* — etiquetas — */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 700 10px var(--bc-font-heading);
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  color: var(--bc-text-dim);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* — color por rareza (data-model.md § RarityColorMap) — */
+.tag--normal {
+  color: var(--bc-text-dim);
+}
+
+.tag--especial {
+  color: var(--bc-green);
+}
+
+.tag--raro {
+  color: var(--bc-cyan);
+}
+
+.tag--superraro {
+  color: var(--bc-purple);
+}
+
+.tag--megarraro {
+  color: var(--bc-gold);
+}
+
+.tag--legendario {
+  color: var(--bc-orange);
+}
+
+.tag--colaboracion {
+  color: var(--bc-pink);
+}
+
+/* — campos de formulario (Ajustes) — */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font: 600 12px var(--bc-font-body);
+  color: var(--bc-text-dim);
+}
+
+.field input[type='range'] {
+  accent-color: var(--bc-cyan);
+}
+
+.field select {
+  font: 500 13px var(--bc-font-body);
+  color: var(--bc-text);
+  background: var(--bc-surface);
+  border: 1px solid var(--bc-border);
+  border-radius: var(--bc-radius-sm);
+  padding: 8px 10px;
+}
+
+.field select:focus-visible,
+.field input:focus-visible {
+  outline: 2px solid var(--bc-cyan);
+  outline-offset: 1px;
+}
+
+/* — pantalla de Batalla (screens/BattleScreen.tsx, game/BattleStage.tsx) — */
+.battle-screen {
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--bc-bg);
+  color: var(--bc-text);
+  font-family: var(--bc-font-body);
+}
+
+.battle-overlay {
+  justify-content: space-between;
+  padding: 6px 4px;
+}
+
+.battle-stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  border-radius: var(--bc-radius-md);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(34, 211, 238, 0.2), transparent 42%),
+    radial-gradient(circle at 88% 10%, rgba(251, 146, 60, 0.2), transparent 45%),
+    radial-gradient(circle at 55% 100%, rgba(168, 85, 247, 0.18), transparent 45%),
+    #05070d;
+}
+
+.battle-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.deploy-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* — animaciones cosméticas — */
+@keyframes bc-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.55), 0 12px 34px rgba(239, 68, 68, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(251, 146, 60, 0), 0 12px 34px rgba(239, 68, 68, 0.35);
+  }
+}
+
+.anim-pulse {
+  animation: bc-pulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-pulse {
+    animation: none;
+  }
+}

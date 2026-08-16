@@ -1,3 +1,4 @@
+import { ArrowLeft, Check } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from '../i18n/useTranslation'
 import type { Locale } from '../i18n/translations'
@@ -31,46 +32,62 @@ export function SettingsScreen({ onNavigate }: SettingsScreenProps) {
   }
 
   return (
-    <main>
+    <main className="screen">
       <h1>{t('settings.heading')}</h1>
 
-      <label htmlFor="musicVolume">{t('settings.musicVolume')}</label>
-      <input
-        id="musicVolume"
-        type="range"
-        min={0}
-        max={1}
-        step={0.1}
-        value={draft.musicVolume}
-        onChange={(e) => setDraft({ ...draft, musicVolume: Number(e.target.value) })}
-      />
+      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="field">
+          <label htmlFor="musicVolume">{t('settings.musicVolume')}</label>
+          <input
+            id="musicVolume"
+            type="range"
+            min={0}
+            max={1}
+            step={0.1}
+            value={draft.musicVolume}
+            onChange={(e) => setDraft({ ...draft, musicVolume: Number(e.target.value) })}
+          />
+        </div>
 
-      <label htmlFor="sfxVolume">{t('settings.sfxVolume')}</label>
-      <input
-        id="sfxVolume"
-        type="range"
-        min={0}
-        max={1}
-        step={0.1}
-        value={draft.sfxVolume}
-        onChange={(e) => setDraft({ ...draft, sfxVolume: Number(e.target.value) })}
-      />
+        <div className="field">
+          <label htmlFor="sfxVolume">{t('settings.sfxVolume')}</label>
+          <input
+            id="sfxVolume"
+            type="range"
+            min={0}
+            max={1}
+            step={0.1}
+            value={draft.sfxVolume}
+            onChange={(e) => setDraft({ ...draft, sfxVolume: Number(e.target.value) })}
+          />
+        </div>
 
-      <label htmlFor="language">{t('settings.language')}</label>
-      <select
-        id="language"
-        value={draft.language}
-        onChange={(e) => setDraft({ ...draft, language: e.target.value })}
-      >
-        {LOCALES.map((locale) => (
-          <option key={locale.value} value={locale.value}>
-            {locale.label}
-          </option>
-        ))}
-      </select>
+        <div className="field">
+          <label htmlFor="language">{t('settings.language')}</label>
+          <select
+            id="language"
+            value={draft.language}
+            onChange={(e) => setDraft({ ...draft, language: e.target.value })}
+          >
+            {LOCALES.map((locale) => (
+              <option key={locale.value} value={locale.value}>
+                {locale.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-      <button onClick={handleApply}>{t('settings.apply')}</button>
-      <button onClick={handleBack}>{t('settings.back')}</button>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button className="btn btn-primary" onClick={handleApply}>
+          <Check size={16} aria-hidden="true" />
+          {t('settings.apply')}
+        </button>
+        <button className="btn btn-ghost" onClick={handleBack}>
+          <ArrowLeft size={16} aria-hidden="true" />
+          {t('settings.back')}
+        </button>
+      </div>
     </main>
   )
 }

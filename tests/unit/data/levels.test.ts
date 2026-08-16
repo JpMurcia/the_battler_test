@@ -13,4 +13,12 @@ describe('LEVELS difficulty por región', () => {
       lastDifficultyByRegion.set(level.region, level.difficulty)
     }
   })
+
+  it('specs/011-nivel-2-hacia-el-futuro (T007): level-2.difficulty >= level-1.difficulty (misma región)', () => {
+    const level1 = LEVELS.find((candidate) => candidate.id === 'level-1')!
+    const level2 = LEVELS.find((candidate) => candidate.id === 'level-2')!
+
+    expect(level2.region).toBe(level1.region)
+    expect(level2.difficulty).toBeGreaterThanOrEqual(level1.difficulty)
+  })
 })

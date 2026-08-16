@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BattleScreen } from './screens/BattleScreen'
+import { CatGuideScreen } from './screens/CatGuideScreen'
+import { EnemyGuideScreen } from './screens/EnemyGuideScreen'
 import { GachaScreen } from './screens/GachaScreen'
 import { LevelSelectScreen } from './screens/LevelSelectScreen'
 import { MainMenuScreen } from './screens/MainMenuScreen'
@@ -7,6 +9,7 @@ import { ResultScreen } from './screens/ResultScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { TeamScreen } from './screens/TeamScreen'
 import { TitleScreen } from './screens/TitleScreen'
+import { TreasureMenuScreen } from './screens/TreasureMenuScreen'
 import { UpgradeScreen } from './screens/UpgradeScreen'
 import { useMetaStore } from './state/useMetaStore'
 import type { Screen } from './types/screen'
@@ -43,6 +46,12 @@ function App() {
       return <BattleScreen onNavigate={setScreen} />
     case 'Result':
       return <ResultScreen onNavigate={setScreen} />
+    case 'CatGuide':
+      return <CatGuideScreen onNavigate={setScreen} />
+    case 'EnemyGuide':
+      return <EnemyGuideScreen onNavigate={setScreen} />
+    case 'TreasureMenu':
+      return <TreasureMenuScreen onNavigate={setScreen} />
   }
 }
 

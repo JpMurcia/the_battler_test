@@ -38,7 +38,7 @@
 - [X] T004 [US1] `src/game/UnitSprite.tsx`: dibuja el cuerpo (`Graphics`) una única vez por unidad usando `getVisualProfile(cat)` (T001) — reemplaza el `g.rect(...).fill(...)` fijo actual (depende de T001)
 - [X] T005 [US1] `src/game/UnitSprite.tsx`: `useTick` propio (de `@pixi/react`) que en cada frame lee la unidad fresca desde `useGameStore.getState().units` por `instanceId` y muta, vía `ref` al objeto Pixi, su posición y su transform de animación (bob de idle o pulso de ataque según `AnimationState`) — nunca redibuja el `Graphics` (research.md Decisión 2/3) (depende de T004, T002)
 - [X] T006 [US1] `src/game/BattleStage.tsx` (`BattleField`): deja de llamar a `setUnits` en cada tick; recalcula el conjunto de `instanceId`s activos y solo dispara re-render (mount/unmount de `UnitSprite`) cuando esa composición cambia — nace o muere una unidad (research.md Decisión 3) (depende de T005)
-- [ ] T007 [US1] Verificación manual en navegador: `npm run dev`, recorrer quickstart.md pasos 1-4 (animación de idle continua sin instantes estáticos, transición a ataque reconocible y sincronizada con la cadencia de daño, retorno a idle al quedar libre)
+- [X] T007 [US1] Verificación manual en navegador: `npm run dev`, recorrer quickstart.md pasos 1-4 (animación de idle continua sin instantes estáticos, transición a ataque reconocible y sincronizada con la cadencia de daño, retorno a idle al quedar libre)
 
 **Checkpoint**: cada unidad activa se ve viva en todo momento — cierra el requisito mínimo de Constitución § III. Sin diferenciación por tipo de gato ni señal de muerte todavía (eso es US2/US3).
 
@@ -52,8 +52,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T008 [P] [US2] `src/game/UnitSprite.tsx`: aplica `bodyWidth`/`bodyHeight`/`cornerRadius`/`accentColor` de `VisualProfile` (T001) al dibujar el cuerpo (T004), de forma que los 4 tipos de gato produzcan siluetas y acentos de color distinguibles entre sí (research.md Decisión 5) (depende de T001, T004)
-- [ ] T009 [US2] Verificación manual en navegador: quickstart.md paso 5 (dos tipos de gato desplegados a la vez se distinguen a simple vista, sin abrir ningún panel de información)
+- [X] T008 [P] [US2] `src/game/UnitSprite.tsx`: aplica `bodyWidth`/`bodyHeight`/`cornerRadius`/`accentColor` de `VisualProfile` (T001) al dibujar el cuerpo (T004), de forma que los 4 tipos de gato produzcan siluetas y acentos de color distinguibles entre sí (research.md Decisión 5) (depende de T001, T004)
+- [X] T009 [US2] Verificación manual en navegador: quickstart.md paso 5 (dos tipos de gato desplegados a la vez se distinguen a simple vista, sin abrir ningún panel de información)
 
 **Checkpoint**: US1 + US2 funcionan juntas — unidades animadas y visualmente distinguibles por tipo.
 
@@ -67,9 +67,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] `src/game/BattleStage.tsx` (`BattleField`): registro efímero de `DeathEcho` — compara, tick a tick y solo mientras `status === 'InProgress'`, el conjunto de `instanceId`s del tick anterior contra el actual; cualquier `instanceId` que desaparece por esa vía (no por `reset()`) se añade al registro con su última posición/equipo/tipo de gato conocidos (data-model.md § DeathEcho, research.md Decisión 4) (depende de T006)
-- [ ] T011 [US3] `src/game/BattleStage.tsx`: renderiza y anima cada `DeathEcho` activo (escala/alpha decrecientes según `remainingSeconds`) y lo elimina del registro al llegar a 0 (depende de T010)
-- [ ] T012 [US3] Verificación manual en navegador: quickstart.md paso 6 (señal visual de derrota antes de la desaparición) y paso 8 (sin ecos residuales al salir de la batalla y volver a entrar)
+- [X] T010 [US3] `src/game/BattleStage.tsx` (`BattleField`): registro efímero de `DeathEcho` — compara, tick a tick y solo mientras `status === 'InProgress'`, el conjunto de `instanceId`s del tick anterior contra el actual; cualquier `instanceId` que desaparece por esa vía (no por `reset()`) se añade al registro con su última posición/equipo/tipo de gato conocidos (data-model.md § DeathEcho, research.md Decisión 4) (depende de T006)
+- [X] T011 [US3] `src/game/BattleStage.tsx`: renderiza y anima cada `DeathEcho` activo (escala/alpha decrecientes según `remainingSeconds`) y lo elimina del registro al llegar a 0 (depende de T010)
+- [X] T012 [US3] Verificación manual en navegador: quickstart.md paso 6 (señal visual de derrota antes de la desaparición) y paso 8 (sin ecos residuales al salir de la batalla y volver a entrar)
 
 **Checkpoint**: las tres historias de usuario funcionan de forma independiente y en conjunto — la spec está completa.
 
@@ -77,10 +77,10 @@
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T013 [P] `npx tsc -b` limpio sobre todo el proyecto
-- [ ] T014 [P] `npm run test` — suite completa (existente de `src/engine/` sin ningún cambio + T003) en verde
-- [ ] T015 Verificación de rendimiento: quickstart.md paso 7 (10+ unidades animadas activas simultáneamente, fluido sin tirones perceptibles — sin regresión sobre `specs/002-motor-de-combate/spec.md` SC-003)
-- [ ] T016 Recorrido final de `quickstart.md` de punta a punta (pasos 1-8 en una sola sesión de navegador)
+- [X] T013 [P] `npx tsc -b` limpio sobre todo el proyecto
+- [X] T014 [P] `npm run test` — suite completa (existente de `src/engine/` sin ningún cambio + T003) en verde
+- [X] T015 Verificación de rendimiento: quickstart.md paso 7 (10+ unidades animadas activas simultáneamente, fluido sin tirones perceptibles — sin regresión sobre `specs/002-motor-de-combate/spec.md` SC-003)
+- [X] T016 Recorrido final de `quickstart.md` de punta a punta (pasos 1-8 en una sola sesión de navegador)
 
 ---
 

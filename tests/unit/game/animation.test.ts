@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CATS } from '../../../src/data/cats'
 import {
+  ANIMATION_STATE_TO_SPRITE_FOLDER,
   getAnimationPose,
   getAnimationState,
   getDeathEchoPose,
@@ -46,6 +47,22 @@ describe('getVisualProfile', () => {
 
     expect(getVisualProfile(cat).attackPulseDurationSeconds).toBe(cat.attackIntervalSeconds)
   })
+
+  it('specs/010-evolucion-de-gatos: acepta stats efectivos evolucionados (no solo un Cat completo) y produce un perfil distinto al de la Forma Base', () => {
+    const cat = CATS.find((candidate) => candidate.id === 'tank-cat')!
+    const baseProfile = getVisualProfile(cat)
+
+    const trueFormProfile = getVisualProfile({
+      width: cat.width,
+      hp: cat.hp * 2,
+      speed: cat.speed,
+      damage: cat.damage * 2,
+      attackIntervalSeconds: cat.attackIntervalSeconds,
+    })
+
+    expect(trueFormProfile.bodyHeight).toBeGreaterThan(baseProfile.bodyHeight)
+    expect(trueFormProfile.accentColor).not.toBe(baseProfile.accentColor)
+  })
 })
 
 describe('getAnimationState', () => {
@@ -55,6 +72,16 @@ describe('getAnimationState', () => {
 
   it('mapea Engaged a Attacking', () => {
     expect(getAnimationState('Engaged')).toBe('Attacking')
+  })
+})
+
+describe('ANIMATION_STATE_TO_SPRITE_FOLDER (specs/021-reskin-cyber-modern)', () => {
+  it('mapea Idle a la carpeta idle', () => {
+    expect(ANIMATION_STATE_TO_SPRITE_FOLDER.Idle).toBe('idle')
+  })
+
+  it('mapea Attacking a la carpeta attack', () => {
+    expect(ANIMATION_STATE_TO_SPRITE_FOLDER.Attacking).toBe('attack')
   })
 })
 

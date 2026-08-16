@@ -54,9 +54,11 @@ function accentColorFromDamage(damage: number): number {
 /**
  * Deriva la identidad visual de un tipo de gato exclusivamente de sus stats ya existentes
  * (width/hp/speed/damage/attackIntervalSeconds) — sin campos nuevos en src/data/cats.ts
- * (specs/003-identidad-visual-animada/research.md Decisión 1).
+ * (specs/003-identidad-visual-animada/research.md Decisión 1). Acepta cualquier objeto con
+ * esos mismos campos (p. ej. los stats efectivos ya evolucionados de un BattleUnit —
+ * specs/010-evolucion-de-gatos/plan.md § Key Design Decision 2), no solo un Cat completo.
  */
-export function getVisualProfile(cat: Cat): VisualProfile {
+export function getVisualProfile(cat: Pick<Cat, 'width' | 'hp' | 'speed' | 'damage' | 'attackIntervalSeconds'>): VisualProfile {
   return {
     bodyWidth: cat.width,
     bodyHeight: clamp(BODY_HEIGHT_BASE + cat.hp * BODY_HEIGHT_PER_HP, BODY_HEIGHT_BASE, BODY_HEIGHT_MAX),
@@ -70,6 +72,16 @@ export function getVisualProfile(cat: Cat): VisualProfile {
 /** Mapeo de solo lectura desde BattleUnit.state — 'Dead' nunca llega aquí porque esas unidades ya no están en useGameStore.getState().units. */
 export function getAnimationState(unitState: BattleUnit['state']): AnimationState {
   return unitState === 'Engaged' ? 'Attacking' : 'Idle'
+}
+
+/**
+ * specs/021-reskin-cyber-modern (data-model.md § AnimationState → carpeta de sprite). Aditivo — no
+ * cambia getAnimationState/getAnimationPose. Decide qué arreglo de SpriteAnimationSet (src/game/spriteAssets.ts)
+ * corresponde a cada AnimationState.
+ */
+export const ANIMATION_STATE_TO_SPRITE_FOLDER: Record<AnimationState, 'idle' | 'attack'> = {
+  Idle: 'idle',
+  Attacking: 'attack',
 }
 
 /**

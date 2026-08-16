@@ -16,8 +16,8 @@ beforeEach(() => {
   })
   useMetaStore.setState({
     ownedCats: {
-      'basic-cat': { level: 1, experienceInvested: 0 },
-      'tank-cat': { level: 1, experienceInvested: 0 },
+      'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+      'tank-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
     },
     activeTeamCatIds: [],
   })
@@ -38,5 +38,23 @@ describe('BattleScreen DeployBar', () => {
 
     expect(screen.getByRole('button', { name: /Gato Básico/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Gato Tanque/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('BattleScreen — indicador de barrera de jefe (specs/020-barrera-de-base)', () => {
+  it('FR-008: con bossBarrierActive true, el indicador aparece', () => {
+    useGameStore.setState({ bossBarrierActive: true, enemyBase: { hp: 100, maxHp: 100 } })
+
+    render(<BattleScreen onNavigate={noop} />)
+
+    expect(screen.getByText(/🛡/)).toBeInTheDocument()
+  })
+
+  it('con bossBarrierActive false, el indicador no aparece', () => {
+    useGameStore.setState({ bossBarrierActive: false, enemyBase: { hp: 100, maxHp: 100 } })
+
+    render(<BattleScreen onNavigate={noop} />)
+
+    expect(screen.queryByText(/🛡/)).not.toBeInTheDocument()
   })
 })

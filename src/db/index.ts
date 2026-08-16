@@ -13,6 +13,49 @@ export interface OwnedCatRow {
   catId: string // clave primaria
   level: number
   experienceInvested: number
+  /** specs/010-evolucion-de-gatos. Ausente en filas viejas = 'Base' al leer (sin migración). */
+  evolutionStage?: 'Base' | 'Second' | 'True'
+}
+
+export interface EvolutionItemsRow {
+  id: 1 // fila única (singleton)
+  counts: Record<string, number>
+}
+
+/** specs/012-saga-imperio-de-los-gatos. */
+export interface TreasuresRow {
+  id: 1 // fila única (singleton)
+  obtainedIds: string[]
+}
+
+/** specs/012-saga-imperio-de-los-gatos. */
+export interface ArcProgressRow {
+  id: 1 // fila única (singleton)
+  grantedRewardArcIds: string[]
+}
+
+/** specs/013-escalado-capitulos-sets-tesoros. */
+export interface TreasureSetBonusesRow {
+  id: 1 // fila única (singleton)
+  grantedSetIds: string[]
+}
+
+/** specs/017-objetos-de-batalla. */
+export interface BattleItemsRow {
+  id: 1 // fila única (singleton)
+  counts: Record<string, number>
+}
+
+/** specs/018-bibliotecas-consulta. */
+export interface EncounteredEnemiesRow {
+  id: 1 // fila única (singleton)
+  catIds: string[]
+}
+
+/** specs/019-rango-de-usuario (FR-007). Monótono — un umbral reclamado nunca se retira. */
+export interface UserRankRow {
+  id: 1 // fila única (singleton)
+  claimedThresholds: number[]
 }
 
 export interface LevelProgressRow {
@@ -47,6 +90,13 @@ class BattleCatsDB extends Dexie {
   settings!: Table<SettingsRow, number>
   teamFormation!: Table<TeamFormationRow, number>
   missionEnergy!: Table<MissionEnergyRow, number>
+  evolutionItems!: Table<EvolutionItemsRow, number>
+  treasures!: Table<TreasuresRow, number>
+  arcProgress!: Table<ArcProgressRow, number>
+  treasureSetBonuses!: Table<TreasureSetBonusesRow, number>
+  battleItems!: Table<BattleItemsRow, number>
+  encounteredEnemies!: Table<EncounteredEnemiesRow, number>
+  userRank!: Table<UserRankRow, number>
 
   constructor() {
     super('BattleCatsDB')
@@ -61,6 +111,25 @@ class BattleCatsDB extends Dexie {
     })
     this.version(3).stores({
       missionEnergy: 'id',
+    })
+    this.version(4).stores({
+      evolutionItems: 'id',
+    })
+    this.version(5).stores({
+      treasures: 'id',
+      arcProgress: 'id',
+    })
+    this.version(6).stores({
+      treasureSetBonuses: 'id',
+    })
+    this.version(7).stores({
+      battleItems: 'id',
+    })
+    this.version(8).stores({
+      encounteredEnemies: 'id',
+    })
+    this.version(9).stores({
+      userRank: 'id',
     })
   }
 }
