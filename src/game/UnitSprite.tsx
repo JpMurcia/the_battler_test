@@ -5,21 +5,17 @@ import { CATS } from '../data/cats'
 import { SEED_ENEMIES, SEED_UNITS } from '../data/seedData'
 import type { BattleUnit } from '../engine/types'
 import { getOrCreateUnitTexture } from './graphics/unitFactory'
+import { computeCyberBodyLayout, drawCyberBodyBase, drawCyberThruster, drawCyberVisor, getGlowPulseAlpha } from './graphics/cyberUnitBody'
+import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
 import { useGameStore } from '../state/useGameStore'
 import { ANIMATION_STATE_TO_SPRITE_FOLDER, getAnimationPose, getAnimationState, getVisualProfile } from './animation'
 import { loadSpriteTextures, resolveSpriteAnimationSet } from './spriteAssets'
 
 extend({ Container, Graphics, AnimatedSprite, Sprite })
 
-// specs/021-reskin-cyber-modern (research.md Decisión 4): colores de equipo del catálogo de tema (cian/rojo).
-const TEAM_COLOR: Record<BattleUnit['team'], number> = {
-  Player: 0x22d3ee, // cian
-  Enemy: 0xef4444, // rojo
-}
-
-const GLOW_RING_COUNT = 3
-const GLOW_RING_STEP_PX = 4
 const SPRITE_ANIMATION_SPEED = 0.3
+const VISOR_PULSE_HZ = 1.8
+const THRUSTER_PULSE_HZ = 6
 
 interface UnitSpriteProps {
   instanceId: string
@@ -106,35 +102,45 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     }
   }, [animationSet])
 
+  // specs/021-reskin-cyber-modern (rediseño Cyber-Modern): geometría del cuerpo placeholder derivada
+  // una sola vez del profile — compartida entre las 3 capas Graphics de abajo (cuerpo, visor, propulsor).
+  const bodyLayout = useMemo(() => (profile ? computeCyberBodyLayout(profile) : null), [profile])
+
+  const visorRef = useRef<Graphics>(null)
+  const thrusterRef = useRef<Graphics>(null)
+
   const drawBody = useCallback(
     (g: Graphics) => {
-      if (!profile) return
-      g.clear()
-      // Anillo de resplandor por equipo — trazos concéntricos de alpha decreciente, sin paquete de
-      // filtros (specs/021-reskin-cyber-modern research.md Decisión 4).
-      for (let ring = GLOW_RING_COUNT; ring >= 1; ring -= 1) {
-        const expand = ring * GLOW_RING_STEP_PX
-        g.roundRect(
-          -expand,
-          -expand,
-          profile.bodyWidth + expand * 2,
-          profile.bodyHeight + expand * 2,
-          profile.cornerRadius + expand,
-        ).stroke({ width: 2, color: TEAM_COLOR[team], alpha: 0.16 / ring })
-      }
-      g.roundRect(0, 0, profile.bodyWidth, profile.bodyHeight, profile.cornerRadius)
-        .fill(TEAM_COLOR[team])
-        .roundRect(0, profile.bodyHeight * 0.62, profile.bodyWidth, profile.bodyHeight * 0.38, profile.cornerRadius)
-        .fill(profile.accentColor)
+      if (!profile || !bodyLayout) return
+      drawCyberBodyBase(g, bodyLayout, team, profile.accentColor)
     },
-    [profile, team],
+    [profile, bodyLayout, team],
+  )
+
+  // Geometría fija dibujada una sola vez — el brillo/parpadeo se anima después por `.alpha` en useTick,
+  // nunca redibujando (Constitución § VI: nada se recalcula por frame más allá de transforms/alpha).
+  const drawVisorLayer = useCallback(
+    (g: Graphics) => {
+      if (!bodyLayout) return
+      drawCyberVisor(g, bodyLayout, team)
+    },
+    [bodyLayout, team],
+  )
+
+  const drawThrusterLayer = useCallback(
+    (g: Graphics) => {
+      if (!bodyLayout) return
+      drawCyberThruster(g, bodyLayout, team)
+    },
+    [bodyLayout, team],
   )
 
   useTick(({ deltaMS }) => {
     const container = containerRef.current
     if (!profile || !container) return
 
-    const unit = useGameStore.getState().units.find((candidate) => candidate.instanceId === instanceId)
+    const store = useGameStore.getState()
+    const unit = store.units.find((candidate) => candidate.instanceId === instanceId)
     if (!unit) return
 
     clockRef.current += deltaMS / 1000
@@ -142,10 +148,26 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     const animationState = getAnimationState(unit.state)
     const pose = getAnimationPose(animationState, profile, clockRef.current, unit.attackCooldownRemaining)
 
-    container.x = unit.x
-    container.y = pose.bobOffsetY
+    // specs/021-reskin-cyber-modern: unit.x vive en coordenadas del carril de simulación
+    // (src/engine/simulation.ts, típicamente [0, laneLength]) — se mapea a píxeles de pantalla
+    // recién aquí, en la capa de render, nunca en el motor (Constitución § IV/VI).
+    const laneX = getLaneScreenX(unit.x, store.laneLength, app.screen.width)
+    const laneY = getLaneScreenY(app.screen.height)
+
+    container.x = laneX
+    container.y = laneY + pose.bobOffsetY
     container.scale.set(pose.scaleX, pose.scaleY)
     container.rotation = pose.rotationRadians
+
+    // "Ojos animados": pulso de brillo neón continuo en el visor holográfico — mismo Graphics
+    // estático de siempre, solo se modula alpha (specs/021 punto "detalles neón/ojos animados").
+    if (visorRef.current) visorRef.current.alpha = getGlowPulseAlpha(clockRef.current, VISOR_PULSE_HZ, 0.55, 1)
+    // Propulsor: parpadeo rápido, más brillante mientras la unidad avanza ('Moving') que mientras
+    // combate detenida ('Engaged') — refuerza la lectura de "en movimiento" (specs/021 "propulsores").
+    if (thrusterRef.current) {
+      const [min, max] = unit.state === 'Moving' ? [0.6, 1] : [0.25, 0.55]
+      thrusterRef.current.alpha = getGlowPulseAlpha(clockRef.current, THRUSTER_PULSE_HZ, min, max)
+    }
 
     // specs/021-reskin-cyber-modern (US4): intercambio de arreglo de texturas por mutación directa,
     // solo en las transiciones de estado — nunca redisparado por prop/re-render (research.md Decisión 2).
@@ -189,7 +211,11 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
           scale={{ x: team === 'Enemy' ? -1 : 1, y: 1 }}
         />
       ) : (
-        <pixiGraphics draw={drawBody} />
+        <>
+          <pixiGraphics draw={drawBody} />
+          <pixiGraphics ref={visorRef} draw={drawVisorLayer} />
+          <pixiGraphics ref={thrusterRef} draw={drawThrusterLayer} />
+        </>
       )}
     </pixiContainer>
   )

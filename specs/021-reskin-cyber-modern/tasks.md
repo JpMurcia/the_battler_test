@@ -138,6 +138,23 @@ Proyecto único (`src/`, `public/`, `tests/`, `scripts/` en la raíz del repo) �
 
 ---
 
+## Phase 8: Profundización de escenario de Batalla (post-checkpoint, sesión posterior)
+
+**Purpose**: Extiende el escenario Pixi de la Historia 3/4 más allá del alcance mínimo original — sustituye las barras de HP planas de base por torres, añade feedback visual de impacto, y enriquece el cuerpo procedural placeholder. Ninguna tarea cambia una regla de combate ni una firma de `src/engine/*` (Constitución § VI).
+
+- [X] T037 [P] Crear `src/game/graphics/layout.ts`: `getLaneScreenX`/`getLaneScreenY`, conversión compartida de coordenada de carril de simulación a coordenada de pantalla Pixi — extraída para que `UnitSprite`, `DeathEchoSprite`, `BaseTower` e `ImpactEffect` posicionen sus contenedores de forma consistente
+- [X] T038 [P] Crear `src/game/graphics/baseTower.ts` (layout/draw puros) + `src/game/BaseTower.tsx`: sustituye `PlayerBaseReadout`/`EnemyBaseReadout` planos por una "Torre Gato Cyber" en capas dentro del escenario Pixi (plataforma+cuerpo, torreta que rota, barra de HP con gradiente neón redibujada solo por umbral de cambio, overlay de escudo del jefe vinculado — `bossBarrierActive`, `specs/020-barrera-de-base` FR-008) — lee `useGameStore` vía `useTick` propio, mismo patrón sin re-render de React que `UnitSprite`
+- [X] T039 [P] Crear `src/game/graphics/cyberEffects.ts` (poses puras) + `src/game/ImpactEffect.tsx`: efecto de impacto efímero (onda de choque expansiva + chispas radiales + texto de daño flotante) disparado desde `BattleField` (`BattleStage.tsx`) al detectar una caída de hp tick-a-tick en una unidad o base, con auto-retiro vía `onExpire` (mismo patrón que `DeathEchoSprite`)
+- [X] T040 [P] Crear `src/game/graphics/cyberUnitBody.ts` (layout/draw puros) y adoptarlo en `UnitSprite.tsx`/`DeathEchoSprite.tsx`: unifica el cuerpo `Graphics` placeholder (anillo de resplandor con pulso, visor, propulsor) en un solo módulo compartido — `DeathEchoSprite` usa la variante `dimmed` (sin visor/propulsor, gradiente desaturado) para distinguir visualmente un casco inerte de una unidad activa
+- [X] T041 [P] Extender `drawSeedUnit` (`src/game/graphics/unitFactory.ts`): sombra vectorial, placas de armadura metálica, visor holográfico y contorno neón sobre el cuerpo procedural de cada unidad semilla (`FR-005`)
+- [X] T042 Extender `LaneBackground` (`src/game/BattleStage.tsx`) con rejilla de suelo en perspectiva y línea de horizonte neón a la altura real del carril (`getLaneScreenY`), y guard `app?.renderer` explícito antes de leer `app.screen` (evita el crash de montaje en el mismo commit inicial que `<Application>`)
+- [X] T043 [P] Tests unitarios de las funciones puras nuevas: `tests/unit/game/layout.test.ts`, `tests/unit/game/baseTower.test.ts`, `tests/unit/game/cyberEffects.test.ts`, `tests/unit/game/cyberUnitBody.test.ts`
+- [X] T044 Ejecutar `npx tsc -b`, `npm test` (428/428) y `npm run lint` como pase de regresión sobre la Fase 8 completa
+
+**Checkpoint**: Escenario de Batalla con torres de base, feedback de impacto y unidades placeholder enriquecidas — pendiente el mismo recorrido visual en vivo que T036 (bloqueo de composición del panel Browser, ver Notas de specs/010 T016 y specs/012 T036).
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

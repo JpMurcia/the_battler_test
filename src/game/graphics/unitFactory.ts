@@ -8,6 +8,20 @@ const EAR_SIZE_RATIO = 0.28
 const EYE_RADIUS_RATIO = 0.08
 const FACE_COLOR = 0x1f2937
 
+/** Aclara un color 0xRRGGBB sumando `amount` a cada canal (recorte a 255) — usado para acentos neón derivados de `primaryColor`. */
+function lighten(color: number, amount: number): number {
+  const r = Math.min(255, ((color >> 16) & 0xff) + amount)
+  const g = Math.min(255, ((color >> 8) & 0xff) + amount)
+  const b = Math.min(255, (color & 0xff) + amount)
+  return (r << 16) + (g << 8) + b
+}
+
+/** specs/021-reskin-cyber-modern: sombra vectorial elíptica bajo la unidad — se dibuja primero, detrás del cuerpo. */
+function drawShadow(g: Graphics, design: ProceduralDesign): void {
+  const half = design.size / 2
+  g.ellipse(0, half * 0.94, half * 0.85, half * 0.22).fill({ color: 0x000000, alpha: 0.32 })
+}
+
 function drawBody(g: Graphics, design: ProceduralDesign): void {
   const half = design.size / 2
   if (design.baseShape === 'circle') {
@@ -17,6 +31,37 @@ function drawBody(g: Graphics, design: ProceduralDesign): void {
   } else {
     g.poly([0, -half, half, half, -half, half]).fill(design.primaryColor)
   }
+}
+
+/** specs/021-reskin-cyber-modern: contorno neón sobre el borde del cuerpo — mismo shape que drawBody, solo stroke. */
+function drawNeonRim(g: Graphics, design: ProceduralDesign): void {
+  const half = design.size / 2
+  const rimColor = lighten(design.primaryColor, 100)
+  const stroke = { width: Math.max(1, design.size * 0.05), color: rimColor, alpha: 0.85 }
+  if (design.baseShape === 'circle') {
+    g.circle(0, 0, half).stroke(stroke)
+  } else if (design.baseShape === 'rect') {
+    g.rect(-half, -half, design.size, design.size).stroke(stroke)
+  } else {
+    g.poly([0, -half, half, half, -half, half]).stroke(stroke)
+  }
+}
+
+/** specs/021-reskin-cyber-modern: par de placas de armadura metálica a los flancos inferiores del cuerpo. */
+function drawArmorPlates(g: Graphics, design: ProceduralDesign): void {
+  const half = design.size / 2
+  const plateWidth = half * 0.3
+  const plateHeight = half * 0.5
+  g.roundRect(-half - plateWidth * 0.15, half * 0.1, plateWidth, plateHeight, plateWidth * 0.25).fill({ color: 0x334155, alpha: 0.9 })
+  g.roundRect(half - plateWidth * 0.85, half * 0.1, plateWidth, plateHeight, plateWidth * 0.25).fill({ color: 0x334155, alpha: 0.9 })
+}
+
+/** specs/021-reskin-cyber-modern: visor holográfico — panel oscuro + franja brillante, detrás de drawFace. */
+function drawVisorPanel(g: Graphics, design: ProceduralDesign): void {
+  const half = design.size / 2
+  const visorGlow = lighten(design.primaryColor, 140)
+  g.roundRect(-half * 0.45, -half * 0.32, half * 0.9, half * 0.34, half * 0.1).fill({ color: 0x0b1220, alpha: 0.82 })
+  g.roundRect(-half * 0.36, -half * 0.22, half * 0.72, half * 0.14, half * 0.05).fill({ color: visorGlow, alpha: 0.85 })
 }
 
 function drawCatEars(g: Graphics, design: ProceduralDesign): void {
@@ -68,13 +113,17 @@ function drawFace(g: Graphics, design: ProceduralDesign): void {
  */
 export function drawSeedUnit(g: Graphics, design: ProceduralDesign, role: UnitRole): void {
   g.clear()
+  drawShadow(g, design)
   drawBody(g, design)
+  drawArmorPlates(g, design)
   if (role === 'ally') {
     drawCatEars(g, design)
   } else {
     drawEnemyFeature(g, design)
   }
+  drawVisorPanel(g, design)
   drawFace(g, design)
+  drawNeonRim(g, design)
 }
 
 /** Caché en memoria, no persistida (reconstruible) — keyed por unidad semilla + rol (FR-005). */

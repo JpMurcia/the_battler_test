@@ -1,21 +1,15 @@
-import { extend, useTick } from '@pixi/react'
+import { extend, useApplication, useTick } from '@pixi/react'
 import { Container, Graphics, Sprite, type Texture } from 'pixi.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CATS } from '../data/cats'
 import type { BattleUnit } from '../engine/types'
 import { getDeathEchoDurationSeconds, getDeathEchoPose, getVisualProfile } from './animation'
+import { computeCyberBodyLayout, drawCyberBodyBase } from './graphics/cyberUnitBody'
+import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
+import { useGameStore } from '../state/useGameStore'
 import { loadSpriteTextures, resolveSpriteAnimationSet } from './spriteAssets'
 
 extend({ Container, Graphics, Sprite })
-
-// specs/021-reskin-cyber-modern (research.md Decisión 4): mismos colores de equipo que UnitSprite.
-const TEAM_COLOR: Record<BattleUnit['team'], number> = {
-  Player: 0x22d3ee,
-  Enemy: 0xef4444,
-}
-
-const GLOW_RING_COUNT = 3
-const GLOW_RING_STEP_PX = 4
 
 interface DeathEchoSpriteProps {
   instanceId: string
@@ -36,12 +30,27 @@ interface DeathEchoSpriteProps {
  * arte de "muerte" propio en esta spec (data-model.md § Rendering). Fallback igual que UnitSprite.
  */
 export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathEchoSpriteProps) {
+  const { app } = useApplication()
   const containerRef = useRef<Container>(null)
   const remainingRef = useRef(getDeathEchoDurationSeconds())
 
   const cat = useMemo(() => CATS.find((candidate) => candidate.id === catId), [catId])
   const profile = useMemo(() => (cat ? getVisualProfile(cat) : null), [cat])
   const animationSet = useMemo(() => resolveSpriteAnimationSet(cat?.spriteKey), [cat])
+  const bodyLayout = useMemo(() => (profile ? computeCyberBodyLayout(profile) : null), [profile])
+
+  // specs/021-reskin-cyber-modern: `x` llega en coordenadas del carril de simulación (misma
+  // convención que UnitSprite) — un DeathEcho no se mueve, así que el mapeo a pantalla se calcula
+  // una sola vez al montar (su vida útil es de 0.35s, un resize en esa ventana es irrelevante).
+  // El getter `app.screen` hace `this.renderer.screen` internamente — hay que comprobar
+  // `app?.renderer` (no `app?.screen`, que ya invoca el getter y puede lanzar) por si este eco
+  // llegase a montar en el mismo commit inicial que <Application> (ver LaneBackground). En la
+  // práctica solo se crea desde dentro de un useTick ya en marcha, pero el guard cuesta una línea.
+  const screenX = useMemo(
+    () => (app?.renderer ? getLaneScreenX(x, useGameStore.getState().laneLength, app.screen.width) : 0),
+    [x, app],
+  )
+  const screenY = useMemo(() => (app?.renderer ? getLaneScreenY(app.screen.height) : 0), [app])
 
   const [idleFrame, setIdleFrame] = useState<Texture | null>(null)
 
@@ -63,26 +72,15 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
     }
   }, [animationSet])
 
+  // specs/021-reskin-cyber-modern: cuerpo "apagado" (dimmed) — desatura el gradiente de equipo y
+  // suprime los anillos de resplandor, visualmente distinto de una unidad viva (sin visor/propulsor:
+  // un casco inerte, no un droide todavía activo).
   const drawBody = useCallback(
     (g: Graphics) => {
-      if (!profile) return
-      g.clear()
-      for (let ring = GLOW_RING_COUNT; ring >= 1; ring -= 1) {
-        const expand = ring * GLOW_RING_STEP_PX
-        g.roundRect(
-          -expand,
-          -expand,
-          profile.bodyWidth + expand * 2,
-          profile.bodyHeight + expand * 2,
-          profile.cornerRadius + expand,
-        ).stroke({ width: 2, color: TEAM_COLOR[team], alpha: 0.16 / ring })
-      }
-      g.roundRect(0, 0, profile.bodyWidth, profile.bodyHeight, profile.cornerRadius)
-        .fill(TEAM_COLOR[team])
-        .roundRect(0, profile.bodyHeight * 0.62, profile.bodyWidth, profile.bodyHeight * 0.38, profile.cornerRadius)
-        .fill(profile.accentColor)
+      if (!profile || !bodyLayout) return
+      drawCyberBodyBase(g, bodyLayout, team, profile.accentColor, { dimmed: true })
     },
-    [profile, team],
+    [profile, bodyLayout, team],
   )
 
   useTick(({ deltaMS }) => {
@@ -103,7 +101,7 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
   if (!profile) return null
 
   return (
-    <pixiContainer ref={containerRef} x={x} pivot={{ x: 0, y: profile.bodyHeight }}>
+    <pixiContainer ref={containerRef} x={screenX} y={screenY} pivot={{ x: 0, y: profile.bodyHeight }}>
       {idleFrame ? (
         <pixiSprite
           texture={idleFrame}
