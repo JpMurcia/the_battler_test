@@ -36,6 +36,9 @@ body,
   margin: 0;
   width: 100%;
   height: 100%;
+  /* Diseño fijo a móvil en horizontal: la página nunca scrollea — cada pantalla gestiona su propio
+     alto fijo (`.screen`/`.battle-screen`) y expone `.screen-scroll` donde haga falta scroll interno. */
+  overflow: hidden;
 }
 
 h1,
@@ -49,13 +52,60 @@ code {
   font-family: var(--mono);
 }
 
-.level-list {
-  max-height: 70vh;
-  overflow-y: auto;
-  list-style: none;
-  padding: 0;
-}
-
 .level-item--locked {
   opacity: 0.5;
+}
+
+/* — aviso de rotación (index.html): el juego solo está diseñado para móvil en horizontal — */
+.rotate-prompt {
+  display: none;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .rotate-prompt {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    text-align: center;
+    background: var(--bc-bg);
+    color: var(--bc-text);
+    font-family: var(--bc-font-body);
+  }
+
+  .rotate-prompt__icon {
+    font-size: 40px;
+    animation: bc-rotate-hint 1.6s ease-in-out infinite;
+  }
+
+  .rotate-prompt__title {
+    font: 800 16px var(--bc-font-heading);
+    letter-spacing: 0.02em;
+  }
+
+  .rotate-prompt__body {
+    font-size: 13px;
+    color: var(--bc-text-dim);
+    max-width: 280px;
+  }
+
+  /* El árbol de React sigue montado (estado/timers intactos) — solo se oculta visualmente. */
+  #root {
+    display: none;
+  }
+}
+
+@keyframes bc-rotate-hint {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(90deg);
+  }
 }

@@ -155,6 +155,21 @@ Proyecto único (`src/`, `public/`, `tests/`, `scripts/` en la raíz del repo) �
 
 ---
 
+## Phase 9: Diseño fijo a móvil en horizontal, sin scroll de página (post-checkpoint, sesión posterior)
+
+**Purpose**: El mockup (`docs/the-battle-cats-redesign/project/Battle Cats Modernizado.dc.html`, `deviceW/deviceH: 874/402`) fue siempre un marco de teléfono en horizontal con `overflow:hidden` — la app nunca lo replicó: `.screen`/`.battle-screen` usaban `min-height:100vh`, así que el contenido largo hacía crecer y scrollear la página entera. Esta fase cierra esa brecha: cada pantalla queda fija al alto del viewport, y solo el contenido variable (catálogos, listas) scrollea *dentro* de su propio contenedor.
+
+- [X] T045 [P] `src/theme.css`: `.screen`/`.battle-screen` pasan de `min-height:100vh` a `height:100dvh` (con fallback `100vh`) + `overflow:hidden`, padding/gap reducidos para compactar el layout en un viewport de teléfono en horizontal (~380-420px de alto); nueva clase `.screen-scroll` (`flex:1;min-height:0;overflow-y:auto`) como única región con scroll interno permitida por pantalla
+- [X] T046 `src/theme.css`: `.deploy-bar` pasa de `flex-wrap:wrap` a `flex-wrap:nowrap;overflow-x:auto` — una fila de despliegue que no entra en el ancho disponible scrollea horizontalmente en vez de envolver a una segunda línea (rompería el alto fijo de `.battle-screen`)
+- [X] T047 `src/index.css`: `html`/`body`/`#root` con `overflow:hidden` (ningún scroll de página posible); se retira el `.level-list{max-height:70vh}` suelto, ya cubierto por `.screen-scroll`
+- [X] T048 [P] `index.html` + `src/index.css`: aviso de rotación (`.rotate-prompt`, fuera de `#root` para sobrevivir al render de React) — `@media (orientation: portrait) and (max-width: 900px)` oculta `#root` y muestra "Girá tu dispositivo"; verificado en el navegador a 390×844 (aparece, `#root` oculto) y 844×390 (desaparece, `#root` visible)
+- [X] T049 Aplicar `.screen-scroll` a la única lista/región variable de cada pantalla afectada — `CatGuideScreen`, `EnemyGuideScreen`, `TreasureMenuScreen`, `LevelSelectScreen` (lista de niveles, no la de `EventBannerCard`); en `UpgradeScreen`/`TeamScreen`, envolver la lista de gatos *junto con* `UserRankSection`/`BattleItemSelector` en un único contenedor `.screen-scroll` — de lo contrario esas secciones adicionales, fuera del área de scroll, empujan la fila de navegación y "Volver" fuera del viewport fijo sin manera de alcanzarlos (encontrado y corregido durante la verificación en navegador de esta misma fase, ver T050)
+- [X] T050 Verificación en navegador (viewport 844×390, landscape de teléfono real): recorridas Título → Menú → Base/Mejorar → Equipo → Guía de Gatos → Menú de Tesoros → Selección de Nivel → Batalla; confirmado por JS (`scrollHeight` vs `clientHeight`) que ninguna pantalla clipea contenido ni produce scroll de página, y que "Volver"/los botones de navegación quedan siempre alcanzables dentro del viewport
+
+**Checkpoint**: Toda pantalla existente (001–022) hereda el diseño fijo a horizontal vía `.screen`/`.battle-screen` — ninguna requiere cambio propio salvo las cinco listadas en T049 (ya aplicado).
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

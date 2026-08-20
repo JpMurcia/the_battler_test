@@ -65,7 +65,7 @@ export function LevelSelectScreen({ onNavigate }: LevelSelectScreenProps) {
         Energía de misión: {Math.floor(missionEnergy.current)}/{missionEnergy.max}
       </div>
       <EventBannerCard onPlay={handlePlay} />
-      <ul className="level-list list-card">
+      <ul className="level-list list-card screen-scroll">
         {LEVELS.map((level, index) => {
           const state = getLevelState(index, highestUnlockedLevelIndex, completedLevelIds.includes(level.id))
           const lacksEnergy = missionEnergy.current < level.energyCost

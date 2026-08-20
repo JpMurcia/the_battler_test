@@ -33,16 +33,25 @@
   --bc-font-body: 'Inter', sans-serif;
 }
 
-/* — fundación de pantalla — */
+/*
+ * — fundación de pantalla —
+ * Diseño fijo a móvil en horizontal (mockup `Battle Cats Modernizado.dc.html`, marco 874×402): la
+ * pantalla nunca crece más allá del viewport ni produce scroll de página — `height` fija + `overflow:
+ * hidden` en vez del `min-height` anterior. El único contenido que puede exceder ese alto (catálogos,
+ * listas de nivel) se marca explícitamente con `.screen-scroll` para scrollear *dentro* de su propio
+ * flex item, nunca la pantalla completa.
+ */
 .screen {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   width: 100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 18px;
-  padding: 28px 20px 40px;
+  gap: 10px;
+  padding: 14px 18px;
+  overflow: hidden;
   background:
     radial-gradient(circle at 20% 10%, rgba(34, 211, 238, 0.12), transparent 45%),
     radial-gradient(circle at 85% 20%, rgba(251, 146, 60, 0.12), transparent 45%),
@@ -50,6 +59,14 @@
     var(--bc-bg);
   color: var(--bc-text);
   font-family: var(--bc-font-body);
+}
+
+/* — única región con scroll interno permitido por pantalla (nunca la página/`.screen` en sí) — */
+.screen-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .screen h1,
@@ -359,13 +376,15 @@
 
 /* — pantalla de Batalla (screens/BattleScreen.tsx, game/BattleStage.tsx) — */
 .battle-screen {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   width: 100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px;
+  gap: 8px;
+  padding: 10px 12px;
+  overflow: hidden;
   background: var(--bc-bg);
   color: var(--bc-text);
   font-family: var(--bc-font-body);
@@ -395,10 +414,14 @@
   height: 100%;
 }
 
+/* Fila de despliegue: nunca envuelve a una segunda línea (rompería el alto fijo de `.battle-screen`)
+   — si el equipo no entra en el ancho disponible, scrollea horizontalmente en su lugar. */
 .deploy-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* — animaciones cosméticas — */

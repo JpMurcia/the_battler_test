@@ -14,7 +14,7 @@ export function CatGuideScreen({ onNavigate }: CatGuideScreenProps) {
   return (
     <main className="screen">
       <h1>Guía de Gatos</h1>
-      <ul className="list-card">
+      <ul className="list-card screen-scroll">
         {CATS.filter((cat) => cat.id in ownedCats).map((cat) => {
           const owned = ownedCats[cat.id]
           const stats = getEffectiveCatStats(cat, owned.evolutionStage)

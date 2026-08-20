@@ -65,28 +65,33 @@ export function UpgradeScreen({ onNavigate }: UpgradeScreenProps) {
           Moneda: {currency}
         </span>
       </div>
-      <ul className="list-card">
-        {CATS.filter((cat) => cat.id in ownedCats).map((cat) => {
-          const owned = ownedCats[cat.id]
-          const cost = upgradeCost(owned.level)
-          const disabled = currency < cost
-          return (
-            <li key={cat.id} className="list-card__row">
-              <div className="list-card__main">
-                <span className="list-card__title">
-                  {cat.name} — Nivel {owned.level}
-                </span>
-                <span className="list-card__meta">siguiente mejora: {cost}</span>
-              </div>
-              {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
-              <button className="btn btn-primary" disabled={disabled} onClick={() => upgradeCat(cat.id)}>
-                Mejorar
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-      <UserRankSection />
+      {/* Única región con scroll interno de esta pantalla — lista de gatos + Rango de Usuario juntos,
+          para que la fila de navegación y "Volver" de abajo queden siempre visibles (nunca clipeados
+          por el alto fijo de `.screen`). */}
+      <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <ul className="list-card">
+          {CATS.filter((cat) => cat.id in ownedCats).map((cat) => {
+            const owned = ownedCats[cat.id]
+            const cost = upgradeCost(owned.level)
+            const disabled = currency < cost
+            return (
+              <li key={cat.id} className="list-card__row">
+                <div className="list-card__main">
+                  <span className="list-card__title">
+                    {cat.name} — Nivel {owned.level}
+                  </span>
+                  <span className="list-card__meta">siguiente mejora: {cost}</span>
+                </div>
+                {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
+                <button className="btn btn-primary" disabled={disabled} onClick={() => upgradeCat(cat.id)}>
+                  Mejorar
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+        <UserRankSection />
+      </div>
       <div className="hud-bar">
         <button className="btn btn-outline--cyan" onClick={() => onNavigate('Team')}>
           <Users size={16} aria-hidden="true" />

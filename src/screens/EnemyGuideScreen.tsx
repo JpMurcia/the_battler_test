@@ -17,7 +17,7 @@ export function EnemyGuideScreen({ onNavigate }: EnemyGuideScreenProps) {
   return (
     <main className="screen">
       <h1>Guía de Enemigos</h1>
-      <ul className="list-card">
+      <ul className="list-card screen-scroll">
         {CATS.filter((cat) => encounteredEnemyCatIds.includes(cat.id)).map((cat) => (
           <li key={cat.id} className="list-card__row">
             <span className="list-card__title">

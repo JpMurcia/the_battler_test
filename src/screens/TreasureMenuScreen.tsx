@@ -15,7 +15,7 @@ export function TreasureMenuScreen({ onNavigate }: TreasureMenuScreenProps) {
   return (
     <main className="screen">
       <h1>Menú de Tesoros</h1>
-      <ul className="list-card">
+      <ul className="list-card screen-scroll">
         {TREASURE_SETS.map((set) => {
           const obtainedCount = set.treasureIds.filter((id) => obtainedTreasureIds.includes(id)).length
           const isGranted = grantedTreasureSetIds.includes(set.id)

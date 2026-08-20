@@ -64,21 +64,26 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
   return (
     <main className="screen">
       <h1>Equipo</h1>
-      <ul className="list-card">
-        {CATS.filter((cat) => cat.id in ownedCats).map((cat) => (
-          <li key={cat.id} className="list-card__row">
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input type="checkbox" checked={selectedIds.includes(cat.id)} onChange={() => toggleCat(cat.id)} />
-              {cat.name}
-            </label>
-            {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
-          </li>
-        ))}
-      </ul>
+      {/* Única región con scroll interno de esta pantalla — lista de gatos + Objetos de Batalla juntos,
+          para que "Confirmar equipo"/"Volver" queden siempre visibles (nunca clipeados por el alto
+          fijo de `.screen`). */}
+      <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <ul className="list-card">
+          {CATS.filter((cat) => cat.id in ownedCats).map((cat) => (
+            <li key={cat.id} className="list-card__row">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={selectedIds.includes(cat.id)} onChange={() => toggleCat(cat.id)} />
+                {cat.name}
+              </label>
+              {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
+            </li>
+          ))}
+        </ul>
+        <BattleItemSelector />
+      </div>
       <button className="btn btn-primary" disabled={selectedIds.length === 0} onClick={() => setActiveTeam(selectedIds)}>
         Confirmar equipo
       </button>
-      <BattleItemSelector />
       <button className="btn btn-ghost" onClick={() => onNavigate('Upgrade')}>
         <ArrowLeft size={16} aria-hidden="true" />
         Volver
