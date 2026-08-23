@@ -75,6 +75,7 @@ export const EVENT_BANNERS: EventBanner[] = [
       region: 'evento-etapas-de-fantasia',
       difficulty: 3,
       treasureId: 'tesoro-evento-etapas-de-fantasia',
+      mapPosition: { x: 90, y: 12 },
     },
     energyCost: EVENT_ENERGY_COST,
   },

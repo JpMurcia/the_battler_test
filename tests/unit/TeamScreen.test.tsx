@@ -37,6 +37,24 @@ describe('TeamScreen', () => {
   })
 })
 
+describe('TeamScreen — tope de equipo activo (specs/023-mapa-de-etapas-visual US3/FR-015)', () => {
+  const SEVEN_OWNED_CAT_IDS = ['basic-cat', 'tank-cat', 'speed-cat', 'heavy-cat', 'solar-cat', 'armored-cat', 'frost-cat']
+
+  it('con 6 gatos ya seleccionados, el checkbox de un 7º gato poseído queda deshabilitado', () => {
+    useMetaStore.setState({
+      ownedCats: Object.fromEntries(
+        SEVEN_OWNED_CAT_IDS.map((catId) => [catId, { level: 1, experienceInvested: 0, evolutionStage: 'Base' as const }]),
+      ),
+      activeTeamCatIds: SEVEN_OWNED_CAT_IDS.slice(0, 6),
+    })
+    render(<TeamScreen onNavigate={noop} />)
+
+    const seventhCatCheckbox = screen.getByRole('checkbox', { name: /Gato Escarcha/ })
+    expect(seventhCatCheckbox).toBeDisabled()
+    expect(seventhCatCheckbox).not.toBeChecked()
+  })
+})
+
 describe('TeamScreen — objetos de batalla (specs/017-objetos-de-batalla US1)', () => {
   it('con un objeto en inventario, seleccionarlo lo marca elegido', () => {
     useMetaStore.setState({ battleItemInventory: { 'speed-boost': 1 } })

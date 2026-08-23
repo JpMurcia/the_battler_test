@@ -60,6 +60,30 @@ vi.mock('../../src/data/sagaArcs', async (importOriginal) => {
         enemyStrengthMultiplier: 1,
         completionRewards: {},
       },
+      // specs/023-mapa-de-etapas-visual (US2): mismos ids que la producción real (`src/data/sagaArcs.ts`), con
+      // el reparto de catId de data-model.md — entradas nuevas, no reemplazan test-arc-1/test-arc-2 (índices
+      // usados por otros tests de este archivo, p. ej. el tope escalonado FR-017 sobre SAGA_ARCS[1]).
+      {
+        id: 'arco-1-imperio-de-los-gatos',
+        name: 'Imperio de los Gatos — Arco 1',
+        levelIds: ['level-1'],
+        costMultiplier: 0.8,
+        enemyStrengthMultiplier: 0.8,
+        completionRewards: {
+          unlockNextArcId: 'arco-2-imperio-de-los-gatos',
+          unlockCatIds: ['speed-cat', 'heavy-cat', 'armored-cat', 'frost-cat', 'weaken-cat', 'slow-cat', 'zombie-ward-cat'],
+        },
+      },
+      {
+        id: 'arco-2-imperio-de-los-gatos',
+        name: 'Imperio de los Gatos — Arco 2',
+        levelIds: ['level-2'],
+        costMultiplier: 1,
+        enemyStrengthMultiplier: 1,
+        completionRewards: {
+          unlockCatIds: ['triple-strike-cat', 'lucky-cat', 'seed-cat-basic', 'seed-cat-wall', 'seed-cat-ranged', 'seed-cat-titan'],
+        },
+      },
     ],
   }
 })
@@ -184,6 +208,16 @@ describe('useMetaStore', () => {
     useMetaStore.setState({ activeTeamCatIds: ['basic-cat'] })
 
     const ok = useMetaStore.getState().setActiveTeam([])
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().activeTeamCatIds).toEqual(['basic-cat'])
+  })
+
+  it('specs/023-mapa-de-etapas-visual (FR-015): setActiveTeam rechaza más de MAX_ACTIVE_TEAM_SIZE sin mutar el estado', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ activeTeamCatIds: ['basic-cat'] })
+
+    const ok = useMetaStore.getState().setActiveTeam(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
 
     expect(ok).toBe(false)
     expect(useMetaStore.getState().activeTeamCatIds).toEqual(['basic-cat'])
@@ -419,6 +453,57 @@ describe('useMetaStore', () => {
       useMetaStore.getState().claimArcRewardsIfComplete('test-arc-1')
 
       expect(useMetaStore.getState().ownedCats['tank-cat']).toBeUndefined()
+    })
+
+    describe('specs/023-mapa-de-etapas-visual (US2/FR-010/FR-011/FR-012): catálogo completo obtenible', () => {
+      it('FR-010/FR-011: completar arco-1 otorga exactamente los 7 catId sin obtención previa, sin tocar recompensas existentes', async () => {
+        await useMetaStore.getState().hydrate()
+        useMetaStore.setState({ completedLevelIds: ['level-1'] })
+
+        useMetaStore.getState().claimArcRewardsIfComplete('arco-1-imperio-de-los-gatos')
+
+        const state = useMetaStore.getState()
+        for (const catId of ['speed-cat', 'heavy-cat', 'armored-cat', 'frost-cat', 'weaken-cat', 'slow-cat', 'zombie-ward-cat']) {
+          expect(state.ownedCats[catId]).toBeDefined()
+        }
+        expect(state.grantedArcRewardIds).toContain('arco-1-imperio-de-los-gatos')
+      })
+
+      it('FR-010/FR-011: completar arco-2 otorga el resto de los 13 catId', async () => {
+        await useMetaStore.getState().hydrate()
+        useMetaStore.setState({ completedLevelIds: ['level-1', 'level-2'] })
+
+        useMetaStore.getState().claimArcRewardsIfComplete('arco-2-imperio-de-los-gatos')
+
+        const state = useMetaStore.getState()
+        for (const catId of ['triple-strike-cat', 'lucky-cat', 'seed-cat-basic', 'seed-cat-wall', 'seed-cat-ranged', 'seed-cat-titan']) {
+          expect(state.ownedCats[catId]).toBeDefined()
+        }
+      })
+
+      it('FR-012: no altera firstVictoryUnlockCatId/grantedArcRewardIds ya otorgados por level-1/level-2', async () => {
+        await useMetaStore.getState().hydrate()
+        useMetaStore.setState({ completedLevelIds: ['level-1'] })
+        useMetaStore.getState().grantLevelRewards('level-1') // otorga tank-cat (firstVictoryUnlockCatId real)
+
+        useMetaStore.getState().claimArcRewardsIfComplete('arco-1-imperio-de-los-gatos')
+
+        expect(useMetaStore.getState().ownedCats['tank-cat']).toBeDefined()
+      })
+
+      it('volver a llamar sobre un arco ya otorgado no duplica ni vuelve a otorgar', async () => {
+        await useMetaStore.getState().hydrate()
+        useMetaStore.setState({ completedLevelIds: ['level-1'] })
+        useMetaStore.getState().claimArcRewardsIfComplete('arco-1-imperio-de-los-gatos')
+        const ownedAfterFirst = { ...useMetaStore.getState().ownedCats }
+
+        useMetaStore.getState().claimArcRewardsIfComplete('arco-1-imperio-de-los-gatos')
+
+        expect(useMetaStore.getState().ownedCats).toEqual(ownedAfterFirst)
+        expect(
+          useMetaStore.getState().grantedArcRewardIds.filter((id) => id === 'arco-1-imperio-de-los-gatos'),
+        ).toHaveLength(1)
+      })
     })
   })
 

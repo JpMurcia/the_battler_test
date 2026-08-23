@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { EventBanner } from '../../src/data/events'
 import type { Level } from '../../src/data/levels'
@@ -20,6 +20,7 @@ const { mockEventBanners, MOCK_LEVELS } = vi.hoisted(() => ({
       energyCost: 20,
       region: 'imperio-de-los-gatos',
       difficulty: 1,
+      mapPosition: { x: 15, y: 80 },
     },
     {
       id: 'level-2',
@@ -32,7 +33,8 @@ const { mockEventBanners, MOCK_LEVELS } = vi.hoisted(() => ({
       enemyWave: [],
       energyCost: 20,
       region: 'imperio-de-los-gatos',
-      difficulty: 1,
+      difficulty: 2,
+      mapPosition: { x: 45, y: 55 },
     },
   ] as Level[],
 }))
@@ -66,56 +68,87 @@ beforeEach(() => {
   mockEventBanners.length = 0
 })
 
-describe('LevelSelectScreen', () => {
-  it('deshabilita "Jugar" en un nivel bloqueado y no inicia la batalla', () => {
+describe('LevelSelectScreen — mapa de nodos (specs/023-mapa-de-etapas-visual US1)', () => {
+  it('refleja el estado correcto por nodo (bloqueado/disponible) y un nodo bloqueado no tiene efecto', () => {
     const onNavigate = vi.fn()
     render(<LevelSelectScreen onNavigate={onNavigate} />)
 
-    const lockedButton = screen.getAllByRole('button', { name: 'Jugar' })[1]
-    expect(lockedButton).toBeDisabled()
+    const unlockedNode = screen.getByRole('button', { name: 'Nivel 1' })
+    const lockedNode = screen.getByRole('button', { name: 'Nivel 2' })
+    expect(unlockedNode).not.toBeDisabled()
+    expect(unlockedNode).toHaveClass('stage-node--unlocked')
+    expect(lockedNode).toBeDisabled()
+    expect(lockedNode).toHaveClass('stage-node--locked')
 
-    fireEvent.click(lockedButton)
+    fireEvent.click(lockedNode)
 
+    expect(screen.queryByText('¡Atacar!')).not.toBeInTheDocument()
     expect(onNavigate).not.toHaveBeenCalled()
     expect(useGameStore.getState().levelId).toBeNull()
   })
 
-  it('permite jugar un nivel desbloqueado y descuenta la energía de misión', () => {
+  it('un nodo completado refleja ese estado y desbloquea el siguiente', () => {
+    useMetaStore.setState({ highestUnlockedLevelIndex: 1, completedLevelIds: ['level-1'] })
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: 'Nivel 1' })).toHaveClass('stage-node--completed')
+    expect(screen.getByRole('button', { name: 'Nivel 2' })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Nivel 2' })).toHaveClass('stage-node--unlocked')
+  })
+
+  it('tocar un nodo disponible abre el panel de detalle con nombre, estrellas y costo de energía', () => {
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nivel 1' }))
+
+    expect(screen.getByText('Nivel 1', { selector: '.stage-detail-panel__title' })).toBeInTheDocument()
+    expect(screen.getByText('★ 1')).toBeInTheDocument()
+    expect(screen.getByText('⚡ 20')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '¡Atacar!' })).not.toBeDisabled()
+  })
+
+  it('"¡Atacar!" descuenta la energía de misión y navega a Battle, igual que el "Jugar" anterior', () => {
     const onNavigate = vi.fn()
     render(<LevelSelectScreen onNavigate={onNavigate} />)
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Jugar' })[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Nivel 1' }))
+    fireEvent.click(screen.getByRole('button', { name: '¡Atacar!' }))
 
     expect(onNavigate).toHaveBeenCalledWith('Battle')
     expect(useGameStore.getState().levelId).toBe('level-1')
     expect(useMetaStore.getState().missionEnergy.current).toBe(80)
   })
 
-  it('specs/011-nivel-2-hacia-el-futuro (T005): con highestUnlockedLevelIndex = 1, level-2 aparece desbloqueado', () => {
-    useMetaStore.setState({ highestUnlockedLevelIndex: 1 })
-    render(<LevelSelectScreen onNavigate={vi.fn()} />)
-
-    const level2Button = screen.getAllByRole('button', { name: 'Jugar' })[1]
-    expect(level2Button).not.toBeDisabled()
-  })
-
-  it('deshabilita "Jugar" sin energía de misión suficiente y no navega a Battle (specs/007 US2)', () => {
+  it('"¡Atacar!" queda deshabilitado sin energía de misión suficiente y no navega', () => {
     useMetaStore.setState({ missionEnergy: { current: 5, max: 100 } })
     const onNavigate = vi.fn()
     render(<LevelSelectScreen onNavigate={onNavigate} />)
 
-    const button = screen.getAllByRole('button', { name: 'Jugar' })[0]
-    expect(button).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Nivel 1' }))
+    const attackButton = screen.getByRole('button', { name: '¡Atacar!' })
+    expect(attackButton).toBeDisabled()
 
-    fireEvent.click(button)
+    fireEvent.click(attackButton)
 
     expect(onNavigate).not.toHaveBeenCalled()
     expect(useGameStore.getState().levelId).toBeNull()
     expect(useMetaStore.getState().missionEnergy.current).toBe(5)
   })
+
+  it('el panel se reactiva a missionEnergy sin cerrarse (Edge Cases)', () => {
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Nivel 1' }))
+    expect(screen.getByRole('button', { name: '¡Atacar!' })).not.toBeDisabled()
+
+    act(() => {
+      useMetaStore.setState({ missionEnergy: { current: 0, max: 100 } })
+    })
+
+    expect(screen.getByRole('button', { name: '¡Atacar!' })).toBeDisabled()
+  })
 })
 
-describe('LevelSelectScreen — banner de evento (specs/014-banner-evento-especial)', () => {
+describe('LevelSelectScreen — banner de evento (specs/014-banner-evento-especial / specs/023 FR-008)', () => {
   const activeBanner: EventBanner = {
     id: 'test-banner',
     name: 'Banner de Prueba',
@@ -133,50 +166,53 @@ describe('LevelSelectScreen — banner de evento (specs/014-banner-evento-especi
       energyCost: 10,
       region: 'test',
       difficulty: 1,
+      mapPosition: { x: 90, y: 12 },
     },
   }
 
-  it('US1/FR-002: un banner dentro de su ventana horaria aparece seleccionable', () => {
+  it('un banner activo aparece como nodo distinguido, fuera de la cadena de líneas de desbloqueo', () => {
     mockEventBanners.push(activeBanner)
     render(<LevelSelectScreen onNavigate={vi.fn()} />)
 
-    expect(screen.getByText(/Banner de Prueba/)).toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: 'Jugar' })).toHaveLength(3) // banner + level-1 + level-2
+    const eventNode = screen.getByRole('button', { name: 'Fase Especial de Prueba' })
+    expect(eventNode).toHaveClass('stage-node--event')
+    expect(eventNode).not.toBeDisabled()
   })
 
-  it('US1/FR-003: un banner fuera de todas sus ventanas horarias no se muestra', () => {
+  it('un banner fuera de ventana horaria no se muestra', () => {
     mockEventBanners.push({
       ...activeBanner,
       timeWindows: [{ startMs: Date.now() - 1000 * 60 * 60 * 24 * 2, endMs: Date.now() - 1000 * 60 * 60 * 24 }],
     })
     render(<LevelSelectScreen onNavigate={vi.fn()} />)
 
-    expect(screen.queryByText(/Banner de Prueba/)).not.toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: 'Jugar' })).toHaveLength(2) // solo level-1 + level-2
+    expect(screen.queryByRole('button', { name: 'Fase Especial de Prueba' })).not.toBeInTheDocument()
   })
 
-  it('US2/FR-005: seleccionar el banner activo con energía suficiente navega a Battle con la specialStage, sin exigir desbloqueo secuencial', () => {
+  it('seleccionar el nodo de evento con energía suficiente navega a Battle con la specialStage, sin exigir desbloqueo secuencial', () => {
     mockEventBanners.push(activeBanner)
     useMetaStore.setState({ highestUnlockedLevelIndex: 0 }) // nada desbloqueado todavía
     const onNavigate = vi.fn()
     render(<LevelSelectScreen onNavigate={onNavigate} />)
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Jugar' })[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Fase Especial de Prueba' }))
+    fireEvent.click(screen.getByRole('button', { name: '¡Atacar!' }))
 
     expect(onNavigate).toHaveBeenCalledWith('Battle')
     expect(useGameStore.getState().levelId).toBe('test-banner-stage')
   })
 
-  it('sin energía de misión suficiente, el botón del banner está deshabilitado y no navega', () => {
+  it('sin energía de misión suficiente, "¡Atacar!" del nodo de evento está deshabilitado y no navega', () => {
     mockEventBanners.push(activeBanner)
     useMetaStore.setState({ missionEnergy: { current: 5, max: 100 } })
     const onNavigate = vi.fn()
     render(<LevelSelectScreen onNavigate={onNavigate} />)
 
-    const button = screen.getAllByRole('button', { name: 'Jugar' })[0]
-    expect(button).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Fase Especial de Prueba' }))
+    const attackButton = screen.getByRole('button', { name: '¡Atacar!' })
+    expect(attackButton).toBeDisabled()
 
-    fireEvent.click(button)
+    fireEvent.click(attackButton)
 
     expect(onNavigate).not.toHaveBeenCalled()
     expect(useGameStore.getState().levelId).toBeNull()

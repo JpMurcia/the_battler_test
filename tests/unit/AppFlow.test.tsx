@@ -66,11 +66,15 @@ describe('Flujo de navegación completo (spec.md US3)', () => {
     expect(await screen.findByRole('heading', { name: 'Menú Principal' })).toBeInTheDocument()
 
     // 4. Menú → Selección de Nivel: el nivel de demostración semilla está disponible (FR-002, research.md Decisión 3).
+    // specs/023-mapa-de-etapas-visual (US1): el nodo del mapa reemplaza la fila de lista — tocar el nodo abre
+    // el panel de detalle, y "¡Atacar!" reemplaza el "Jugar" anterior (FR-006).
     fireEvent.click(screen.getByRole('button', { name: /Niveles/ }))
     expect(await screen.findByRole('heading', { name: 'Selección de Nivel' })).toBeInTheDocument()
-    const demoLevelRow = screen.getByText('Nivel Semilla (Demo)').closest('li')!
-    expect(within(demoLevelRow).getByText(/Disponible/)).toBeInTheDocument()
-    fireEvent.click(within(demoLevelRow).getByRole('button', { name: 'Jugar' }))
+    const demoLevelNode = screen.getByRole('button', { name: 'Nivel Semilla (Demo)' })
+    expect(demoLevelNode).not.toBeDisabled()
+    expect(demoLevelNode).toHaveClass('stage-node--unlocked')
+    fireEvent.click(demoLevelNode)
+    fireEvent.click(screen.getByRole('button', { name: '¡Atacar!' }))
 
     // 5. Batalla: HUD superior visible (dinero del jugador vía energía de misión ya gastada, HP de ambas bases) y alineación activa.
     expect(await screen.findByText(/Base jugador:/)).toBeInTheDocument()

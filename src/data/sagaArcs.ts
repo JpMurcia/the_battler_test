@@ -25,7 +25,12 @@ export const SAGA_ARCS: SagaArc[] = [
     levelIds: ['level-1'],
     costMultiplier: 0.8,
     enemyStrengthMultiplier: 0.8,
-    completionRewards: { unlockNextArcId: 'arco-2-imperio-de-los-gatos' },
+    // specs/023-mapa-de-etapas-visual (US2/FR-010/FR-011): núcleo original sin recompensa asignada
+    // (speed-cat/heavy-cat/armored-cat) + los 4 de specs/015-catalogo-habilidades-combate.
+    completionRewards: {
+      unlockNextArcId: 'arco-2-imperio-de-los-gatos',
+      unlockCatIds: ['speed-cat', 'heavy-cat', 'armored-cat', 'frost-cat', 'weaken-cat', 'slow-cat', 'zombie-ward-cat'],
+    },
   },
   {
     id: 'arco-2-imperio-de-los-gatos',
@@ -37,7 +42,11 @@ export const SAGA_ARCS: SagaArc[] = [
     // la base enemiga hasta ser derrotado.
     bossLevelId: 'level-2',
     bossCatId: 'armored-cat',
-    completionRewards: {},
+    // specs/023-mapa-de-etapas-visual (US2/FR-010/FR-011): los 2 de specs/016-multigolpe-critico + los 4
+    // gatos semilla jugables de specs/022-datos-semilla-flujo-navegacion.
+    completionRewards: {
+      unlockCatIds: ['triple-strike-cat', 'lucky-cat', 'seed-cat-basic', 'seed-cat-wall', 'seed-cat-ranged', 'seed-cat-titan'],
+    },
   },
 ]
 

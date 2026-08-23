@@ -5,7 +5,7 @@ import { isEventStageId, resolveLevel } from '../data/events'
 import { findArcByLevelId } from '../data/sagaArcs'
 import { BattleStage } from '../game/BattleStage'
 import { useGameStore } from '../state/useGameStore'
-import { useMetaStore } from '../state/useMetaStore'
+import { MAX_ACTIVE_TEAM_SIZE, useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
 
 interface BattleScreenProps {
@@ -73,10 +73,11 @@ function DeployBar() {
   const deployUnit = useGameStore((state) => state.deployUnit)
 
   const deployableCats = CATS.filter((cat) => cat.id in ownedCatsById)
-  const ownedCats =
+  const ownedCats = (
     activeTeamCatIds.length > 0
       ? deployableCats.filter((cat) => activeTeamCatIds.includes(cat.id))
       : deployableCats
+  ).slice(0, MAX_ACTIVE_TEAM_SIZE) // specs/023-mapa-de-etapas-visual (FR-016): equipos heredados de más de 6 no rompen la grilla.
 
   return (
     <div className="deploy-bar">

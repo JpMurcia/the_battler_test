@@ -20,6 +20,7 @@ function makeBanner(timeWindows: EventBanner['timeWindows']): EventBanner {
       energyCost: 10,
       region: 'test',
       difficulty: 1,
+      mapPosition: { x: 50, y: 50 },
     },
   }
 }

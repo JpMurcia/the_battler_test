@@ -2,7 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { CATS, RARITY_TAG_CLASS } from '../data/cats'
-import { useMetaStore } from '../state/useMetaStore'
+import { MAX_ACTIVE_TEAM_SIZE, useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
 
 interface TeamScreenProps {
@@ -69,15 +69,20 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
           fijo de `.screen`). */}
       <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <ul className="list-card">
-          {CATS.filter((cat) => cat.id in ownedCats).map((cat) => (
-            <li key={cat.id} className="list-card__row">
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <input type="checkbox" checked={selectedIds.includes(cat.id)} onChange={() => toggleCat(cat.id)} />
-                {cat.name}
-              </label>
-              {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
-            </li>
-          ))}
+          {CATS.filter((cat) => cat.id in ownedCats).map((cat) => {
+            const checked = selectedIds.includes(cat.id)
+            // specs/023-mapa-de-etapas-visual (FR-015): mismo patrón que disabledToSelect de BattleItemSelector.
+            const disabledToSelect = !checked && selectedIds.length >= MAX_ACTIVE_TEAM_SIZE
+            return (
+              <li key={cat.id} className="list-card__row">
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={checked} disabled={disabledToSelect} onChange={() => toggleCat(cat.id)} />
+                  {cat.name}
+                </label>
+                {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
+              </li>
+            )
+          })}
         </ul>
         <BattleItemSelector />
       </div>

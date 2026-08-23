@@ -39,6 +39,8 @@ export interface Level {
   laneLength?: number
   /** specs/017-objetos-de-batalla (US3/FR-003). Ausente = sin objetos de batalla otorgados al ganar. */
   battleItemRewards?: { itemId: string; count: number }[]
+  /** specs/023-mapa-de-etapas-visual (FR-001). Porcentaje 0-100 de posición del nodo dentro del área del mapa. */
+  mapPosition: { x: number; y: number }
 }
 
 /** Fixture de bootstrap — valores de diseño provisionales, no balanceados (tasks.md Fase 1 / specs/002-motor-de-combate). */
@@ -59,6 +61,7 @@ export const LEVELS: Level[] = [
     energyCost: 20,
     region: 'imperio-de-los-gatos',
     difficulty: 1,
+    mapPosition: { x: 15, y: 80 },
     // specs/012-saga-imperio-de-los-gatos: contenido mínimo de ejemplo — población completa fuera de alcance (spec.md Assumptions).
     baseHpTriggers: [
       { thresholdPercent: 50, reinforcementWave: [{ catId: 'speed-cat', spawnAtSeconds: 0 }, { catId: 'speed-cat', spawnAtSeconds: 3 }] },
@@ -95,6 +98,7 @@ export const LEVELS: Level[] = [
     energyCost: 25,
     region: 'imperio-de-los-gatos',
     difficulty: 2,
+    mapPosition: { x: 45, y: 55 },
     // specs/012-saga-imperio-de-los-gatos: contenido mínimo de ejemplo — población completa fuera de alcance (spec.md Assumptions).
     baseHpTriggers: [{ thresholdPercent: 40, reinforcementWave: [{ catId: 'armored-cat', spawnAtSeconds: 0 }] }],
     maxSimultaneousEnemies: 5,
@@ -129,5 +133,6 @@ export const LEVELS: Level[] = [
     energyCost: 20,
     region: 'imperio-de-los-gatos',
     difficulty: 2,
+    mapPosition: { x: 75, y: 30 },
   },
 ]

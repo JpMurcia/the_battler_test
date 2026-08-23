@@ -41,6 +41,24 @@ describe('BattleScreen DeployBar', () => {
   })
 })
 
+describe('BattleScreen DeployBar — tope de equipo heredado (specs/023-mapa-de-etapas-visual US3/FR-016)', () => {
+  const SEVEN_OWNED_CAT_IDS = ['basic-cat', 'tank-cat', 'speed-cat', 'heavy-cat', 'solar-cat', 'armored-cat', 'frost-cat']
+
+  it('con activeTeamCatIds de 7 catId (dato heredado), muestra como máximo los primeros 6 sin error', () => {
+    useMetaStore.setState({
+      ownedCats: Object.fromEntries(
+        SEVEN_OWNED_CAT_IDS.map((catId) => [catId, { level: 1, experienceInvested: 0, evolutionStage: 'Base' as const }]),
+      ),
+      activeTeamCatIds: SEVEN_OWNED_CAT_IDS,
+    })
+
+    render(<BattleScreen onNavigate={noop} />)
+
+    expect(screen.getByRole('button', { name: /Gato Blindado/ })).toBeInTheDocument() // 6º (armored-cat)
+    expect(screen.queryByRole('button', { name: /Gato Escarcha/ })).not.toBeInTheDocument() // 7º excluido
+  })
+})
+
 describe('BattleScreen — indicador de barrera de jefe (specs/020-barrera-de-base)', () => {
   it('FR-008: con bossBarrierActive true, el indicador aparece', () => {
     useGameStore.setState({ bossBarrierActive: true, enemyBase: { hp: 100, maxHp: 100 } })

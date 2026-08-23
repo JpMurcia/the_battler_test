@@ -83,6 +83,9 @@ interface MetaState {
 
 const DEFAULT_SETTINGS: MetaSettings = { musicVolume: 1, sfxVolume: 1, language: 'es' }
 
+/** specs/023-mapa-de-etapas-visual (FR-015). Tope del mockup: grilla de despliegue de `repeat(6,1fr)`. */
+export const MAX_ACTIVE_TEAM_SIZE = 6
+
 /** Costo de mejora provisional, no balanceado (tasks.md Fase 1). */
 const upgradeCost = (currentLevel: number) => currentLevel * 100
 
@@ -260,7 +263,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   },
 
   setActiveTeam: (catIds) => {
-    if (catIds.length === 0) return false
+    if (catIds.length === 0 || catIds.length > MAX_ACTIVE_TEAM_SIZE) return false
     set({ activeTeamCatIds: catIds })
     void db.teamFormation.put({ id: 1, catIds })
     return true
