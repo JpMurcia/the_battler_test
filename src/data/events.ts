@@ -75,7 +75,10 @@ export const EVENT_BANNERS: EventBanner[] = [
       region: 'evento-etapas-de-fantasia',
       difficulty: 3,
       treasureId: 'tesoro-evento-etapas-de-fantasia',
-      mapPosition: { x: 90, y: 12 },
+      // specs/023-mapa-de-etapas-visual: esquina inferior derecha, no la superior — el panel de detalle
+      // (.stage-detail-panel, right:8px/top:8px/width:190px) cubre físicamente la esquina superior derecha
+      // mientras está abierto, lo que dejaba este nodo sin poder recibir clics con otro panel ya abierto.
+      mapPosition: { x: 90, y: 88 },
     },
     energyCost: EVENT_ENERGY_COST,
   },

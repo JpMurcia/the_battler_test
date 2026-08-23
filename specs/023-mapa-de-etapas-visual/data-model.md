@@ -18,11 +18,11 @@ Al ser obligatorio, `npx tsc -b` exige un valor en **todo** literal de tipo `Lev
 | `level-2` | `{ x: 45, y: 55 }` | segundo nodo, misma región |
 | `level-seed-demo` | `{ x: 75, y: 30 }` | tercer nodo, catálogo semilla (`specs/022`) |
 
-`EventBanner.specialStage` (`src/data/events.ts`) reutiliza el tipo `Level` sin cambio de forma (ya documentado en su propio comentario), así que también requiere `mapPosition`. Se ubica visualmente separado de la cadena secuencial (FR-008), esquina superior derecha del mapa:
+`EventBanner.specialStage` (`src/data/events.ts`) reutiliza el tipo `Level` sin cambio de forma (ya documentado en su propio comentario), así que también requiere `mapPosition`. Se ubica visualmente separado de la cadena secuencial (FR-008), esquina inferior derecha del mapa — no la superior: el panel de detalle (`.stage-detail-panel`, `right:8px;top:8px;width:190px`) cubre físicamente esa esquina mientras está abierto, lo que dejaría el nodo sin poder recibir clics con otro panel ya abierto (hallazgo de verificación con Playwright, T023):
 
 | `id` | `mapPosition` |
 |---|---|
-| `evento-etapas-de-fantasia-fase-especial` | `{ x: 90, y: 12 }` |
+| `evento-etapas-de-fantasia-fase-especial` | `{ x: 90, y: 88 }` |
 
 ## Líneas conectoras (`nodeLines`, derivadas — sin persistencia)
 
