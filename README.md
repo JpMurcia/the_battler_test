@@ -37,7 +37,7 @@ El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB
 
 ## Estado actual
 
-El proyecto avanza en 22 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**47 archivos, 393 tests**) al momento de escribir esto.
+El proyecto completó 23 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**51 archivos, 440 tests**) al momento de escribir esto — las 23 specs están 100% completas, incluidas sus tareas de verificación manual en navegador.
 
 | Spec | Contenido | Tareas |
 |---|---|---|
@@ -50,31 +50,29 @@ El proyecto avanza en 22 specs numeradas bajo `specs/`, cada una construida sobr
 | [`007-energia-mision-dificultad`](specs/007-energia-mision-dificultad/) | Energía de misión con regeneración y dificultad progresiva | ✅ 19/19 |
 | [`008-tipos-de-ataque`](specs/008-tipos-de-ataque/) | Tipos de ataque: `Single` / `Area` / `LongRange` | ✅ 18/18 |
 | [`009-clasificacion-habilidades`](specs/009-clasificacion-habilidades/) | Clasificación de gatos/enemigos y habilidades por rasgo (`TraitTargeting`, `Curse`) | ✅ 16/16 |
-| [`010-evolucion-de-gatos`](specs/010-evolucion-de-gatos/) | Evolución de gatos (`Base` → `Second` → `True`) vía ítems | 🚧 15/16 |
-| [`011-nivel-2-hacia-el-futuro`](specs/011-nivel-2-hacia-el-futuro/) | Segundo nivel jugable con gatos nuevos | 🚧 7/11 |
-| [`012-saga-imperio-de-los-gatos`](specs/012-saga-imperio-de-los-gatos/) | Arcos de saga, Gatorreta y Brote Zombi | 🚧 35/36 |
-| [`013-escalado-capitulos-sets-tesoros`](specs/013-escalado-capitulos-sets-tesoros/) | Escalado por arco y sets de tesoros con bonificación pasiva | 🚧 18/19 |
-| [`014-banner-evento-especial`](specs/014-banner-evento-especial/) | Banner especial de evento: "Etapas de Fantasía" | 🚧 14/15 |
-| [`015-catalogo-habilidades-combate`](specs/015-catalogo-habilidades-combate/) | Efectos `Weaken` / `Freeze` / `Slow`, resistencias | 🚧 20/21 |
-| [`016-multigolpe-critico`](specs/016-multigolpe-critico/) | Tipos de ataque `MultiHit` y `Critical` | 🚧 12/13 |
-| [`017-objetos-de-batalla`](specs/017-objetos-de-batalla/) | Objetos de batalla seleccionables pre-combate (máx. 3) | 🚧 19/20 |
-| [`018-bibliotecas-consulta`](specs/018-bibliotecas-consulta/) | Guía de gatos, guía de enemigos y menú de tesoros | ✅ 21/22 |
-| [`019-rango-de-usuario`](specs/019-rango-de-usuario/) | Sistema de rango de usuario con umbrales reclamables | 🚧 13/14 |
-| [`020-barrera-de-base`](specs/020-barrera-de-base/) | Barrera de base y jefes vinculados | 🚧 14/15 |
-| [`021-reskin-cyber-modern`](specs/021-reskin-cyber-modern/) | Reskin visual Cyber-Modern + sprites reales de combate (12 héroes) | ✅ 36/37 |
-| [`022-datos-semilla-flujo-navegacion`](specs/022-datos-semilla-flujo-navegacion/) | Datos semilla, assets procedimentales y flujo de navegación | 🚧 20/21 |
-
-### Sobre las tareas pendientes
-
-Casi todo lo que queda abierto (9 de las 22 specs) es el **mismo tipo de tarea**: una verificación manual de punta a punta en navegador (recorrer una pantalla, jugar un nivel, confirmar un flujo visual). Quedan sin ejecutar porque requieren el panel de Browser del lado del usuario — no reflejan lógica sin terminar; la lógica correspondiente ya tiene su test Vitest en verde. El detalle está anotado tarea por tarea en cada `tasks.md`.
+| [`010-evolucion-de-gatos`](specs/010-evolucion-de-gatos/) | Evolución de gatos (`Base` → `Second` → `True`) vía ítems | ✅ 16/16 |
+| [`011-nivel-2-hacia-el-futuro`](specs/011-nivel-2-hacia-el-futuro/) | Segundo nivel jugable con gatos nuevos | ✅ 11/11 |
+| [`012-saga-imperio-de-los-gatos`](specs/012-saga-imperio-de-los-gatos/) | Arcos de saga, Gatorreta y Brote Zombi | ✅ 36/36 |
+| [`013-escalado-capitulos-sets-tesoros`](specs/013-escalado-capitulos-sets-tesoros/) | Escalado por arco y sets de tesoros con bonificación pasiva | ✅ 19/19 |
+| [`014-banner-evento-especial`](specs/014-banner-evento-especial/) | Banner especial de evento: "Etapas de Fantasía" | ✅ 15/15 |
+| [`015-catalogo-habilidades-combate`](specs/015-catalogo-habilidades-combate/) | Efectos `Weaken` / `Freeze` / `Slow`, resistencias | ✅ 21/21 |
+| [`016-multigolpe-critico`](specs/016-multigolpe-critico/) | Tipos de ataque `MultiHit` y `Critical` | ✅ 13/13 |
+| [`017-objetos-de-batalla`](specs/017-objetos-de-batalla/) | Objetos de batalla seleccionables pre-combate (máx. 3) | ✅ 20/20 |
+| [`018-bibliotecas-consulta`](specs/018-bibliotecas-consulta/) | Guía de gatos, guía de enemigos y menú de tesoros | ✅ 22/22 |
+| [`019-rango-de-usuario`](specs/019-rango-de-usuario/) | Sistema de rango de usuario con umbrales reclamables | ✅ 14/14 |
+| [`020-barrera-de-base`](specs/020-barrera-de-base/) | Barrera de base y jefes vinculados | ✅ 15/15 |
+| [`021-reskin-cyber-modern`](specs/021-reskin-cyber-modern/) | Reskin visual Cyber-Modern + sprites reales de combate (12 héroes) | ✅ 50/50 |
+| [`022-datos-semilla-flujo-navegacion`](specs/022-datos-semilla-flujo-navegacion/) | Datos semilla, assets procedimentales y flujo de navegación | ✅ 20/20 |
+| [`023-mapa-de-etapas-visual`](specs/023-mapa-de-etapas-visual/) | Mapa visual de etapas, catálogo completo de gatos obtenibles y grilla de despliegue fija | ✅ 23/23 |
 
 ### Contenido de juego
 
-- **12 gatos** en [`src/data/cats.ts`](src/data/cats.ts), cada uno con `spriteKey` propio (`hero_1`…`hero_12`) y sprites reales de idle/ataque en `public/sprites/`.
-- **3 niveles** en [`src/data/levels.ts`](src/data/levels.ts), agrupados en **2 arcos de saga** ([`src/data/sagaArcs.ts`](src/data/sagaArcs.ts)).
-- **Sets de tesoros** con bonificación pasiva ([`src/data/treasureSets.ts`](src/data/treasureSets.ts)) y **eventos especiales** con banner propio ([`src/data/events.ts`](src/data/events.ts)).
+- **16 gatos jugables** en [`src/data/cats.ts`](src/data/cats.ts): 12 de producción (cada uno con `spriteKey` propio `hero_1`…`hero_12` y sprites reales de idle/ataque en `public/sprites/`) más 4 gatos semilla con diseño procedimental (`specs/022`). Los 13 gatos sin recompensa asignada (núcleo original, habilidades de combate, multigolpe/crítico y los 4 semilla) ahora se otorgan al completar los arcos de saga (`specs/023`) — todo el catálogo jugable es obtenible sin gacha.
+- **3 niveles** en [`src/data/levels.ts`](src/data/levels.ts), agrupados en **2 arcos de saga** ([`src/data/sagaArcs.ts`](src/data/sagaArcs.ts)), presentados como **mapa visual de nodos** conectados (`LevelSelectScreen`, `specs/023`) en vez de lista vertical.
+- **Sets de tesoros** con bonificación pasiva ([`src/data/treasureSets.ts`](src/data/treasureSets.ts)) y **eventos especiales** con banner propio ([`src/data/events.ts`](src/data/events.ts)), representado como nodo de borde dorado en el mapa.
 - **3 objetos de batalla** seleccionables antes del combate ([`src/data/battleItems.ts`](src/data/battleItems.ts)): aceleración de velocidad, energía extra, radar de tesoro.
 - **Umbrales de rango de usuario** reclamables ([`src/data/userRankThresholds.ts`](src/data/userRankThresholds.ts)).
+- **Equipo activo tope de 6** (`MAX_ACTIVE_TEAM_SIZE`, `useMetaStore.ts`) — la barra de despliegue en batalla es una grilla fija de 6 columnas, sin scroll horizontal (`specs/023`).
 - Sin gacha real todavía — `GachaScreen` sigue siendo un stub de navegación.
 
 ---
@@ -123,7 +121,7 @@ src/
 │   └── graphics/unitFactory.ts # Construcción de BattleUnit desde Cat + contenido de nivel/evento
 ├── data/
 │   ├── cats.ts             # Catálogo de gatos (stats + spriteKey)
-│   ├── levels.ts           # Niveles (bases, energía, oleada enemiga)
+│   ├── levels.ts           # Niveles (bases, energía, oleada enemiga, mapPosition en el mapa visual)
 │   ├── sagaArcs.ts         # Arcos de saga y agrupación de niveles
 │   ├── events.ts           # Eventos especiales / banners
 │   ├── treasureSets.ts     # Sets de tesoros y sus bonificaciones pasivas
@@ -152,7 +150,7 @@ Title ──▶ MainMenu ──┬──▶ LevelSelect ──▶ Battle ──�
                            (las 4 subpantallas de Upgrade vuelven a Upgrade)
 ```
 
-`LevelSelectScreen` llama a `useGameStore.startLevel(levelId)` y navega a `Battle`. `Upgrade` funciona como hub hacia `Team` (formación activa), `CatGuide`/`EnemyGuide` (bibliotecas de consulta, specs/018) y `TreasureMenu`. `Gacha` sigue siendo un stub de navegación sin lógica.
+`LevelSelectScreen` renderiza el progreso como un **mapa visual de nodos** (círculos conectados por líneas punteadas, posicionados por `Level.mapPosition`; el evento especial activo aparece como nodo aparte de borde dorado) en vez de la lista vertical original — tocar un nodo disponible o completado abre un panel de detalle con dificultad en estrellas, costo de energía y el botón "¡Atacar!", que llama a `useGameStore.startLevel(levelId)` y navega a `Battle` (`specs/023`). `Upgrade` funciona como hub hacia `Team` (formación activa, tope `MAX_ACTIVE_TEAM_SIZE`), `CatGuide`/`EnemyGuide` (bibliotecas de consulta, specs/018) y `TreasureMenu`. `Gacha` sigue siendo un stub de navegación sin lógica.
 
 ### Motor de combate (`src/engine/`)
 
@@ -177,7 +175,7 @@ Determinista y puro — `stepSimulation(state, deltaSeconds) → nextState`, sin
 ### Estado (Zustand)
 
 - **`useGameStore`** — estado de la partida en curso: `status`, energía, HP de bases, `units[]`, cooldowns de despliegue, objetos de batalla seleccionados, tiempo transcurrido. Completamente efímero: `reset()` lo vuelve a `Idle`, nunca se persiste (Constitución § V).
-- **`useMetaStore`** — progreso persistente del jugador: moneda, niveles desbloqueados/completados, gatos poseídos (nivel, XP, `evolutionStage`), formación activa, energía de misión, ítems de evolución, tesoros obtenidos, recompensas de arco/set otorgadas, inventario de objetos de batalla, enemigos avistados, rango reclamado y ajustes. Se hidrata una vez desde Dexie al arrancar (`hydrate()`) y cada acción de mutación escribe de inmediato en IndexedDB (sin paso de "guardar" separado).
+- **`useMetaStore`** — progreso persistente del jugador: moneda, niveles desbloqueados/completados, gatos poseídos (nivel, XP, `evolutionStage`), formación activa (`setActiveTeam`, tope `MAX_ACTIVE_TEAM_SIZE = 6`), energía de misión, ítems de evolución, tesoros obtenidos, recompensas de arco/set otorgadas (incluye `unlockCatIds` de los 13 gatos previamente inalcanzables, `specs/023`), inventario de objetos de batalla, enemigos avistados, rango reclamado y ajustes. Se hidrata una vez desde Dexie al arrancar (`hydrate()`) y cada acción de mutación escribe de inmediato en IndexedDB (sin paso de "guardar" separado).
 
 ### Persistencia (`src/db/index.ts`)
 
@@ -192,5 +190,5 @@ Vitest + Testing Library + `fake-indexeddb` (jsdom). La suite cubre `src/engine/
 ## Documentación adicional
 
 - [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — principios de diseño no negociables del proyecto.
-- [`specs/`](specs/) — spec/plan/tasks de cada una de las 22 features, en orden cronológico.
+- [`specs/`](specs/) — spec/plan/tasks de cada una de las 23 features, en orden cronológico.
 - [`docs/`](docs/) — material de diseño y rediseño visual adicional (guías de estilo, roadmap de fases, referencia de manual técnico).
