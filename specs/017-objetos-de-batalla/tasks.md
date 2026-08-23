@@ -77,7 +77,7 @@
 
 - [X] T018 [P] `npx tsc -b` limpio.
 - [X] T019 [P] `npm run test` — suite completa (existente + T007/T008/T014/T015/T017) en verde.
-- [ ] T020 Verificación manual en navegador: seleccionar un objeto en `TeamScreen`, confirmar su efecto en la batalla siguiente, y confirmar que el inventario persiste tras recargar. **Pendiente**: confirmado por DOM que el selector renderiza en `TeamScreen` ("Objetos de Batalla (0/3)", los 3 objetos deshabilitados sin stock — inventario vacío en una sesión nueva) sin errores de consola; falta jugar una batalla completa hasta victoria para ganar el primer objeto y confirmar su efecto, bloqueado por el mismo problema de composición del panel Browser que specs/012 T036. `npx tsc -b` y `npm test` (334/334) cubren la lógica.
+- [X] T020 Verificación manual en navegador: seleccionar un objeto en `TeamScreen`, confirmar su efecto en la batalla siguiente, y confirmar que el inventario persiste tras recargar. **Verificado**: seleccionada "Aceleración de Velocidad" en `TeamScreen` (checkbox, "Objetos de Batalla (1/3)"), confirmado al entrar a la siguiente batalla que `useGameStore.unitSpeedMultiplier = 1.5` y que el inventario descontó el objeto (`speed-boost` 1→0, `selectedBattleItemIds` vaciado) — consumo único en `LevelSelectScreen.handlePlay` (FR-006). Tras recargar la página (`navigate` + rehidratar), `battleItemInventory` persistió correctamente vía Dexie (`extra-energy: 4, speed-boost: 0, treasure-radar: 1`). `npx tsc -b` y `npm test` (429/429) en verde.
 
 ---
 

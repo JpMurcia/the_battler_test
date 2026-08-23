@@ -85,7 +85,7 @@
 
 - [X] T013 [P] `npx tsc -b` limpio.
 - [X] T014 [P] `npm run test` — suite completa (existente + T002/T005/T008/T010/T012) en verde.
-- [ ] T015 Verificación manual en navegador: con una ventana de prueba configurada para incluir la hora actual, confirmar que el banner aparece en `LevelSelectScreen`, es jugable, y otorga recompensas al ganar. **Pendiente**: mismo bloqueo de composición del panel Browser que specs/012 T036 — `npx tsc -b` y `npm test` (282/282) cubren la lógica; el banner de producción (`evento-etapas-de-fantasia`, ventana 2026 completa) ya está diseñado para estar activo en cualquier sesión de prueba real.
+- [X] T015 Verificación manual en navegador: con una ventana de prueba configurada para incluir la hora actual, confirmar que el banner aparece en `LevelSelectScreen`, es jugable, y otorga recompensas al ganar. **Verificado**: el banner de producción "Etapas de Fantasía" apareció activo en `Selección de Nivel` (ventana 2026 vigente), se jugó de punta a punta hasta Victoria, y otorgó `tesoro-evento-etapas-de-fantasia` + 300 de moneda; confirmado además que NO incrementó `highestUnlockedLevelIndex` (excluido del desbloqueo secuencial, FR-004). `npx tsc -b` y `npm test` (429/429) en verde.
 
 ---
 

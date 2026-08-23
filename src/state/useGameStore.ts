@@ -89,12 +89,21 @@ export const useGameStore = create<GameState>((set, get) => ({
     const level = resolveLevel(levelId)
     if (!level) return
 
+    const arc = findArcByLevelId(levelId)
+
     // specs/012-saga-imperio-de-los-gatos (US7/FR-011): resuelto una sola vez, nunca releído de LEVELS en cada tick.
-    const activeEnemyWave = zombieMode && level.zombieWave ? level.zombieWave : level.enemyWave
+    // FR-012: si este nivel es el `bossLevelId` de su arco, el jefe se filtra de la oleada zombi — nunca genera
+    // ni bloquea la base enemiga bajo Brote Zombi, aunque el fixture de `zombieWave` liste su catId.
+    const activeEnemyWave =
+      zombieMode && level.zombieWave
+        ? arc?.bossLevelId === levelId && arc.bossCatId
+          ? level.zombieWave.filter((entry) => entry.catId !== arc.bossCatId)
+          : level.zombieWave
+        : level.enemyWave
 
     // specs/013-escalado-capitulos-sets-tesoros (US1/FR-001): mismo enemyStrengthMultiplier de specs/012, aplicado
     // aquí a la vida de la base enemiga — stepSimulation sigue operando solo sobre SimState.enemyBase ya resuelto.
-    const enemyStrengthMultiplier = findArcByLevelId(levelId)?.enemyStrengthMultiplier ?? 1
+    const enemyStrengthMultiplier = arc?.enemyStrengthMultiplier ?? 1
     const enemyBaseHp = Math.round(level.enemyBaseHp * enemyStrengthMultiplier)
 
     // specs/013-escalado-capitulos-sets-tesoros (US4/FR-007): bonificación pasiva de sets de tesoros ya otorgados.

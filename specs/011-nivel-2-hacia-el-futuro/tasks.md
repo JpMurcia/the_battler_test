@@ -27,7 +27,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Verificación manual en navegador: con el Nivel 1 completado, entrar al Nivel 2 desde selección, desplegar gatos (incluidos los nuevos), y confirmar que la batalla resuelve en victoria o derrota igual que el Nivel 1. **Pendiente** — reintentado en sesión posterior: `Selección de Nivel` confirmado por DOM (`Nivel 2: Hacia el Futuro (Bloqueado, costo: 25)` con `highestUnlockedLevelIndex = 0`, coherente con T005), pero el bucle de batalla (rAF/Pixi ticker) no avanza sin composición del panel Browser — mismo bloqueo que specs/010 T016. Requiere panel Browser visible del lado del usuario.
+- [X] T003 [US1] Verificación manual en navegador: con el Nivel 1 completado, entrar al Nivel 2 desde selección, desplegar gatos (incluidos los nuevos), y confirmar que la batalla resuelve en victoria o derrota igual que el Nivel 1. **Verificado**: jugado de punta a punta en el navegador real (panel Browser visible) — Nivel 1 completado (Victoria, moneda +100, `tank-cat` desbloqueado por primera victoria), Nivel 2 jugado desplegando `basic-cat`/`tank-cat`, resolviendo en Victoria (base enemiga 1300→0, incluido el jefe `armored-cat` de `specs/020`).
 - [X] T004 [US1] Test Vitest `tests/unit/engine/simulation.test.ts` (extiende, parametrizado por nivel si el patrón existente lo permite, o caso nuevo): `stepSimulation` con la configuración de `level-2` spawnea la oleada completa y resuelve victoria/derrota correctamente (depende de T002).
 
 **Checkpoint**: Nivel 2 jugable de punta a punta.
@@ -43,7 +43,7 @@
 ### Implementation for User Story 2
 
 - [X] T005 [US2] Test Testing Library `tests/unit/LevelSelectScreen.test.tsx` (extiende, de `specs/005-mapa-de-niveles`): con `LEVELS` de 2 elementos y `highestUnlockedLevelIndex = 0`, `level-2` aparece bloqueado; con `highestUnlockedLevelIndex = 1`, aparece desbloqueado (depende de T002).
-- [ ] T006 [US2] Verificación manual: completar el Nivel 1 en el navegador, confirmar que `unlockNextLevel()` deja `level-2` desbloqueado en la siguiente visita a selección de niveles, sin ninguna excepción especial en el código. **Pendiente** — misma limitación de sesión que T003.
+- [X] T006 [US2] Verificación manual: completar el Nivel 1 en el navegador, confirmar que `unlockNextLevel()` deja `level-2` desbloqueado en la siguiente visita a selección de niveles, sin ninguna excepción especial en el código. **Verificado**: tras la Victoria del Nivel 1, `Selección de Nivel` muestra "Nivel 1: Completado" y "Nivel 2: Hacia el Futuro: Disponible" (antes: Bloqueado) — confirmado por DOM, sin recargar la página.
 
 **Checkpoint**: desbloqueo secuencial validado con contenido real de 2 niveles.
 
@@ -58,7 +58,7 @@
 ### Implementation for User Story 3
 
 - [X] T007 [US3] Test Vitest `tests/unit/data/levels.test.ts` (extiende, de `specs/007-energia-mision-dificultad`, si ya implementada): `level-2.difficulty >= level-1.difficulty` si comparten región (depende de T002).
-- [ ] T008 [US3] Verificación manual: confirmar en `DeployBar` (una vez el jugador posea los gatos nuevos) que aparecen como opciones distintas de los 4 originales. **Pendiente** — misma limitación de sesión que T003.
+- [X] T008 [US3] Verificación manual: confirmar en `DeployBar` (una vez el jugador posea los gatos nuevos) que aparecen como opciones distintas de los 4 originales. **Verificado**: al entrar al Nivel 2 ya con `tank-cat` poseído (desbloqueado por la primera victoria del Nivel 1), `DeployBar` muestra "Gato Básico (10)" y "Gato Tanque (30)" como botones distintos.
 
 **Checkpoint**: las tres historias completas — spec cerrada.
 
@@ -68,7 +68,7 @@
 
 - [X] T009 [P] `npx tsc -b` limpio.
 - [X] T010 [P] `npm test` — suite completa (existente + T004/T005/T007) en verde.
-- [ ] T011 Recorrido manual de punta a punta: Nivel 1 → completar → Nivel 2 desbloqueado → jugar Nivel 2 → resultado. **Pendiente** — misma limitación de sesión que T003.
+- [X] T011 Recorrido manual de punta a punta: Nivel 1 → completar → Nivel 2 desbloqueado → jugar Nivel 2 → resultado. **Verificado**: recorrido completo en un solo flujo real de navegador (ver T003/T006/T008) — Nivel 1 → Victoria → Nivel 2 disponible → Nivel 2 jugado con el roster ampliado → Victoria.
 
 ---
 

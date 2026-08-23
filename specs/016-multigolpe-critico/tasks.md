@@ -70,7 +70,7 @@
 
 - [X] T011 [P] `npx tsc -b` limpio.
 - [X] T012 [P] `npm run test` — suite completa (existente de `src/engine/` sin regresión + T006/T007/T008/T010) en verde.
-- [ ] T013 Recorrido manual: una unidad `MultiHit` y una `Critical` de prueba enfrentadas en `BattleScreen`, confirmando que `'Single'`/`'Area'`/`'LongRange'` existentes no cambian su comportamiento. **Pendiente**: mismo bloqueo de composición del panel Browser que specs/012 T036 — `npx tsc -b` y `npm test` (311/311) cubren la lógica; `triple-strike-cat`/`lucky-cat` ya están en el catálogo real.
+- [X] T013 Recorrido manual: una unidad `MultiHit` y una `Critical` de prueba enfrentadas en `BattleScreen`, confirmando que `'Single'`/`'Area'`/`'LongRange'` existentes no cambian su comportamiento. **Verificado**: `triple-strike-cat` (`MultiHit`, `hitsPerSequence: 3`) y `lucky-cat` (`Critical`, `criticalChance: 0.3`) desplegados junto al roster base en una batalla real de `level-1`, confirmado por estado que ambos `BattleUnit` conservan sus campos de ataque especiales durante el combate; la batalla resolvió en Victoria sin errores de consola, con las unidades `Single`/`Area`/`LongRange` existentes (`basic-cat` etc.) comportándose igual que en el resto de la sesión. `npx tsc -b` y `npm test` (429/429) en verde.
 
 ---
 

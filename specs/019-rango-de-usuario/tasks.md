@@ -58,7 +58,7 @@
 
 - [X] T012 [P] `npx tsc -b` limpio.
 - [X] T013 [P] `npm run test` — suite completa (existente + T007/T010/T011) en verde.
-- [ ] T014 Verificación manual en navegador: mejorar unidades hasta alcanzar un umbral de prueba, reclamarlo, y confirmar que el objeto de batalla aparece en `TeamScreen` (`specs/017`). **Parcialmente confirmado**: `UpgradeScreen` muestra "Rango de Usuario: 1" con los 3 umbrales (rango 3/5/10) y sus botones "Reclamar" correctamente deshabilitados (rango 1 no alcanza ninguno), sin errores de consola. Falta mejorar unidades hasta alcanzar rango 3, reclamar, y confirmar en `TeamScreen` — bloqueado por el mismo problema de composición del panel Browser que specs/012 T036 (el click de "Mejorar" sí funciona vía DOM, pero verificar el flujo completo con capturas visuales requiere el panel compuesto). `npx tsc -b` y `npm test` (356/356) cubren la lógica.
+- [X] T014 Verificación manual en navegador: mejorar unidades hasta alcanzar un umbral de prueba, reclamarlo, y confirmar que el objeto de batalla aparece en `TeamScreen` (`specs/017`). **Verificado**: con 3 gatos poseídos nivel 1 (Nivel de personaje: 3), `UpgradeScreen` mostró el botón "Reclamar" del Rango 3 habilitado; al pulsarlo, cambió a "Rango 3: extra-energy x1 (Reclamado)" y `TeamScreen` reflejó el objeto otorgado ("Energía Extra (0/3)", incluyendo también las 2 unidades ya ganadas como recompensa de nivel). `npx tsc -b` y `npm test` (429/429) en verde.
 
 ---
 

@@ -69,7 +69,9 @@ vi.mock('../../src/data/sagaArcs', async (importOriginal) => {
           completionRewards: {},
         }
       }
-      return undefined
+      // Cualquier otro levelId (p.ej. 'level-2', nivel jefe real de specs/020) resuelve por el arco real —
+      // solo los dos niveles de prueba de arriba necesitan un arco sintético.
+      return actual.findArcByLevelId(levelId)
     },
   }
 })
@@ -355,6 +357,20 @@ describe('useGameStore.startLevel — Brote Zombi (specs/012-saga-imperio-de-los
 
     expect(useGameStore.getState().activeEnemyWave).toEqual(level1.enemyWave)
   })
+
+  // FR-012 + specs/020-barrera-de-base: level-2 es el bossLevelId de arco-2 (armored-cat) — su propio
+  // zombieWave lista a armored-cat como enemigo más, por lo que sin este filtro el jefe seguiría
+  // generándose y bloqueando la base enemiga incluso en Brote Zombi (encontrado en el recorrido manual
+  // de tasks.md T036, ausente de la cobertura previa porque solo ejercía level-1, que no es nivel jefe).
+  it('FR-012: en un nivel que es bossLevelId de su arco, Brote Zombi filtra al jefe de activeEnemyWave', () => {
+    const level2 = LEVELS.find((candidate) => candidate.id === 'level-2')!
+
+    useGameStore.getState().startLevel('level-2', true)
+
+    const activeEnemyWave = useGameStore.getState().activeEnemyWave!
+    expect(activeEnemyWave.some((entry) => entry.catId === 'armored-cat')).toBe(false)
+    expect(activeEnemyWave).toEqual(level2.zombieWave!.filter((entry) => entry.catId !== 'armored-cat'))
+  })
 })
 
 describe('useGameStore — fase especial de evento (specs/014-banner-evento-especial US2/US3)', () => {
@@ -428,11 +444,13 @@ describe('useGameStore.startLevel — vida de base enemiga por arco (specs/013-e
   })
 
   it('sin arco encontrado, enemyBase.maxHp usa Level.enemyBaseHp sin multiplicar', () => {
-    const level1 = LEVELS.find((candidate) => candidate.id === 'level-1')!
+    // 'level-1' ya no sirve como representante de "sin arco" — specs/012 lo agregó a arco-1-imperio-de-los-gatos.
+    // 'lane-length-test-level' (mock de arriba) no pertenece a ningún SagaArc real ni de prueba.
+    const level = LEVELS.find((candidate) => candidate.id === 'lane-length-test-level')!
 
-    useGameStore.getState().startLevel('level-1')
+    useGameStore.getState().startLevel('lane-length-test-level')
 
-    expect(useGameStore.getState().enemyBase.maxHp).toBe(level1.enemyBaseHp)
+    expect(useGameStore.getState().enemyBase.maxHp).toBe(level.enemyBaseHp)
   })
 })
 

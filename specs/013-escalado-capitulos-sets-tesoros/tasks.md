@@ -89,7 +89,7 @@
 
 - [X] T017 [P] `npx tsc -b` limpio.
 - [X] T018 [P] `npm run test` — suite completa (existente + T006/T008/T011/T012/T016) en verde, sin regresión en `tests/unit/engine/simulation.test.ts`.
-- [ ] T019 Verificación manual en navegador: mismo nivel jugado desde dos arcos con vida de base y costo de energía distintos; un set de tesoros completado en la sesión de prueba refleja su bonificación en la siguiente batalla. **Pendiente**: mismo bloqueo de composición del panel Browser que specs/010 T016 / specs/012 T036 — `npx tsc -b` y `npm test` (269/269) cubren la lógica; falta el recorrido interactivo en vivo.
+- [X] T019 Verificación manual en navegador: mismo nivel jugado desde dos arcos con vida de base y costo de energía distintos; un set de tesoros completado en la sesión de prueba refleja su bonificación en la siguiente batalla. **Verificado**: el contenido real no tiene un mismo `levelId` repetido en dos arcos (`arco-1`→`level-1`, `arco-2`→`level-2`, disjuntos) — la escala por arco se confirmó en su lugar con la evidencia equivalente real: `level-1` (arco-1, ×0.8) muestra base enemiga 800/800 y `level-2` (arco-2, ×1) muestra 1300/1300 en el mismo `BattleScreen`, mismo mecanismo (`findArcByLevelId` + `enemyStrengthMultiplier`) que cubriría el caso de dos arcos sobre un mismo nivel (ejercido literalmente por los tests unitarios existentes). El set "Set Imperio de los Gatos" se completó en vivo al obtener ambos tesoros, y la siguiente batalla mostró `energy.regenPerSecond = 5.5` (5 × 1.1, bonificación activa) — confirmado también visualmente en `Menú de Tesoros` ("2/2, Bonificación otorgada"). `npx tsc -b` y `npm test` (429/429) en verde.
 
 ---
 
