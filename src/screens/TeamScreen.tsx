@@ -2,7 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { CATS, RARITY_TAG_CLASS } from '../data/cats'
-import { MAX_ACTIVE_TEAM_SIZE, useMetaStore } from '../state/useMetaStore'
+import { MAX_TEAM_ROSTER_SIZE, useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
 
 interface TeamScreenProps {
@@ -71,8 +71,10 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
         <ul className="list-card">
           {CATS.filter((cat) => cat.id in ownedCats).map((cat) => {
             const checked = selectedIds.includes(cat.id)
-            // specs/023-mapa-de-etapas-visual (FR-015): mismo patrón que disabledToSelect de BattleItemSelector.
-            const disabledToSelect = !checked && selectedIds.length >= MAX_ACTIVE_TEAM_SIZE
+            // specs/022-datos-semilla-flujo-navegacion (FR-008): equipo equipable de hasta 10 — mismo patrón
+            // que disabledToSelect de BattleItemSelector (no confundir con MAX_ACTIVE_TEAM_SIZE, tope de 6
+            // de la grilla de despliegue en batalla, specs/023).
+            const disabledToSelect = !checked && selectedIds.length >= MAX_TEAM_ROSTER_SIZE
             return (
               <li key={cat.id} className="list-card__row">
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>

@@ -213,14 +213,23 @@ describe('useMetaStore', () => {
     expect(useMetaStore.getState().activeTeamCatIds).toEqual(['basic-cat'])
   })
 
-  it('specs/023-mapa-de-etapas-visual (FR-015): setActiveTeam rechaza más de MAX_ACTIVE_TEAM_SIZE sin mutar el estado', async () => {
+  it('specs/022-datos-semilla-flujo-navegacion (FR-008): setActiveTeam rechaza más de MAX_TEAM_ROSTER_SIZE (10) sin mutar el estado', async () => {
     await useMetaStore.getState().hydrate()
     useMetaStore.setState({ activeTeamCatIds: ['basic-cat'] })
 
-    const ok = useMetaStore.getState().setActiveTeam(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+    const ok = useMetaStore.getState().setActiveTeam(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'])
 
     expect(ok).toBe(false)
     expect(useMetaStore.getState().activeTeamCatIds).toEqual(['basic-cat'])
+  })
+
+  it('specs/022-datos-semilla-flujo-navegacion (FR-008): setActiveTeam acepta hasta 10 catId, incluidos más de 6 (no confundir con MAX_ACTIVE_TEAM_SIZE de la grilla de despliegue, specs/023)', async () => {
+    await useMetaStore.getState().hydrate()
+
+    const ok = useMetaStore.getState().setActiveTeam(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().activeTeamCatIds).toHaveLength(10)
   })
 
   it('setActiveTeam persiste y actualiza una selección no vacía', async () => {

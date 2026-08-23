@@ -37,21 +37,39 @@ describe('TeamScreen', () => {
   })
 })
 
-describe('TeamScreen — tope de equipo activo (specs/023-mapa-de-etapas-visual US3/FR-015)', () => {
-  const SEVEN_OWNED_CAT_IDS = ['basic-cat', 'tank-cat', 'speed-cat', 'heavy-cat', 'solar-cat', 'armored-cat', 'frost-cat']
+describe('TeamScreen — tope de equipo equipable (specs/022-datos-semilla-flujo-navegacion FR-008)', () => {
+  // specs/022 FR-008: equipo equipable de 5 a 10 unidades — no confundir con MAX_ACTIVE_TEAM_SIZE (6),
+  // el tope de la grilla de despliegue en batalla (specs/023), que no limita cuántas se pueden equipar.
+  const ELEVEN_OWNED_CAT_IDS = [
+    'basic-cat', 'tank-cat', 'speed-cat', 'heavy-cat', 'solar-cat', 'armored-cat',
+    'frost-cat', 'weaken-cat', 'slow-cat', 'zombie-ward-cat', 'triple-strike-cat',
+  ]
 
-  it('con 6 gatos ya seleccionados, el checkbox de un 7º gato poseído queda deshabilitado', () => {
+  it('un 7º gato poseído puede seleccionarse (el tope de 6 es solo de la grilla de despliegue, no del equipo)', () => {
     useMetaStore.setState({
       ownedCats: Object.fromEntries(
-        SEVEN_OWNED_CAT_IDS.map((catId) => [catId, { level: 1, experienceInvested: 0, evolutionStage: 'Base' as const }]),
+        ELEVEN_OWNED_CAT_IDS.map((catId) => [catId, { level: 1, experienceInvested: 0, evolutionStage: 'Base' as const }]),
       ),
-      activeTeamCatIds: SEVEN_OWNED_CAT_IDS.slice(0, 6),
+      activeTeamCatIds: ELEVEN_OWNED_CAT_IDS.slice(0, 6),
     })
     render(<TeamScreen onNavigate={noop} />)
 
     const seventhCatCheckbox = screen.getByRole('checkbox', { name: /Gato Escarcha/ })
-    expect(seventhCatCheckbox).toBeDisabled()
-    expect(seventhCatCheckbox).not.toBeChecked()
+    expect(seventhCatCheckbox).not.toBeDisabled()
+  })
+
+  it('con 10 gatos ya seleccionados, el checkbox de un 11º gato poseído queda deshabilitado', () => {
+    useMetaStore.setState({
+      ownedCats: Object.fromEntries(
+        ELEVEN_OWNED_CAT_IDS.map((catId) => [catId, { level: 1, experienceInvested: 0, evolutionStage: 'Base' as const }]),
+      ),
+      activeTeamCatIds: ELEVEN_OWNED_CAT_IDS.slice(0, 10),
+    })
+    render(<TeamScreen onNavigate={noop} />)
+
+    const eleventhCatCheckbox = screen.getByRole('checkbox', { name: /Gato Triple Golpe/ })
+    expect(eleventhCatCheckbox).toBeDisabled()
+    expect(eleventhCatCheckbox).not.toBeChecked()
   })
 })
 

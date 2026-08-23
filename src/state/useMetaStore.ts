@@ -83,8 +83,15 @@ interface MetaState {
 
 const DEFAULT_SETTINGS: MetaSettings = { musicVolume: 1, sfxVolume: 1, language: 'es' }
 
-/** specs/023-mapa-de-etapas-visual (FR-015). Tope del mockup: grilla de despliegue de `repeat(6,1fr)`. */
+/** specs/023-mapa-de-etapas-visual (FR-014/FR-016). Tope del mockup: grilla de despliegue de `repeat(6,1fr)`.
+ * Acota únicamente cuántas unidades del equipo se muestran/despliegan a la vez en batalla (`DeployBar`) — no
+ * el tamaño del equipo equipable en sí, ver `MAX_TEAM_ROSTER_SIZE`. */
 export const MAX_ACTIVE_TEAM_SIZE = 6
+
+/** specs/022-datos-semilla-flujo-navegacion (FR-008): equipo equipable de 5 a 10 unidades. Corrige una
+ * contradicción detectada tras specs/023: `setActiveTeam`/`TeamScreen` habían quedado acotados a
+ * `MAX_ACTIVE_TEAM_SIZE` (6, un límite de la grilla de despliegue en batalla, no del roster equipable). */
+export const MAX_TEAM_ROSTER_SIZE = 10
 
 /** Costo de mejora provisional, no balanceado (tasks.md Fase 1). */
 const upgradeCost = (currentLevel: number) => currentLevel * 100
@@ -263,7 +270,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   },
 
   setActiveTeam: (catIds) => {
-    if (catIds.length === 0 || catIds.length > MAX_ACTIVE_TEAM_SIZE) return false
+    if (catIds.length === 0 || catIds.length > MAX_TEAM_ROSTER_SIZE) return false
     set({ activeTeamCatIds: catIds })
     void db.teamFormation.put({ id: 1, catIds })
     return true

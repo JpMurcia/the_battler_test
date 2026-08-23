@@ -46,16 +46,21 @@ Reparto de los 13 `catId` sin camino de obtención (research.md Decisión 2), ag
 
 `unlockNextArcId` de `arco-1` permanece sin cambios (FR-012) — el campo nuevo es puramente aditivo dentro de `completionRewards`.
 
-## `MAX_ACTIVE_TEAM_SIZE` (nueva constante — `src/state/useMetaStore.ts`)
+## `MAX_ACTIVE_TEAM_SIZE` / `MAX_TEAM_ROSTER_SIZE` (`src/state/useMetaStore.ts`)
+
+*Corregido post-cierre — ver spec.md § Nota de corrección: FR-015 original acotaba tanto la grilla de despliegue como el equipo equipable al mismo número (6), pisando el rango 5-10 ya exigido por `specs/022` FR-008.*
 
 ```ts
-/** specs/023-mapa-de-etapas-visual (FR-015). Tope del mockup: grilla de despliegue de `repeat(6,1fr)`. */
+/** specs/023 (FR-014/FR-016). Cuántas unidades se muestran/despliegan a la vez en DeployBar — no el tamaño del equipo. */
 export const MAX_ACTIVE_TEAM_SIZE = 6
+
+/** specs/022 (FR-008). Tope del equipo equipable en sí (mínimo real: "no vacío", ver Nota de corrección). */
+export const MAX_TEAM_ROSTER_SIZE = 10
 ```
 
-- `setActiveTeam(catIds)` (`useMetaStore.ts:262-267`) agrega el guard `catIds.length > MAX_ACTIVE_TEAM_SIZE` → `return false` (mismo patrón de rechazo sin efecto que ya usa `catIds.length === 0`).
-- `DeployBar` (`src/screens/BattleScreen.tsx:68-94`) recorta su lista de despliegue a `.slice(0, MAX_ACTIVE_TEAM_SIZE)` — cubre FR-016 (equipos heredados de más de 6) sin depender de que `setActiveTeam` haya validado ese equipo.
-- `TeamScreen` (`src/screens/TeamScreen.tsx`) deshabilita el checkbox de un `catId` no seleccionado cuando `selectedIds.length >= MAX_ACTIVE_TEAM_SIZE` (mismo patrón ya usado por `BattleItemSelector`/`MAX_BATTLE_ITEMS_PER_BATTLE` en el mismo archivo).
+- `setActiveTeam(catIds)` (`useMetaStore.ts`) agrega el guard `catIds.length > MAX_TEAM_ROSTER_SIZE` → `return false` (mismo patrón de rechazo sin efecto que ya usa `catIds.length === 0`, de `specs/006`).
+- `DeployBar` (`src/screens/BattleScreen.tsx`) recorta su lista de despliegue a `.slice(0, MAX_ACTIVE_TEAM_SIZE)` — cubre FR-016 (equipos de 7-10, ya un caso normal bajo `specs/022`, no solo "heredado") sin depender de que `setActiveTeam` haya validado ese equipo.
+- `TeamScreen` (`src/screens/TeamScreen.tsx`) deshabilita el checkbox de un `catId` no seleccionado cuando `selectedIds.length >= MAX_TEAM_ROSTER_SIZE` (mismo patrón ya usado por `BattleItemSelector`/`MAX_BATTLE_ITEMS_PER_BATTLE` en el mismo archivo).
 
 ## Nodo de UI — `StageNode` (tipo interno de `LevelSelectScreen.tsx`, no persistido)
 
