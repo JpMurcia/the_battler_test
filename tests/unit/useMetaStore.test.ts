@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { RarityType } from '../../src/data/cats'
 import { LEVELS } from '../../src/data/levels'
 import { db } from '../../src/db'
 import { useMetaStore } from '../../src/state/useMetaStore'
@@ -135,6 +136,9 @@ const INITIAL_STATE = {
   pendingTreasureRadar: false,
   encounteredEnemyCatIds: [] as string[],
   claimedRankThresholds: [] as number[],
+  gachaCurrency: 0,
+  npCurrency: 0,
+  gachaStorage: [] as { id?: number; catId: string; rarity: RarityType }[],
 }
 
 beforeEach(async () => {
@@ -152,6 +156,7 @@ beforeEach(async () => {
     db.battleItems.clear(),
     db.encounteredEnemies.clear(),
     db.userRank.clear(),
+    db.gachaStorage.clear(),
   ])
   useMetaStore.setState(INITIAL_STATE)
 })
@@ -166,8 +171,12 @@ describe('useMetaStore', () => {
     expect(state.highestUnlockedLevelIndex).toBe(0)
     expect(state.completedLevelIds).toEqual([])
     expect(state.ownedCats).toEqual({
-      [CATS[0].id]: { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+      [CATS[0].id]: { level: 1, experienceInvested: 0, evolutionStage: 'Base', plusLevel: 0 },
     })
+    // specs/024-sistema-gacha.
+    expect(state.gachaCurrency).toBe(0)
+    expect(state.npCurrency).toBe(0)
+    expect(state.gachaStorage).toEqual([])
     // specs/012-saga-imperio-de-los-gatos.
     expect(state.obtainedTreasureIds).toEqual([])
     expect(state.grantedArcRewardIds).toEqual([])
@@ -836,6 +845,121 @@ describe('useMetaStore', () => {
       expect(useMetaStore.getState().battleItemInventory['speed-boost']).toBe(2)
       expect(useMetaStore.getState().battleItemInventory['extra-energy']).toBe(1)
       expect([...useMetaStore.getState().claimedRankThresholds].sort()).toEqual([2, 4])
+    })
+  })
+
+  // specs/024-sistema-gacha.
+  describe('gacha', () => {
+    beforeEach(async () => {
+      await useMetaStore.getState().hydrate()
+    })
+
+    it('FR-001/FR-005: rollGachaSingle con saldo suficiente descuenta 150, agrega 1 cápsula al Almacén y no toca ownedCats', async () => {
+      useMetaStore.setState({ gachaCurrency: 150 })
+
+      const result = await useMetaStore.getState().rollGachaSingle('estandar')
+
+      expect(result).not.toBeNull()
+      expect(useMetaStore.getState().gachaCurrency).toBe(0)
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(1)
+      expect(useMetaStore.getState().gachaStorage[0].catId).toBe(result!.catId)
+      expect(useMetaStore.getState().ownedCats[result!.catId]).toBeUndefined()
+      const rows = await db.gachaStorage.toArray()
+      expect(rows).toHaveLength(1)
+    })
+
+    it('FR-004: rollGachaSingle con saldo insuficiente no descuenta ni agrega ninguna cápsula', async () => {
+      useMetaStore.setState({ gachaCurrency: 100 })
+
+      const result = await useMetaStore.getState().rollGachaSingle('estandar')
+
+      expect(result).toBeNull()
+      expect(useMetaStore.getState().gachaCurrency).toBe(100)
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(0)
+    })
+
+    it('FR-002: rollGachaMulti con saldo suficiente descuenta 1500 (no 11x150) y agrega exactamente 11 cápsulas', async () => {
+      useMetaStore.setState({ gachaCurrency: 1500 })
+
+      const results = await useMetaStore.getState().rollGachaMulti('estandar')
+
+      expect(results).toHaveLength(11)
+      expect(useMetaStore.getState().gachaCurrency).toBe(0)
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(11)
+    })
+
+    it('FR-004: rollGachaMulti con saldo insuficiente para la x11 retorna null sin efecto', async () => {
+      useMetaStore.setState({ gachaCurrency: 1499 })
+
+      const results = await useMetaStore.getState().rollGachaMulti('estandar')
+
+      expect(results).toBeNull()
+      expect(useMetaStore.getState().gachaCurrency).toBe(1499)
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(0)
+    })
+
+    it('FR-006: activateCapsule de un catId no poseído lo agrega a ownedCats y retira la cápsula del Almacén', async () => {
+      const id = await db.gachaStorage.add({ catId: 'tank-cat', rarity: 'Raro' })
+      useMetaStore.setState({ gachaStorage: [{ id, catId: 'tank-cat', rarity: 'Raro' }] })
+
+      await useMetaStore.getState().activateCapsule(id)
+
+      expect(useMetaStore.getState().ownedCats['tank-cat']).toEqual({ level: 1, experienceInvested: 0, evolutionStage: 'Base' })
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(0)
+      expect(await db.gachaStorage.toArray()).toHaveLength(0)
+    })
+
+    it('FR-007: activateCapsule de un catId ya poseído suma nivel "+" y no crea una segunda entrada', async () => {
+      const id = await db.gachaStorage.add({ catId: 'basic-cat', rarity: 'Raro' })
+      useMetaStore.setState({
+        ownedCats: { 'basic-cat': { level: 3, experienceInvested: 200, evolutionStage: 'Base' } },
+        gachaStorage: [{ id, catId: 'basic-cat', rarity: 'Raro' }],
+      })
+
+      await useMetaStore.getState().activateCapsule(id)
+
+      const ownedCats = useMetaStore.getState().ownedCats
+      expect(Object.keys(ownedCats)).toEqual(['basic-cat'])
+      expect(ownedCats['basic-cat'].plusLevel).toBe(1)
+      expect(ownedCats['basic-cat'].level).toBe(3)
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(0)
+    })
+
+    it('FR-008: exchangeCapsuleForXp suma a currency, retira la cápsula, no toca plusLevel', async () => {
+      const id = await db.gachaStorage.add({ catId: 'basic-cat', rarity: 'Raro' })
+      useMetaStore.setState({
+        currency: 0,
+        ownedCats: { 'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base', plusLevel: 2 } },
+        gachaStorage: [{ id, catId: 'basic-cat', rarity: 'Raro' }],
+      })
+
+      await useMetaStore.getState().exchangeCapsuleForXp(id)
+
+      expect(useMetaStore.getState().currency).toBe(150)
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(0)
+      expect(useMetaStore.getState().ownedCats['basic-cat'].plusLevel).toBe(2)
+    })
+
+    it('FR-009: exchangeCapsuleForNp en una cápsula Megarraro suma a npCurrency', async () => {
+      const id = await db.gachaStorage.add({ catId: 'seed-cat-titan', rarity: 'Megarraro' })
+      useMetaStore.setState({ npCurrency: 0, gachaStorage: [{ id, catId: 'seed-cat-titan', rarity: 'Megarraro' }] })
+
+      const ok = await useMetaStore.getState().exchangeCapsuleForNp(id)
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().npCurrency).toBe(150)
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(0)
+    })
+
+    it('FR-009: exchangeCapsuleForNp en una cápsula Raro/Superraro retorna false sin efecto', async () => {
+      const id = await db.gachaStorage.add({ catId: 'tank-cat', rarity: 'Raro' })
+      useMetaStore.setState({ npCurrency: 0, gachaStorage: [{ id, catId: 'tank-cat', rarity: 'Raro' }] })
+
+      const ok = await useMetaStore.getState().exchangeCapsuleForNp(id)
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().npCurrency).toBe(0)
+      expect(useMetaStore.getState().gachaStorage).toHaveLength(1)
     })
   })
 })

@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { CATS, RARITY_TAG_CLASS, getEffectiveCatStats } from '../data/cats'
-import { useMetaStore } from '../state/useMetaStore'
+import { formatCatLevel, useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
 
 interface CatGuideScreenProps {
@@ -21,7 +21,7 @@ export function CatGuideScreen({ onNavigate }: CatGuideScreenProps) {
           return (
             <li key={cat.id} className="list-card__row">
               <span className="list-card__title">
-                {cat.name} — Nivel {owned.level}, Forma {owned.evolutionStage}: HP {stats.hp}, Daño {stats.damage}
+                {cat.name} — Nivel {formatCatLevel(owned)}, Forma {owned.evolutionStage}: HP {stats.hp}, Daño {stats.damage}
               </span>
               {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
             </li>

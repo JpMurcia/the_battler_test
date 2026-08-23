@@ -1,7 +1,7 @@
 import { ArrowLeft, BookOpen, Gem, Skull, Users } from 'lucide-react'
 import { CATS, RARITY_TAG_CLASS } from '../data/cats'
 import { USER_RANK_THRESHOLDS } from '../data/userRankThresholds'
-import { characterLevelOf, useMetaStore } from '../state/useMetaStore'
+import { characterLevelOf, formatCatLevel, useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
 
 interface UpgradeScreenProps {
@@ -78,7 +78,7 @@ export function UpgradeScreen({ onNavigate }: UpgradeScreenProps) {
               <li key={cat.id} className="list-card__row">
                 <div className="list-card__main">
                   <span className="list-card__title">
-                    {cat.name} — Nivel {owned.level}
+                    {cat.name} — Nivel {formatCatLevel(owned)}
                   </span>
                   <span className="list-card__meta">siguiente mejora: {cost}</span>
                 </div>

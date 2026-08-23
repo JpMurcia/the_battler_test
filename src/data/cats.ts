@@ -1,5 +1,6 @@
 import type { Ability, AppliesEffect, AttackType, ClassificationType, EffectType, SpecialClassificationType } from '../engine/types'
 import { SEED_CATS_AS_CATS, SEED_ENEMIES_AS_CATS } from './seedData'
+import { GACHA_UNITS } from './gachaUnits'
 
 /** specs/010-evolucion-de-gatos. `requiredItemCount` solo es relevante en la forma `true` (FR-001). */
 export interface EvolutionFormData {
@@ -289,4 +290,6 @@ export const CATS: Cat[] = [
   /** specs/022-datos-semilla-flujo-navegacion (FR-001/FR-002). Append — nunca reemplaza el catálogo de producción de arriba. */
   ...SEED_CATS_AS_CATS,
   ...SEED_ENEMIES_AS_CATS,
+  /** specs/024-sistema-gacha (FR-013). Append — puebla Legendario/Colaboración, antes sin ninguna unidad. */
+  ...GACHA_UNITS,
 ]

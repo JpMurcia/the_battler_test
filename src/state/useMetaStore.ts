@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { db, ensureDefaultProfile } from '../db'
+import { db, ensureDefaultProfile, type GachaStorageRow } from '../db'
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { CATS } from '../data/cats'
 import { getAllTreasureIds, resolveLevel } from '../data/events'
@@ -9,12 +9,24 @@ import { TREASURE_SETS } from '../data/treasureSets'
 import { USER_RANK_THRESHOLDS } from '../data/userRankThresholds'
 import { computeMissionEnergyMax, computeRecoveredEnergy, computeRegenPerSecond } from '../data/missionEnergy'
 import type { TreasureSetPassiveBonus } from '../data/treasureSets'
+import {
+  GACHA_BANNERS,
+  GACHA_CAPSULE_EXCHANGE_VALUE,
+  GACHA_MULTI_ROLL_COST,
+  GACHA_MULTI_ROLL_COUNT,
+  GACHA_SINGLE_ROLL_COST,
+  rollMany,
+  rollOne,
+  type GachaRollResult,
+} from '../data/gacha'
 
 interface OwnedCatMeta {
   level: number
   experienceInvested: number
   /** specs/010-evolucion-de-gatos. */
   evolutionStage: 'Base' | 'Second' | 'True'
+  /** specs/024-sistema-gacha (FR-007). Ausente/0 = sin cápsulas duplicadas activadas todavía. */
+  plusLevel?: number
 }
 
 interface MetaSettings {
@@ -55,6 +67,12 @@ interface MetaState {
   encounteredEnemyCatIds: string[]
   /** specs/019-rango-de-usuario (FR-007). Monótono — un umbral reclamado nunca vuelve a quedar disponible. */
   claimedRankThresholds: number[]
+  /** specs/024-sistema-gacha (FR-018). Moneda de gacha — separada de `currency`, se gana jugando, nunca se compra. */
+  gachaCurrency: number
+  /** specs/024-sistema-gacha (FR-009). Moneda de progresión secundaria — solo por intercambio de cápsulas Megarraro/Legendario. */
+  npCurrency: number
+  /** specs/024-sistema-gacha (FR-005). Cápsulas de gacha sin activar, pendientes en el Almacén. */
+  gachaStorage: GachaStorageRow[]
 
   hydrate: () => Promise<void>
   addCurrency: (amount: number) => void
@@ -79,6 +97,20 @@ interface MetaState {
   clearPendingTreasureRadar: () => void
   recordEncounteredEnemy: (catId: string) => void
   claimRankThreshold: (rank: number) => boolean
+  /**
+   * specs/024-sistema-gacha (FR-001/FR-004/FR-005). `null` = saldo insuficiente, sin efecto. Async — a diferencia
+   * del resto de acciones de este store, `gachaStorage` usa clave autoincremental de Dexie (`++id`), que solo se
+   * conoce tras resolver la escritura (research.md Decisión 5); el resto del estado se actualiza igual de inmediato.
+   */
+  rollGachaSingle: (bannerId: string) => Promise<GachaRollResult | null>
+  /** specs/024-sistema-gacha (FR-002/FR-004). `null` = saldo insuficiente, sin efecto. Async — mismo motivo que rollGachaSingle. */
+  rollGachaMulti: (bannerId: string) => Promise<GachaRollResult[] | null>
+  /** specs/024-sistema-gacha (FR-006/FR-007). Nuevo → addOwnedCat; ya poseído → +1 plusLevel. */
+  activateCapsule: (storageRowId: number) => Promise<void>
+  /** specs/024-sistema-gacha (FR-008). Retira la cápsula, suma a `currency` (alias de "XP", research.md Decisión 1). */
+  exchangeCapsuleForXp: (storageRowId: number) => Promise<void>
+  /** specs/024-sistema-gacha (FR-009). Solo cápsulas Megarraro/Legendario — `false` sin efecto si la rareza no califica. */
+  exchangeCapsuleForNp: (storageRowId: number) => Promise<boolean>
 }
 
 const DEFAULT_SETTINGS: MetaSettings = { musicVolume: 1, sfxVolume: 1, language: 'es' }
@@ -105,7 +137,14 @@ const UPGRADE_CAP_EXTENDED = 20
  * cálculo, exportada para que `UpgradeScreen` deje de mantener su propia copia (plan.md Key Design Decision 1).
  */
 export const characterLevelOf = (ownedCats: Record<string, OwnedCatMeta>) =>
-  Object.values(ownedCats).reduce((sum, cat) => sum + cat.level, 0)
+  Object.values(ownedCats).reduce((sum, cat) => sum + cat.level + (cat.plusLevel ?? 0), 0)
+
+/**
+ * specs/024-sistema-gacha (FR-007, research.md Decisión 3). Formato "20+10" del manual técnico § 5.7 —
+ * único punto de esta cadena, reutilizado por CatGuideScreen/UpgradeScreen.
+ */
+export const formatCatLevel = (owned: OwnedCatMeta) =>
+  owned.plusLevel ? `${owned.level}+${owned.plusLevel}` : `${owned.level}`
 
 export const useMetaStore = create<MetaState>((set, get) => ({
   isHydrated: false,
@@ -125,6 +164,9 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   pendingTreasureRadar: false,
   encounteredEnemyCatIds: [],
   claimedRankThresholds: [],
+  gachaCurrency: 0,
+  npCurrency: 0,
+  gachaStorage: [],
 
   hydrate: async () => {
     await ensureDefaultProfile()
@@ -142,6 +184,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       battleItemsRow,
       encounteredEnemiesRow,
       userRankRow,
+      gachaStorage,
     ] = await Promise.all([
       db.playerProfile.get(1),
       db.settings.get(1),
@@ -156,12 +199,18 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       db.battleItems.get(1),
       db.encounteredEnemies.get(1),
       db.userRank.get(1),
+      db.gachaStorage.toArray(),
     ])
 
     const ownedCats = Object.fromEntries(
       ownedCatRows.map((row) => [
         row.catId,
-        { level: row.level, experienceInvested: row.experienceInvested, evolutionStage: row.evolutionStage ?? 'Base' },
+        {
+          level: row.level,
+          experienceInvested: row.experienceInvested,
+          evolutionStage: row.evolutionStage ?? 'Base',
+          plusLevel: row.plusLevel ?? 0,
+        },
       ]),
     )
     const characterLevel = characterLevelOf(ownedCats)
@@ -194,6 +243,9 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       battleItemInventory: battleItemsRow?.counts ?? {},
       encounteredEnemyCatIds: encounteredEnemiesRow?.catIds ?? [],
       claimedRankThresholds: userRankRow?.claimedThresholds ?? [],
+      gachaCurrency: profile?.gachaCurrency ?? 0,
+      npCurrency: profile?.npCurrency ?? 0,
+      gachaStorage,
     })
     void db.missionEnergy.put({ id: 1, current, max, lastUpdatedAt: now })
   },
@@ -478,6 +530,83 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     set({ battleItemInventory, claimedRankThresholds })
     void db.battleItems.put({ id: 1, counts: battleItemInventory })
     void db.userRank.put({ id: 1, claimedThresholds: claimedRankThresholds })
+    return true
+  },
+
+  rollGachaSingle: async (bannerId) => {
+    const banner = GACHA_BANNERS.find((candidate) => candidate.id === bannerId)
+    if (!banner) return null
+    if (get().gachaCurrency < GACHA_SINGLE_ROLL_COST) return null
+
+    const gachaCurrency = get().gachaCurrency - GACHA_SINGLE_ROLL_COST
+    const result = rollOne(banner)
+    const id = await db.gachaStorage.add({ catId: result.catId, rarity: result.rarity })
+
+    set({ gachaCurrency, gachaStorage: [...get().gachaStorage, { id, catId: result.catId, rarity: result.rarity }] })
+    void db.playerProfile.update(1, { gachaCurrency })
+    return result
+  },
+
+  rollGachaMulti: async (bannerId) => {
+    const banner = GACHA_BANNERS.find((candidate) => candidate.id === bannerId)
+    if (!banner) return null
+    if (get().gachaCurrency < GACHA_MULTI_ROLL_COST) return null
+
+    const gachaCurrency = get().gachaCurrency - GACHA_MULTI_ROLL_COST
+    const results = rollMany(banner, GACHA_MULTI_ROLL_COUNT)
+    const newRows = await Promise.all(
+      results.map(async (result) => {
+        const id = await db.gachaStorage.add({ catId: result.catId, rarity: result.rarity })
+        return { id, catId: result.catId, rarity: result.rarity }
+      }),
+    )
+
+    set({ gachaCurrency, gachaStorage: [...get().gachaStorage, ...newRows] })
+    void db.playerProfile.update(1, { gachaCurrency })
+    return results
+  },
+
+  activateCapsule: async (storageRowId) => {
+    const row = get().gachaStorage.find((candidate) => candidate.id === storageRowId)
+    if (!row) return
+
+    const owned = get().ownedCats[row.catId]
+    if (!owned) {
+      get().addOwnedCat(row.catId)
+    } else {
+      // specs/024-sistema-gacha (FR-007): duplicado — suma nivel "+" en vez de crear una segunda entrada.
+      const updated: OwnedCatMeta = { ...owned, plusLevel: (owned.plusLevel ?? 0) + 1 }
+      set({ ownedCats: { ...get().ownedCats, [row.catId]: updated } })
+      void db.ownedCats.put({ catId: row.catId, ...updated })
+    }
+
+    const gachaStorage = get().gachaStorage.filter((candidate) => candidate.id !== storageRowId)
+    set({ gachaStorage })
+    await db.gachaStorage.delete(storageRowId)
+  },
+
+  exchangeCapsuleForXp: async (storageRowId) => {
+    const row = get().gachaStorage.find((candidate) => candidate.id === storageRowId)
+    if (!row) return
+
+    const gachaStorage = get().gachaStorage.filter((candidate) => candidate.id !== storageRowId)
+    // specs/024-sistema-gacha (FR-008, research.md Decisión 1): "XP" es la `currency` ya existente.
+    const currency = get().currency + GACHA_CAPSULE_EXCHANGE_VALUE
+    set({ gachaStorage, currency })
+    void db.playerProfile.update(1, { currency })
+    await db.gachaStorage.delete(storageRowId)
+  },
+
+  exchangeCapsuleForNp: async (storageRowId) => {
+    const row = get().gachaStorage.find((candidate) => candidate.id === storageRowId)
+    if (!row) return false
+    if (row.rarity !== 'Megarraro' && row.rarity !== 'Legendario') return false
+
+    const gachaStorage = get().gachaStorage.filter((candidate) => candidate.id !== storageRowId)
+    const npCurrency = get().npCurrency + GACHA_CAPSULE_EXCHANGE_VALUE
+    set({ gachaStorage, npCurrency })
+    void db.playerProfile.update(1, { npCurrency })
+    await db.gachaStorage.delete(storageRowId)
     return true
   },
 }))

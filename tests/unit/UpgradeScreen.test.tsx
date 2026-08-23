@@ -58,6 +58,22 @@ describe('UpgradeScreen', () => {
   })
 })
 
+describe('UpgradeScreen — nivel "+" (specs/024-sistema-gacha)', () => {
+  it('muestra "Nivel N+M" para un gato con plusLevel > 0, y "Nivel N" sin plusLevel', () => {
+    useMetaStore.setState({
+      ownedCats: {
+        'basic-cat': { level: 3, experienceInvested: 0, evolutionStage: 'Base', plusLevel: 2 },
+        'tank-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+      },
+    })
+
+    render(<UpgradeScreen onNavigate={noop} />)
+
+    expect(screen.getByText(/Gato Básico — Nivel 3\+2/)).toBeInTheDocument()
+    expect(screen.getByText(/Gato Tanque — Nivel 1$/)).toBeInTheDocument()
+  })
+})
+
 describe('UpgradeScreen — Rango de Usuario (specs/019-rango-de-usuario)', () => {
   it('FR-001/002: el Rango de Usuario mostrado coincide con la suma de niveles de ownedCats', () => {
     useMetaStore.setState({

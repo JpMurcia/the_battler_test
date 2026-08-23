@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import { CATS } from '../data/cats'
+import { CATS, type RarityType } from '../data/cats'
 import { computeMissionEnergyMax } from '../data/missionEnergy'
 
 export interface PlayerProfileRow {
@@ -7,6 +7,10 @@ export interface PlayerProfileRow {
   currency: number
   highestUnlockedLevelIndex: number
   createdAt: number
+  /** specs/024-sistema-gacha (FR-018). Ausente en filas viejas = 0 al leer (sin migración). */
+  gachaCurrency?: number
+  /** specs/024-sistema-gacha (FR-009). Ausente en filas viejas = 0 al leer (sin migración). */
+  npCurrency?: number
 }
 
 export interface OwnedCatRow {
@@ -15,6 +19,16 @@ export interface OwnedCatRow {
   experienceInvested: number
   /** specs/010-evolucion-de-gatos. Ausente en filas viejas = 'Base' al leer (sin migración). */
   evolutionStage?: 'Base' | 'Second' | 'True'
+  /** specs/024-sistema-gacha (FR-007). Ausente en filas viejas = 0 al leer (sin migración, mismo patrón que evolutionStage). */
+  plusLevel?: number
+}
+
+/** specs/024-sistema-gacha (FR-005). Una cápsula de gacha sin activar — clave autoincremental porque un mismo
+ * catId puede tener varias cápsulas pendientes a la vez (research.md Decisión 5). */
+export interface GachaStorageRow {
+  id?: number // clave primaria autoincremental
+  catId: string
+  rarity: RarityType
 }
 
 export interface EvolutionItemsRow {
@@ -97,6 +111,7 @@ class BattleCatsDB extends Dexie {
   battleItems!: Table<BattleItemsRow, number>
   encounteredEnemies!: Table<EncounteredEnemiesRow, number>
   userRank!: Table<UserRankRow, number>
+  gachaStorage!: Table<GachaStorageRow, number>
 
   constructor() {
     super('BattleCatsDB')
@@ -130,6 +145,9 @@ class BattleCatsDB extends Dexie {
     })
     this.version(9).stores({
       userRank: 'id',
+    })
+    this.version(10).stores({
+      gachaStorage: '++id',
     })
   }
 }

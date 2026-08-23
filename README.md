@@ -29,7 +29,7 @@ Otros comandos disponibles (`package.json`):
 | `npm test` | Corre la suite de Vitest (`src/engine/`, stores, componentes) |
 | `npm run lint` | Lint con `oxlint` |
 
-El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB` vía Dexie, actualmente en versión 9 de esquema) — persiste entre recargas pero es local a ese navegador/perfil; borrar los datos del sitio reinicia el progreso.
+El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB` vía Dexie, actualmente en versión 10 de esquema) — persiste entre recargas pero es local a ese navegador/perfil; borrar los datos del sitio reinicia el progreso.
 
 `scripts/copy-sprites.mjs` es un script manual de un solo uso (no corre en `dev`/`build`) que copia los frames `idle`/`attack` de los 12 héroes usados por `src/data/cats.ts` desde `assets-source/` hacia `public/sprites/`.
 
@@ -37,7 +37,7 @@ El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB
 
 ## Estado actual
 
-El proyecto completó 23 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**51 archivos, 440 tests**) al momento de escribir esto — las 23 specs están 100% completas, incluidas sus tareas de verificación manual en navegador.
+El proyecto completó 24 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**54 archivos, 474 tests**) al momento de escribir esto — las 24 specs están 100% completas, incluidas sus tareas de verificación manual en navegador.
 
 | Spec | Contenido | Tareas |
 |---|---|---|
@@ -64,16 +64,17 @@ El proyecto completó 23 specs numeradas bajo `specs/`, cada una construida sobr
 | [`021-reskin-cyber-modern`](specs/021-reskin-cyber-modern/) | Reskin visual Cyber-Modern + sprites reales de combate (12 héroes) | ✅ 50/50 |
 | [`022-datos-semilla-flujo-navegacion`](specs/022-datos-semilla-flujo-navegacion/) | Datos semilla, assets procedimentales y flujo de navegación | ✅ 20/20 |
 | [`023-mapa-de-etapas-visual`](specs/023-mapa-de-etapas-visual/) | Mapa visual de etapas, catálogo completo de gatos obtenibles y grilla de despliegue fija | ✅ 23/23 |
+| [`024-sistema-gacha`](specs/024-sistema-gacha/) | Sistema de gacha completo: banners con tasas propias, tirada simple/x11, Almacén de cápsulas, duplicados como nivel "+" | ✅ 37/37 |
 
 ### Contenido de juego
 
-- **16 gatos jugables** en [`src/data/cats.ts`](src/data/cats.ts): 12 de producción (cada uno con `spriteKey` propio `hero_1`…`hero_12` y sprites reales de idle/ataque en `public/sprites/`) más 4 gatos semilla con diseño procedimental (`specs/022`). Los 13 gatos sin recompensa asignada (núcleo original, habilidades de combate, multigolpe/crítico y los 4 semilla) ahora se otorgan al completar los arcos de saga (`specs/023`) — todo el catálogo jugable es obtenible sin gacha.
+- **20 gatos jugables** en [`src/data/cats.ts`](src/data/cats.ts): 12 de producción (cada uno con `spriteKey` propio `hero_1`…`hero_12` y sprites reales de idle/ataque en `public/sprites/`), 4 gatos semilla con diseño procedimental (`specs/022`) y 4 exclusivos de gacha (`Legendario`/`Colaboración`, [`src/data/gachaUnits.ts`](src/data/gachaUnits.ts), sin sprite propio — usan el fallback `Graphics`). Los 13 gatos sin recompensa asignada (núcleo original, habilidades de combate, multigolpe/crítico y los 4 semilla) se otorgan al completar los arcos de saga (`specs/023`); los 4 de gacha solo se obtienen tirando en la Cápsula (`specs/024`).
 - **3 niveles** en [`src/data/levels.ts`](src/data/levels.ts), agrupados en **2 arcos de saga** ([`src/data/sagaArcs.ts`](src/data/sagaArcs.ts)), presentados como **mapa visual de nodos** conectados (`LevelSelectScreen`, `specs/023`) en vez de lista vertical.
 - **Sets de tesoros** con bonificación pasiva ([`src/data/treasureSets.ts`](src/data/treasureSets.ts)) y **eventos especiales** con banner propio ([`src/data/events.ts`](src/data/events.ts)), representado como nodo de borde dorado en el mapa.
 - **3 objetos de batalla** seleccionables antes del combate ([`src/data/battleItems.ts`](src/data/battleItems.ts)): aceleración de velocidad, energía extra, radar de tesoro.
 - **Umbrales de rango de usuario** reclamables ([`src/data/userRankThresholds.ts`](src/data/userRankThresholds.ts)).
 - **Equipo activo tope de 6** (`MAX_ACTIVE_TEAM_SIZE`, `useMetaStore.ts`) — la barra de despliegue en batalla es una grilla fija de 6 columnas, sin scroll horizontal (`specs/023`).
-- Sin gacha real todavía — `GachaScreen` sigue siendo un stub de navegación.
+- **Gacha completo** ([`src/data/gacha.ts`](src/data/gacha.ts)): 3 banners (`UBERFEST`/`EPICFEST`/Estándar) con tasas propias por rareza, tirada simple (150 Cat Food) o x11 (1.500), resultado depositado sin activar en el Almacén (`gachaStorage`) y duplicados convertidos en nivel "+" (`plusLevel`) — todo en `GachaScreen` (`specs/024`).
 
 ---
 
@@ -129,8 +130,10 @@ src/
 │   ├── userRankThresholds.ts # Umbrales de rango de usuario
 │   ├── missionEnergy.ts    # Cálculo de energía máxima/regeneración
 │   ├── levelState.ts       # Resolución de estado derivado de nivel (bloqueado/desbloqueado/completado)
-│   └── seedData.ts         # Datos semilla de bootstrap (specs/022)
-└── db/index.ts             # Esquema Dexie (9 versiones) + ensureDefaultProfile()
+│   ├── seedData.ts         # Datos semilla de bootstrap (specs/022)
+│   ├── gacha.ts             # Banners, tasas por rareza y rollOne/rollMany (specs/024)
+│   └── gachaUnits.ts       # 4 gatos exclusivos de gacha (Legendario/Colaboración, specs/024)
+└── db/index.ts             # Esquema Dexie (10 versiones) + ensureDefaultProfile()
 ```
 
 ### Flujo de pantallas
@@ -141,7 +144,7 @@ src/
 Title ──▶ MainMenu ──┬──▶ LevelSelect ──▶ Battle ──▶ Result ──(Volver)──▶ LevelSelect
                       │        ▲
                       │        └────────────────────────────────────────────┘ (Volver)
-                      ├──▶ Gacha (stub)
+                      ├──▶ Gacha (banners, tirada simple/x11, Almacén, activar/intercambiar cápsulas)
                       ├──▶ Settings ──(Guardar/Volver)──▶ MainMenu
                       └──▶ Upgrade ──┬──▶ Team
                                      ├──▶ CatGuide
@@ -150,7 +153,7 @@ Title ──▶ MainMenu ──┬──▶ LevelSelect ──▶ Battle ──�
                            (las 4 subpantallas de Upgrade vuelven a Upgrade)
 ```
 
-`LevelSelectScreen` renderiza el progreso como un **mapa visual de nodos** (círculos conectados por líneas punteadas, posicionados por `Level.mapPosition`; el evento especial activo aparece como nodo aparte de borde dorado) en vez de la lista vertical original — tocar un nodo disponible o completado abre un panel de detalle con dificultad en estrellas, costo de energía y el botón "¡Atacar!", que llama a `useGameStore.startLevel(levelId)` y navega a `Battle` (`specs/023`). `Upgrade` funciona como hub hacia `Team` (formación activa, tope `MAX_ACTIVE_TEAM_SIZE`), `CatGuide`/`EnemyGuide` (bibliotecas de consulta, specs/018) y `TreasureMenu`. `Gacha` sigue siendo un stub de navegación sin lógica.
+`LevelSelectScreen` renderiza el progreso como un **mapa visual de nodos** (círculos conectados por líneas punteadas, posicionados por `Level.mapPosition`; el evento especial activo aparece como nodo aparte de borde dorado) en vez de la lista vertical original — tocar un nodo disponible o completado abre un panel de detalle con dificultad en estrellas, costo de energía y el botón "¡Atacar!", que llama a `useGameStore.startLevel(levelId)` y navega a `Battle` (`specs/023`). `Upgrade` funciona como hub hacia `Team` (formación activa, tope `MAX_ACTIVE_TEAM_SIZE`), `CatGuide`/`EnemyGuide` (bibliotecas de consulta, specs/018) y `TreasureMenu`. `Gacha` ofrece selector de banner con desglose de tasas, tirada simple/x11 con pantalla de revelado, y el Almacén de cápsulas para activar (nueva unidad jugable) o intercambiar duplicados por XP/NP (`specs/024`).
 
 ### Motor de combate (`src/engine/`)
 
@@ -175,11 +178,11 @@ Determinista y puro — `stepSimulation(state, deltaSeconds) → nextState`, sin
 ### Estado (Zustand)
 
 - **`useGameStore`** — estado de la partida en curso: `status`, energía, HP de bases, `units[]`, cooldowns de despliegue, objetos de batalla seleccionados, tiempo transcurrido. Completamente efímero: `reset()` lo vuelve a `Idle`, nunca se persiste (Constitución § V).
-- **`useMetaStore`** — progreso persistente del jugador: moneda, niveles desbloqueados/completados, gatos poseídos (nivel, XP, `evolutionStage`), formación activa (`setActiveTeam`, tope `MAX_ACTIVE_TEAM_SIZE = 6`), energía de misión, ítems de evolución, tesoros obtenidos, recompensas de arco/set otorgadas (incluye `unlockCatIds` de los 13 gatos previamente inalcanzables, `specs/023`), inventario de objetos de batalla, enemigos avistados, rango reclamado y ajustes. Se hidrata una vez desde Dexie al arrancar (`hydrate()`) y cada acción de mutación escribe de inmediato en IndexedDB (sin paso de "guardar" separado).
+- **`useMetaStore`** — progreso persistente del jugador: moneda, niveles desbloqueados/completados, gatos poseídos (nivel, XP, `evolutionStage`, `plusLevel` de duplicados de gacha), formación activa (`setActiveTeam`, tope `MAX_ACTIVE_TEAM_SIZE = 6`), energía de misión, ítems de evolución, tesoros obtenidos, recompensas de arco/set otorgadas (incluye `unlockCatIds` de los 13 gatos previamente inalcanzables, `specs/023`), inventario de objetos de batalla, enemigos avistados, rango reclamado, moneda de gacha/NP y cápsulas sin activar (`gachaStorage`, `specs/024`), y ajustes. Se hidrata una vez desde Dexie al arrancar (`hydrate()`) y cada acción de mutación escribe de inmediato en IndexedDB (sin paso de "guardar" separado).
 
 ### Persistencia (`src/db/index.ts`)
 
-Dexie sobre IndexedDB, base `BattleCatsDB`, con 9 versiones de esquema acumuladas spec sobre spec. Tablas actuales: `playerProfile`, `ownedCats`, `levelProgress`, `settings`, `teamFormation`, `missionEnergy`, `evolutionItems`, `treasures`, `arcProgress`, `treasureSetBonuses`, `battleItems`, `encounteredEnemies`, `userRank`. `ensureDefaultProfile()` es idempotente y siembra el perfil por defecto y el primer gato garantizado en la primera sesión.
+Dexie sobre IndexedDB, base `BattleCatsDB`, con 10 versiones de esquema acumuladas spec sobre spec. Tablas actuales: `playerProfile`, `ownedCats`, `levelProgress`, `settings`, `teamFormation`, `missionEnergy`, `evolutionItems`, `treasures`, `arcProgress`, `treasureSetBonuses`, `battleItems`, `encounteredEnemies`, `userRank`, `gachaStorage`. `ensureDefaultProfile()` es idempotente y siembra el perfil por defecto y el primer gato garantizado en la primera sesión.
 
 ### Testing
 
@@ -190,5 +193,5 @@ Vitest + Testing Library + `fake-indexeddb` (jsdom). La suite cubre `src/engine/
 ## Documentación adicional
 
 - [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — principios de diseño no negociables del proyecto.
-- [`specs/`](specs/) — spec/plan/tasks de cada una de las 23 features, en orden cronológico.
+- [`specs/`](specs/) — spec/plan/tasks de cada una de las 24 features, en orden cronológico.
 - [`docs/`](docs/) — material de diseño y rediseño visual adicional (guías de estilo, roadmap de fases, referencia de manual técnico).
