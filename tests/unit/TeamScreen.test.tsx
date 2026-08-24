@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { TeamScreen } from '../../src/screens/TeamScreen'
 import { useMetaStore } from '../../src/state/useMetaStore'
@@ -70,6 +70,70 @@ describe('TeamScreen — tope de equipo equipable (specs/022-datos-semilla-flujo
     const eleventhCatCheckbox = screen.getByRole('checkbox', { name: /Gato Triple Golpe/ })
     expect(eleventhCatCheckbox).toBeDisabled()
     expect(eleventhCatCheckbox).not.toBeChecked()
+  })
+})
+
+describe('TeamScreen — Cat Combos (specs/025-cat-combos US2)', () => {
+  it('lista los Cat Combos definidos con nombre y estado agregado', () => {
+    // beforeEach ya deja basic-cat + tank-cat poseídos y activeTeamCatIds: [] → selectedIds inicial = ownedCats (ambos)
+    render(<TeamScreen onNavigate={noop} />)
+
+    expect(screen.getByText('Núcleo Original')).toBeInTheDocument()
+    expect(screen.getByText('Especialistas de Control')).toBeInTheDocument()
+  })
+
+  it('con ambos miembros poseídos y seleccionados, combo-nucleo-original se muestra completo', () => {
+    render(<TeamScreen onNavigate={noop} />)
+
+    const comboRow = screen.getByText('Núcleo Original').closest('li')!
+    expect(within(comboRow).getByText('Completo')).toBeInTheDocument()
+  })
+
+  it('FR-007: distingue un miembro no poseído de uno poseído pero no incluido en la formación', () => {
+    useMetaStore.setState({
+      ownedCats: { 'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' } },
+      activeTeamCatIds: [],
+    })
+    render(<TeamScreen onNavigate={noop} />)
+
+    const comboRow = screen.getByText('Núcleo Original').closest('li')!
+    expect(within(comboRow).getByText('Incompleto')).toBeInTheDocument()
+    expect(within(comboRow).getByText(/Gato Tanque.*no posee/)).toBeInTheDocument()
+  })
+
+  it('FR-007: un miembro poseído pero no en la formación se distingue de uno no poseído', () => {
+    useMetaStore.setState({
+      ownedCats: {
+        'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+        'tank-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+      },
+      activeTeamCatIds: ['basic-cat'], // tank-cat poseído pero fuera de la formación
+    })
+    render(<TeamScreen onNavigate={noop} />)
+
+    const comboRow = screen.getByText('Núcleo Original').closest('li')!
+    expect(within(comboRow).getByText(/Gato Tanque.*no está en el equipo/)).toBeInTheDocument()
+  })
+
+  it('Acceptance Scenario 4: togglear el checkbox del miembro faltante completa el combo en el mismo render, sin Confirmar equipo', () => {
+    useMetaStore.setState({
+      ownedCats: {
+        'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+        'tank-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+      },
+      activeTeamCatIds: ['basic-cat'],
+    })
+    render(<TeamScreen onNavigate={noop} />)
+
+    let comboRow = screen.getByText('Núcleo Original').closest('li')!
+    expect(within(comboRow).getByText('Incompleto')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByLabelText('Gato Tanque'))
+
+    comboRow = screen.getByText('Núcleo Original').closest('li')!
+    expect(within(comboRow).getByText('Completo')).toBeInTheDocument()
+    // no se guardó la formación — activeTeamCatIds no cambia hasta pulsar "Confirmar equipo"
+    expect(useMetaStore.getState().activeTeamCatIds).toEqual(['basic-cat'])
   })
 })
 

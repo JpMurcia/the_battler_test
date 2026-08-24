@@ -8,7 +8,9 @@ import { findArcByLevelId, SAGA_ARCS } from '../data/sagaArcs'
 import { TREASURE_SETS } from '../data/treasureSets'
 import { USER_RANK_THRESHOLDS } from '../data/userRankThresholds'
 import { computeMissionEnergyMax, computeRecoveredEnergy, computeRegenPerSecond } from '../data/missionEnergy'
+import { getCompletedCombos } from '../data/catCombos'
 import type { TreasureSetPassiveBonus } from '../data/treasureSets'
+import type { CatComboBonus } from '../data/catCombos'
 import {
   GACHA_BANNERS,
   GACHA_CAPSULE_EXCHANGE_VALUE,
@@ -90,6 +92,9 @@ interface MetaState {
   isZombieModeAvailable: (levelId: string) => boolean
   checkTreasureSetCompletion: () => void
   getActiveBonusMultiplier: (type: TreasureSetPassiveBonus['type']) => number
+  /** specs/025-cat-combos (FR-002/FR-004/FR-009). Deriva de activeTeamCatIds en cada llamada — sin campo de
+   * estado propio ni persistencia (a diferencia de getActiveBonusMultiplier/grantedTreasureSetIds). */
+  getActiveComboBonusMultiplier: (type: CatComboBonus['type']) => number
   selectBattleItem: (itemId: string) => boolean
   deselectBattleItem: (itemId: string) => void
   consumeSelectedBattleItems: () => { speedMultiplier: number; energyBonus: number }
@@ -449,6 +454,13 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       (product, set) => product * set.passiveBonus.value,
       1,
     )
+  },
+
+  getActiveComboBonusMultiplier: (type) => {
+    const { activeTeamCatIds } = get()
+    return getCompletedCombos(activeTeamCatIds)
+      .filter((combo) => combo.bonus.type === type)
+      .reduce((product, combo) => product * combo.bonus.value, 1)
   },
 
   selectBattleItem: (itemId) => {

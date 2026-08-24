@@ -2,8 +2,46 @@ import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { CATS, RARITY_TAG_CLASS } from '../data/cats'
+import { CAT_COMBOS, getComboMemberStatus, getCompletedCombos } from '../data/catCombos'
 import { MAX_TEAM_ROSTER_SIZE, useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
+
+/** specs/025-cat-combos (FR-006/FR-007). Consulta contra `selectedIds` local, no `activeTeamCatIds` persistido
+ * (research.md Decisión 5) — así se actualiza en el mismo render que un checkbox, sin depender de guardar. */
+function CatComboSection({ ownedCatIds, selectedIds }: { ownedCatIds: string[]; selectedIds: string[] }) {
+  const completedComboIds = new Set(getCompletedCombos(selectedIds).map((combo) => combo.id))
+
+  return (
+    <section className="glass-panel">
+      <h2>Cat Combos</h2>
+      <ul className="list-card">
+        {CAT_COMBOS.map((combo) => {
+          const isComplete = completedComboIds.has(combo.id)
+          const memberStatus = getComboMemberStatus(combo, ownedCatIds, selectedIds)
+          return (
+            <li key={combo.id} className="list-card__row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <strong>{combo.name}</strong>
+                <span className={`tag ${isComplete ? 'tag--normal' : 'tag--especial'}`}>{isComplete ? 'Completo' : 'Incompleto'}</span>
+              </div>
+              <ul>
+                {memberStatus.map((member) => {
+                  const cat = CATS.find((candidate) => candidate.id === member.catId)
+                  const label = !member.owned ? 'no posee este gato' : member.selected ? 'en el equipo' : 'no está en el equipo'
+                  return (
+                    <li key={member.catId} className="list-card__meta">
+                      {cat?.name ?? member.catId} — {label}
+                    </li>
+                  )
+                })}
+              </ul>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
 
 interface TeamScreenProps {
   onNavigate: (screen: Screen) => void
@@ -86,6 +124,7 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
             )
           })}
         </ul>
+        <CatComboSection ownedCatIds={Object.keys(ownedCats)} selectedIds={selectedIds} />
         <BattleItemSelector />
       </div>
       <button className="btn btn-primary" disabled={selectedIds.length === 0} onClick={() => setActiveTeam(selectedIds)}>

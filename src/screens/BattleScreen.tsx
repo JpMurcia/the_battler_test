@@ -104,6 +104,7 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
   const grantLevelRewards = useMetaStore((state) => state.grantLevelRewards)
   const claimArcRewardsIfComplete = useMetaStore((state) => state.claimArcRewardsIfComplete)
   const getActiveBonusMultiplier = useMetaStore((state) => state.getActiveBonusMultiplier)
+  const getActiveComboBonusMultiplier = useMetaStore((state) => state.getActiveComboBonusMultiplier)
   const pendingTreasureRadar = useMetaStore((state) => state.pendingTreasureRadar)
   const grantRandomUnownedTreasure = useMetaStore((state) => state.grantRandomUnownedTreasure)
   const clearPendingTreasureRadar = useMetaStore((state) => state.clearPendingTreasureRadar)
@@ -114,7 +115,14 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
       const level = levelId ? resolveLevel(levelId) : undefined
       if (level) {
         // specs/013-escalado-capitulos-sets-tesoros (US4): bonificación pasiva de sets de tesoros ya otorgados.
-        addCurrency(Math.round(level.currencyReward * getActiveBonusMultiplier('CurrencyRewardMultiplier')))
+        // specs/025-cat-combos (FR-003/FR-008): bonificación de Cat Combo activo, combinada con la de arriba.
+        addCurrency(
+          Math.round(
+            level.currencyReward *
+              getActiveBonusMultiplier('CurrencyRewardMultiplier') *
+              getActiveComboBonusMultiplier('CurrencyRewardMultiplier'),
+          ),
+        )
         // specs/014-banner-evento-especial (FR-004): la fase especial de un evento no participa del desbloqueo secuencial.
         if (!isEventStageId(level.id)) {
           markLevelCompleted(level.id)
@@ -142,6 +150,7 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
     grantLevelRewards,
     claimArcRewardsIfComplete,
     getActiveBonusMultiplier,
+    getActiveComboBonusMultiplier,
     pendingTreasureRadar,
     grantRandomUnownedTreasure,
     clearPendingTreasureRadar,

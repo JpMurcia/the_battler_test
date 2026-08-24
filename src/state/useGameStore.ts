@@ -108,6 +108,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     // specs/013-escalado-capitulos-sets-tesoros (US4/FR-007): bonificación pasiva de sets de tesoros ya otorgados.
     const energyRegenMultiplier = useMetaStore.getState().getActiveBonusMultiplier('EnergyRegenMultiplier')
+    // specs/025-cat-combos (FR-003/FR-008): bonificación de Cat Combo activo, combinada (no exclusiva) con la de arriba.
+    const comboEnergyRegenMultiplier = useMetaStore.getState().getActiveComboBonusMultiplier('EnergyRegenMultiplier')
 
     set({
       status: 'InProgress',
@@ -116,7 +118,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       energy: {
         current: battleItemEffects.energyBonus ?? 0,
         max: level.maxEnergy,
-        regenPerSecond: level.energyRegenPerSecond * energyRegenMultiplier,
+        regenPerSecond: level.energyRegenPerSecond * energyRegenMultiplier * comboEnergyRegenMultiplier,
       },
       playerBase: { hp: level.playerBaseHp, maxHp: level.playerBaseHp },
       enemyBase: { hp: enemyBaseHp, maxHp: enemyBaseHp },

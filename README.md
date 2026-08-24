@@ -37,7 +37,7 @@ El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB
 
 ## Estado actual
 
-El proyecto completó 24 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**54 archivos, 474 tests**) al momento de escribir esto — las 24 specs están 100% completas, incluidas sus tareas de verificación manual en navegador.
+El proyecto completó 25 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**55 archivos, 495 tests**) al momento de escribir esto — las 25 specs están 100% completas, incluidas sus tareas de verificación manual en navegador.
 
 | Spec | Contenido | Tareas |
 |---|---|---|
@@ -65,6 +65,7 @@ El proyecto completó 24 specs numeradas bajo `specs/`, cada una construida sobr
 | [`022-datos-semilla-flujo-navegacion`](specs/022-datos-semilla-flujo-navegacion/) | Datos semilla, assets procedimentales y flujo de navegación | ✅ 20/20 |
 | [`023-mapa-de-etapas-visual`](specs/023-mapa-de-etapas-visual/) | Mapa visual de etapas, catálogo completo de gatos obtenibles y grilla de despliegue fija | ✅ 23/23 |
 | [`024-sistema-gacha`](specs/024-sistema-gacha/) | Sistema de gacha completo: banners con tasas propias, tirada simple/x11, Almacén de cápsulas, duplicados como nivel "+" | ✅ 37/37 |
+| [`025-cat-combos`](specs/025-cat-combos/) | Cat Combos: bonificación pasiva automática por combinación de unidades en la formación activa | ✅ 18/18 |
 
 ### Contenido de juego
 
@@ -75,6 +76,7 @@ El proyecto completó 24 specs numeradas bajo `specs/`, cada una construida sobr
 - **Umbrales de rango de usuario** reclamables ([`src/data/userRankThresholds.ts`](src/data/userRankThresholds.ts)).
 - **Equipo activo tope de 6** (`MAX_ACTIVE_TEAM_SIZE`, `useMetaStore.ts`) — la barra de despliegue en batalla es una grilla fija de 6 columnas, sin scroll horizontal (`specs/023`).
 - **Gacha completo** ([`src/data/gacha.ts`](src/data/gacha.ts)): 3 banners (`UBERFEST`/`EPICFEST`/Estándar) con tasas propias por rareza, tirada simple (150 Cat Food) o x11 (1.500), resultado depositado sin activar en el Almacén (`gachaStorage`) y duplicados convertidos en nivel "+" (`plusLevel`) — todo en `GachaScreen` (`specs/024`).
+- **Cat Combos** ([`src/data/catCombos.ts`](src/data/catCombos.ts)): 2 combinaciones fijas de catIds (`combo-nucleo-original`, `combo-especialistas-control`) que otorgan una bonificación pasiva (energía o recompensa de moneda) al llevarlas completas a la formación activa — visibles y con estado en vivo (completo/incompleto, no-poseído vs. no-en-formación) en `TeamScreen` (`specs/025`).
 
 ---
 
@@ -132,7 +134,8 @@ src/
 │   ├── levelState.ts       # Resolución de estado derivado de nivel (bloqueado/desbloqueado/completado)
 │   ├── seedData.ts         # Datos semilla de bootstrap (specs/022)
 │   ├── gacha.ts             # Banners, tasas por rareza y rollOne/rollMany (specs/024)
-│   └── gachaUnits.ts       # 4 gatos exclusivos de gacha (Legendario/Colaboración, specs/024)
+│   ├── gachaUnits.ts       # 4 gatos exclusivos de gacha (Legendario/Colaboración, specs/024)
+│   └── catCombos.ts        # Cat Combos, su bonificación pasiva y getCompletedCombos (specs/025)
 └── db/index.ts             # Esquema Dexie (10 versiones) + ensureDefaultProfile()
 ```
 
@@ -153,7 +156,7 @@ Title ──▶ MainMenu ──┬──▶ LevelSelect ──▶ Battle ──�
                            (las 4 subpantallas de Upgrade vuelven a Upgrade)
 ```
 
-`LevelSelectScreen` renderiza el progreso como un **mapa visual de nodos** (círculos conectados por líneas punteadas, posicionados por `Level.mapPosition`; el evento especial activo aparece como nodo aparte de borde dorado) en vez de la lista vertical original — tocar un nodo disponible o completado abre un panel de detalle con dificultad en estrellas, costo de energía y el botón "¡Atacar!", que llama a `useGameStore.startLevel(levelId)` y navega a `Battle` (`specs/023`). `Upgrade` funciona como hub hacia `Team` (formación activa, tope `MAX_ACTIVE_TEAM_SIZE`), `CatGuide`/`EnemyGuide` (bibliotecas de consulta, specs/018) y `TreasureMenu`. `Gacha` ofrece selector de banner con desglose de tasas, tirada simple/x11 con pantalla de revelado, y el Almacén de cápsulas para activar (nueva unidad jugable) o intercambiar duplicados por XP/NP (`specs/024`).
+`LevelSelectScreen` renderiza el progreso como un **mapa visual de nodos** (círculos conectados por líneas punteadas, posicionados por `Level.mapPosition`; el evento especial activo aparece como nodo aparte de borde dorado) en vez de la lista vertical original — tocar un nodo disponible o completado abre un panel de detalle con dificultad en estrellas, costo de energía y el botón "¡Atacar!", que llama a `useGameStore.startLevel(levelId)` y navega a `Battle` (`specs/023`). `Upgrade` funciona como hub hacia `Team` (formación activa, tope `MAX_ACTIVE_TEAM_SIZE`, con una sección "Cat Combos" que muestra en vivo qué combinaciones de gatos están completas o incompletas según la selección aún sin guardar, `specs/025`), `CatGuide`/`EnemyGuide` (bibliotecas de consulta, specs/018) y `TreasureMenu`. `Gacha` ofrece selector de banner con desglose de tasas, tirada simple/x11 con pantalla de revelado, y el Almacén de cápsulas para activar (nueva unidad jugable) o intercambiar duplicados por XP/NP (`specs/024`).
 
 ### Motor de combate (`src/engine/`)
 
@@ -193,5 +196,5 @@ Vitest + Testing Library + `fake-indexeddb` (jsdom). La suite cubre `src/engine/
 ## Documentación adicional
 
 - [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — principios de diseño no negociables del proyecto.
-- [`specs/`](specs/) — spec/plan/tasks de cada una de las 24 features, en orden cronológico.
+- [`specs/`](specs/) — spec/plan/tasks de cada una de las 25 features, en orden cronológico.
 - [`docs/`](docs/) — material de diseño y rediseño visual adicional (guías de estilo, roadmap de fases, referencia de manual técnico).

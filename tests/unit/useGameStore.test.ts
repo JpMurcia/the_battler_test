@@ -133,7 +133,9 @@ const evoCat = CATS.find((candidate) => candidate.id === 'evo-test-cat')!
 
 beforeEach(() => {
   useGameStore.getState().reset()
-  useMetaStore.setState({ ownedCats: {}, evolutionItems: {} })
+  // specs/025-cat-combos: activeTeamCatIds se resetea aquí para que ningún test de esta suite dependa del
+  // orden de ejecución respecto a los tests de getActiveComboBonusMultiplier más abajo.
+  useMetaStore.setState({ ownedCats: {}, evolutionItems: {}, activeTeamCatIds: [] })
 })
 
 describe('useGameStore.deployUnit', () => {
@@ -465,5 +467,23 @@ describe('useGameStore.startLevel — laneLength (specs/013-escalado-capitulos-s
     useGameStore.getState().startLevel('level-1')
 
     expect(useGameStore.getState().laneLength).toBe(400)
+  })
+})
+
+describe('useGameStore.startLevel — bonificación de Cat Combo (specs/025-cat-combos US1)', () => {
+  it('FR-003: con la formación activa completa de combo-nucleo-original, regenPerSecond incluye el multiplicador 1.05', () => {
+    useMetaStore.setState({ activeTeamCatIds: ['basic-cat', 'tank-cat'] })
+
+    useGameStore.getState().startLevel('level-1')
+
+    expect(useGameStore.getState().energy.regenPerSecond).toBeCloseTo(5 * 1.05)
+  })
+
+  it('FR-004: con la formación incompleta (falta un miembro), regenPerSecond no incluye ningún multiplicador de combo', () => {
+    useMetaStore.setState({ activeTeamCatIds: ['basic-cat'] })
+
+    useGameStore.getState().startLevel('level-1')
+
+    expect(useGameStore.getState().energy.regenPerSecond).toBe(5)
   })
 })

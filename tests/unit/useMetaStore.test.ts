@@ -606,6 +606,49 @@ describe('useMetaStore', () => {
       expect(useMetaStore.getState().getActiveBonusMultiplier('EnergyRegenMultiplier')).toBe(1)
     })
 
+  })
+
+  describe('getActiveComboBonusMultiplier (specs/025-cat-combos US1/US3)', () => {
+    it('FR-002: formación completa de combo-nucleo-original devuelve el multiplicador de energía de ese combo', async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({ activeTeamCatIds: ['basic-cat', 'tank-cat'] })
+
+      expect(useMetaStore.getState().getActiveComboBonusMultiplier('EnergyRegenMultiplier')).toBe(1.05)
+    })
+
+    it('FR-004: falta un miembro del combo — el multiplicador vuelve a 1, sin bono parcial', async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({ activeTeamCatIds: ['basic-cat'] })
+
+      expect(useMetaStore.getState().getActiveComboBonusMultiplier('EnergyRegenMultiplier')).toBe(1)
+    })
+
+    it('sin ningún combo activo, devuelve 1 (mismo default que getActiveBonusMultiplier)', async () => {
+      await useMetaStore.getState().hydrate()
+
+      expect(useMetaStore.getState().getActiveComboBonusMultiplier('EnergyRegenMultiplier')).toBe(1)
+      expect(useMetaStore.getState().getActiveComboBonusMultiplier('CurrencyRewardMultiplier')).toBe(1)
+    })
+
+    it('Historia 3 (FR-005): con los 4 catIds de ambos combos fixture activos, cada tipo de bono se lee de forma independiente', async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({ activeTeamCatIds: ['basic-cat', 'tank-cat', 'weaken-cat', 'slow-cat'] })
+
+      expect(useMetaStore.getState().getActiveComboBonusMultiplier('EnergyRegenMultiplier')).toBe(1.05)
+      expect(useMetaStore.getState().getActiveComboBonusMultiplier('CurrencyRewardMultiplier')).toBe(1.1)
+    })
+
+    it('FR-009: no persiste nada — recalcula si activeTeamCatIds cambia entre llamadas', async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({ activeTeamCatIds: ['basic-cat', 'tank-cat'] })
+      expect(useMetaStore.getState().getActiveComboBonusMultiplier('EnergyRegenMultiplier')).toBe(1.05)
+
+      useMetaStore.setState({ activeTeamCatIds: [] })
+      expect(useMetaStore.getState().getActiveComboBonusMultiplier('EnergyRegenMultiplier')).toBe(1)
+    })
+  })
+
+  describe('grantLevelRewards + checkTreasureSetCompletion (specs/013-escalado-capitulos-sets-tesoros US4)', () => {
     it('grantLevelRewards (specs/012) dispara checkTreasureSetCompletion automáticamente al completar el set', async () => {
       await useMetaStore.getState().hydrate()
       const level1 = LEVELS.find((candidate) => candidate.id === 'level-1')!
