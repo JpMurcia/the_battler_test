@@ -58,9 +58,9 @@ describe('CATS — specs/027-capitulo-1-imperio-gatos', () => {
         expect(cat?.evolutions).toBeUndefined()
         continue
       }
-      expect(cat?.evolutions?.second.requiredLevel).toBe(10)
-      expect(cat?.evolutions?.true.requiredLevel).toBe(30)
-      expect(cat?.evolutions?.true.requiredItemCount).toBeUndefined()
+      expect(cat?.evolutions?.second?.requiredLevel).toBe(10)
+      expect(cat?.evolutions?.true?.requiredLevel).toBe(30)
+      expect(cat?.evolutions?.true?.requiredItemCount).toBeUndefined()
     }
   })
 

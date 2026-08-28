@@ -54,8 +54,10 @@ export interface Cat {
   abilities?: Ability[]
   immuneEffects?: EffectType[]
   appliesEffect?: AppliesEffect
-  /** specs/010-evolucion-de-gatos. Ausente = el gato no tiene evoluciones definidas (FR-011). */
-  evolutions?: { second: EvolutionFormData; true: EvolutionFormData }
+  /** specs/010-evolucion-de-gatos. Ausente = el gato no tiene evoluciones definidas (FR-011).
+   * specs/030-filtro-detalle-unidad (FR-008): `second`/`true` son independientes — un gato puede
+   * tener solo `second` definido (su forma máxima es Evolucionada, sin Forma Verdadera). */
+  evolutions?: { second?: EvolutionFormData; true?: EvolutionFormData }
   /** specs/012-saga-imperio-de-los-gatos. Ausente = sin rareza asignada todavía (FR-016). */
   rarity?: RarityType
   /** specs/015-catalogo-habilidades-combate (US5/FR-009). Capacidad pasiva permanente — copiada al `BattleUnit` en deployUnit/spawnEnemyUnit. */

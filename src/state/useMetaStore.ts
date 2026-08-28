@@ -373,8 +373,10 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     if (!cat?.evolutions || !owned) return false
 
     if (owned.evolutionStage === 'Base') {
+      // specs/030-filtro-detalle-unidad (FR-008): `second` ahora es opcional — un gato sin forma
+      // Evolucionada definida no puede evolucionar desde Base, igual que si no tuviera `evolutions`.
       const target = cat.evolutions.second
-      if (owned.level < target.requiredLevel) return false
+      if (!target || owned.level < target.requiredLevel) return false
 
       const updated: OwnedCatMeta = { ...owned, evolutionStage: 'Second' }
       set({ ownedCats: { ...get().ownedCats, [catId]: updated } })
@@ -383,7 +385,10 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     }
 
     if (owned.evolutionStage === 'Second') {
+      // specs/030-filtro-detalle-unidad (FR-008): `true` también es opcional — sin Forma Verdadera
+      // definida, `Second` es la forma máxima del gato (mismo criterio que la rama de arriba).
       const target = cat.evolutions.true
+      if (!target) return false
       const requiredItemCount = target.requiredItemCount ?? 0
       const itemCount = get().evolutionItems[catId] ?? 0
       if (owned.level < target.requiredLevel || itemCount < requiredItemCount) return false

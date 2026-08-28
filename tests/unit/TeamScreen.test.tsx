@@ -166,3 +166,66 @@ describe('TeamScreen — objetos de batalla (specs/017-objetos-de-batalla US1)',
     expect(useMetaStore.getState().selectedBattleItemIds).toEqual([])
   })
 })
+
+describe('TeamScreen — filtro de gatos (specs/030-filtro-detalle-unidad US1)', () => {
+  beforeEach(() => {
+    useMetaStore.setState({
+      ownedCats: {
+        'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+        'tank-cat': { level: 5, experienceInvested: 0, evolutionStage: 'Base' },
+        'speed-cat': { level: 3, experienceInvested: 0, evolutionStage: 'Base' },
+      },
+      activeTeamCatIds: [],
+    })
+  })
+
+  it('sin criterios, muestra todos los gatos poseídos', () => {
+    render(<TeamScreen onNavigate={noop} />)
+
+    expect(screen.getByLabelText('Gato Básico')).toBeInTheDocument()
+    expect(screen.getByLabelText('Gato Tanque')).toBeInTheDocument()
+    expect(screen.getByLabelText('Gato Veloz')).toBeInTheDocument()
+  })
+
+  it('marcar una rareza reduce la lista a esa rareza', () => {
+    render(<TeamScreen onNavigate={noop} />)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Especial' }))
+
+    expect(screen.getByLabelText('Gato Veloz')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Gato Básico')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Gato Tanque')).not.toBeInTheDocument()
+  })
+
+  it('ordenar por nivel reordena la lista sin cambiar qué gatos aparecen', () => {
+    render(<TeamScreen onNavigate={noop} />)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Ordenar por nivel' }))
+
+    const names = screen.getAllByRole('checkbox', { name: /^Gato/ }).map((el) => el.closest('label')?.textContent)
+    expect(names).toEqual(['Gato Básico', 'Gato Veloz', 'Gato Tanque'])
+  })
+})
+
+describe('TeamScreen — panel de detalle de unidad (specs/030-filtro-detalle-unidad US2)', () => {
+  it('tocar un gato abre el panel de detalle con sus stats', () => {
+    render(<TeamScreen onNavigate={noop} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Ver detalle de Gato Básico/ }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/DPS/)).toBeInTheDocument()
+  })
+
+  it('cerrar el panel vuelve a la lista con el filtro todavía aplicado', () => {
+    render(<TeamScreen onNavigate={noop} />)
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Normal' }))
+
+    fireEvent.click(screen.getByRole('button', { name: /Ver detalle de Gato Básico/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Cerrar/ }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Gato Veloz')).not.toBeInTheDocument() // sigue filtrado a Normal
+    expect(screen.getByLabelText('Gato Básico')).toBeInTheDocument()
+  })
+})

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // specs/010-evolucion-de-gatos: gato de prueba con `evolutions` declarado, igual patrón que otros tests de esta feature.
@@ -60,5 +60,34 @@ describe('CatGuideScreen (specs/018-bibliotecas-consulta US1)', () => {
 
     expect(screen.getAllByRole('listitem')).toHaveLength(1)
     expect(screen.getByText(/Gato Básico/)).toBeInTheDocument()
+  })
+})
+
+describe('CatGuideScreen — filtro y detalle (specs/030-filtro-detalle-unidad)', () => {
+  beforeEach(() => {
+    useMetaStore.setState({
+      ownedCats: {
+        'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+        'speed-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+      },
+    })
+  })
+
+  it('marcar una rareza reduce la lista visible', () => {
+    render(<CatGuideScreen onNavigate={noop} />)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Especial' }))
+
+    expect(screen.getByText(/Gato Veloz/)).toBeInTheDocument()
+    expect(screen.queryByText(/Gato Básico/)).not.toBeInTheDocument()
+  })
+
+  it('tocar un gato abre el panel de detalle', () => {
+    render(<CatGuideScreen onNavigate={noop} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Ver detalle de Gato Básico/ }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/DPS/)).toBeInTheDocument()
   })
 })

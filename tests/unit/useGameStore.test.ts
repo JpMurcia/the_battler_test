@@ -183,9 +183,9 @@ describe('useGameStore.deployUnit — evolución (specs/010-evolucion-de-gatos)'
     useGameStore.getState().deployUnit(evoCat.id)
 
     const unit = useGameStore.getState().units[0]
-    expect(unit.hp).toBe(evoCat.hp * evoCat.evolutions!.second.hpMultiplier)
-    expect(unit.maxHp).toBe(evoCat.hp * evoCat.evolutions!.second.hpMultiplier)
-    expect(unit.damage).toBe(evoCat.damage * evoCat.evolutions!.second.damageMultiplier)
+    expect(unit.hp).toBe(evoCat.hp * evoCat.evolutions!.second!.hpMultiplier)
+    expect(unit.maxHp).toBe(evoCat.hp * evoCat.evolutions!.second!.hpMultiplier)
+    expect(unit.damage).toBe(evoCat.damage * evoCat.evolutions!.second!.damageMultiplier)
   })
 
   it('US3/FR-008: en evolutionStage True produce el doble de hp/damage respecto a Base', () => {

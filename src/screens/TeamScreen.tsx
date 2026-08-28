@@ -1,8 +1,11 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Info } from 'lucide-react'
 import { useState } from 'react'
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { CATS, RARITY_TAG_CLASS } from '../data/cats'
 import { CAT_COMBOS, getComboMemberStatus, getCompletedCombos } from '../data/catCombos'
+import { EMPTY_CAT_FILTER, matchesCatFilter, type CatFilterState } from '../data/catFilter'
+import { CatFilterControls } from './shared/CatFilterControls'
+import { UnitDetailPanel } from './shared/UnitDetailPanel'
 import { MAX_TEAM_ROSTER_SIZE, useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
 
@@ -92,12 +95,19 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>(
     activeTeamCatIds.length > 0 ? activeTeamCatIds : Object.keys(ownedCats),
   )
+  // specs/030-filtro-detalle-unidad (US1/US2): estado de UI puramente de sesión, no persistido.
+  const [filter, setFilter] = useState<CatFilterState>(EMPTY_CAT_FILTER)
+  const [sortByLevel, setSortByLevel] = useState(false)
+  const [detailCatId, setDetailCatId] = useState<string | null>(null)
 
   const toggleCat = (catId: string) => {
     setSelectedIds((current) =>
       current.includes(catId) ? current.filter((id) => id !== catId) : [...current, catId],
     )
   }
+
+  const visibleCats = CATS.filter((cat) => cat.id in ownedCats && matchesCatFilter(cat, filter))
+  if (sortByLevel) visibleCats.sort((a, b) => ownedCats[a.id].level - ownedCats[b.id].level)
 
   return (
     <main className="screen">
@@ -106,8 +116,9 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
           para que "Confirmar equipo"/"Volver" queden siempre visibles (nunca clipeados por el alto
           fijo de `.screen`). */}
       <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <CatFilterControls filter={filter} onChange={setFilter} sortByLevel={sortByLevel} onToggleSort={() => setSortByLevel((v) => !v)} />
         <ul className="list-card">
-          {CATS.filter((cat) => cat.id in ownedCats).map((cat) => {
+          {visibleCats.map((cat) => {
             const checked = selectedIds.includes(cat.id)
             // specs/022-datos-semilla-flujo-navegacion (FR-008): equipo equipable de hasta 10 — mismo patrón
             // que disabledToSelect de BattleItemSelector (no confundir con MAX_ACTIVE_TEAM_SIZE, tope de 6
@@ -120,10 +131,14 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
                   {cat.name}
                 </label>
                 {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
+                <button className="btn btn-ghost" aria-label={`Ver detalle de ${cat.name}`} onClick={() => setDetailCatId(cat.id)}>
+                  <Info size={16} aria-hidden="true" />
+                </button>
               </li>
             )
           })}
         </ul>
+        {detailCatId && <UnitDetailPanel catId={detailCatId} onClose={() => setDetailCatId(null)} />}
         <CatComboSection ownedCatIds={Object.keys(ownedCats)} selectedIds={selectedIds} />
         <BattleItemSelector />
       </div>
