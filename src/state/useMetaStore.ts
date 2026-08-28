@@ -11,6 +11,7 @@ import {
   isTalentEligible,
   type CatTalents,
 } from '../data/talents'
+import { EVOLUTION_ITEM_PRICE, getBattleItemPrice } from '../data/shop'
 import type { ClassificationType, EffectType } from '../engine/types'
 import { CATS } from '../data/cats'
 import { getAllTreasureIds, resolveLevel } from '../data/events'
@@ -175,6 +176,10 @@ interface MetaState {
   exchangeCapsuleForNp: (storageRowId: number) => Promise<boolean>
   /** specs/026-navegacion-hub-mockup (FR-009). Idempotente — agregar un id ya presente no lo duplica. */
   markNewsRead: (id: string) => Promise<void>
+  /** specs/037-tienda (US1/FR-003). `false` = moneda insuficiente (incluye ids desconocidos, precio 0 tratado como insuficiente). */
+  purchaseBattleItem: (itemId: string) => boolean
+  /** specs/037-tienda (US2/FR-006). `false` = gato no elegible (sin Forma Verdadera definida, ya alcanzada, o ya en el tope de ítems) o moneda insuficiente. */
+  purchaseEvolutionItem: (catId: string) => boolean
 }
 
 const DEFAULT_SETTINGS: MetaSettings = { musicVolume: 1, sfxVolume: 1, language: 'es' }
@@ -734,6 +739,37 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     set({ ownedCats: { ...get().ownedCats, [catId]: updated }, npCurrency })
     void db.ownedCats.put({ catId, ...updated })
     void db.playerProfile.update(1, { npCurrency })
+    return true
+  },
+
+  purchaseBattleItem: (itemId) => {
+    if (!BATTLE_ITEMS.some((item) => item.id === itemId)) return false
+    const price = getBattleItemPrice(itemId)
+    if (get().currency < price) return false
+
+    const battleItemInventory = { ...get().battleItemInventory, [itemId]: (get().battleItemInventory[itemId] ?? 0) + 1 }
+    const currency = get().currency - price
+    set({ currency, battleItemInventory })
+    void db.playerProfile.update(1, { currency })
+    void db.battleItems.put({ id: 1, counts: battleItemInventory })
+    return true
+  },
+
+  purchaseEvolutionItem: (catId) => {
+    const owned = get().ownedCats[catId]
+    const cat = CATS.find((candidate) => candidate.id === catId)
+    if (!owned || !cat || !cat.evolutions?.true || owned.evolutionStage === 'True') return false
+
+    const requiredItemCount = cat.evolutions.true.requiredItemCount ?? 0
+    const current = get().evolutionItems[catId] ?? 0
+    if (current >= requiredItemCount) return false
+    if (get().currency < EVOLUTION_ITEM_PRICE) return false
+
+    const evolutionItems = { ...get().evolutionItems, [catId]: current + 1 }
+    const currency = get().currency - EVOLUTION_ITEM_PRICE
+    set({ currency, evolutionItems })
+    void db.playerProfile.update(1, { currency })
+    void db.evolutionItems.put({ id: 1, counts: evolutionItems })
     return true
   },
 

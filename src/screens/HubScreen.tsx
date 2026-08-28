@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Archive, BookOpen, CheckSquare, Coins, Hammer, Mail, Settings as SettingsIcon, Sparkles, Swords, Tent, Wrench, Zap } from 'lucide-react'
+import { Archive, BookOpen, CheckSquare, Coins, Hammer, Mail, Settings as SettingsIcon, ShoppingCart, Sparkles, Swords, Tent, Wrench, Zap } from 'lucide-react'
 import { GAMATOTO_EXPEDITION_OPTIONS, isExpeditionReady } from '../data/gamatoto'
 import { MISSIONS } from '../data/missions'
 import { NEWS_ENTRIES } from '../data/news'
@@ -12,6 +12,7 @@ import { LibraryPanel } from './panels/LibraryPanel'
 import { PanelOverlay } from './shared/PanelOverlay'
 import { PlayerProfilePanel } from './PlayerProfilePanel'
 import { SettingsScreen } from './SettingsScreen'
+import { ShopPanel } from './ShopPanel'
 import { TeamScreen } from './TeamScreen'
 import { TreasureMenuScreen } from './TreasureMenuScreen'
 import { UpgradeScreen } from './UpgradeScreen'
@@ -42,6 +43,7 @@ const PANEL_LABELS: Record<PanelId, string> = {
   Missions: 'Misiones',
   Gamatoto: 'Gamatoto',
   OtotoCorps: 'Cuerpo Ototo',
+  Shop: 'Tienda',
 }
 
 function formatCountdown(totalSeconds: number): string {
@@ -153,6 +155,9 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
     case 'OtotoCorps':
       panelContent = <OtotoCorpsPanel />
       break
+    case 'Shop':
+      panelContent = <ShopPanel />
+      break
     default:
       panelContent = null
   }
@@ -208,6 +213,10 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
         <button className="btn hub-dock__button" onClick={() => open('Gacha', { gachaInitialTab: 'storage' })} title="Almacén">
           <Archive size={16} aria-hidden="true" />
           Almacén
+        </button>
+        <button className="btn hub-dock__button" onClick={() => open('Shop')} title="Tienda">
+          <ShoppingCart size={16} aria-hidden="true" />
+          Tienda
         </button>
       </div>
 

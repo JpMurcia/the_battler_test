@@ -29,3 +29,5 @@ export type PanelId =
   | 'Gamatoto'
   /** specs/035-ototo-corps. */
   | 'OtotoCorps'
+  /** specs/037-tienda. */
+  | 'Shop'

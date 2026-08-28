@@ -1624,3 +1624,134 @@ describe('useMetaStore — Talentos y Orbes (specs/036-talentos-orbes)', () => {
     })
   })
 })
+
+describe('useMetaStore — Tienda (specs/037-tienda)', () => {
+  describe('purchaseBattleItem (US1)', () => {
+    beforeEach(async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({ currency: 1000 })
+    })
+
+    it('con moneda suficiente, descuenta el precio exacto y suma 1 al inventario existente', () => {
+      const ok = useMetaStore.getState().purchaseBattleItem('speed-boost')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().currency).toBe(850) // 1000 - 150
+      expect(useMetaStore.getState().battleItemInventory['speed-boost']).toBe(1)
+    })
+
+    it('comprar dos veces suma sobre la cantidad ya existente, sin reemplazarla', () => {
+      useMetaStore.getState().purchaseBattleItem('speed-boost')
+
+      const ok = useMetaStore.getState().purchaseBattleItem('speed-boost')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().battleItemInventory['speed-boost']).toBe(2)
+    })
+
+    it('con moneda insuficiente devuelve false sin mutar', () => {
+      useMetaStore.setState({ currency: 50 })
+
+      const ok = useMetaStore.getState().purchaseBattleItem('speed-boost')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().currency).toBe(50)
+      expect(useMetaStore.getState().battleItemInventory['speed-boost'] ?? 0).toBe(0)
+    })
+
+    it('un id de ítem desconocido (precio 0) devuelve false, sin permitir comprarlo gratis', () => {
+      const ok = useMetaStore.getState().purchaseBattleItem('unknown-item')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().battleItemInventory['unknown-item'] ?? 0).toBe(0)
+    })
+
+    it('persiste el inventario y la moneda en Dexie', async () => {
+      useMetaStore.getState().purchaseBattleItem('speed-boost')
+
+      await useMetaStore.getState().hydrate()
+
+      expect(useMetaStore.getState().battleItemInventory['speed-boost']).toBe(1)
+      expect(useMetaStore.getState().currency).toBe(850)
+    })
+  })
+
+  describe('purchaseEvolutionItem (US2)', () => {
+    beforeEach(async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({
+        currency: 1000,
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'evo-test-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+        },
+      })
+    })
+
+    it('sobre un gato elegible con moneda suficiente, descuenta el precio exacto y suma 1 a su contador', () => {
+      const ok = useMetaStore.getState().purchaseEvolutionItem('evo-test-cat')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().currency).toBe(750) // 1000 - 250
+      expect(useMetaStore.getState().evolutionItems['evo-test-cat']).toBe(1)
+    })
+
+    it('no afecta el contador de ningún otro gato', () => {
+      useMetaStore.setState({
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'evo-test-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+        },
+        evolutionItems: { 'other-cat': 2 },
+      })
+
+      useMetaStore.getState().purchaseEvolutionItem('evo-test-cat')
+
+      expect(useMetaStore.getState().evolutionItems['other-cat']).toBe(2)
+      expect(useMetaStore.getState().evolutionItems['evo-test-cat']).toBe(1)
+    })
+
+    it('sobre un gato ya en Forma Verdadera devuelve false', () => {
+      useMetaStore.setState({
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'evo-test-cat': { level: 1, experienceInvested: 0, evolutionStage: 'True' },
+        },
+      })
+
+      const ok = useMetaStore.getState().purchaseEvolutionItem('evo-test-cat')
+
+      expect(ok).toBe(false)
+    })
+
+    it('sobre un gato sin Forma Verdadera definida devuelve false', () => {
+      useMetaStore.setState({
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
+        },
+      })
+
+      const ok = useMetaStore.getState().purchaseEvolutionItem('basic-cat')
+
+      expect(ok).toBe(false)
+    })
+
+    it('al alcanzar requiredItemCount, una compra adicional devuelve false', () => {
+      useMetaStore.setState({ currency: 10_000, evolutionItems: { 'evo-test-cat': 3 } }) // requiredItemCount de evo-test-cat
+
+      const ok = useMetaStore.getState().purchaseEvolutionItem('evo-test-cat')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().evolutionItems['evo-test-cat']).toBe(3)
+    })
+
+    it('con moneda insuficiente devuelve false', () => {
+      useMetaStore.setState({ currency: 0 })
+
+      const ok = useMetaStore.getState().purchaseEvolutionItem('evo-test-cat')
+
+      expect(ok).toBe(false)
+    })
+  })
+})

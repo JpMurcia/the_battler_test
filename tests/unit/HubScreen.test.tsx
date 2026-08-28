@@ -160,6 +160,17 @@ describe('HubScreen — Cuerpo Ototo (specs/035-ototo-corps)', () => {
   })
 })
 
+describe('HubScreen — Tienda (specs/037-tienda)', () => {
+  it('el botón Tienda abre su panel', () => {
+    useMetaStore.setState({ ...BASE_STATE, currency: 500, battleItemInventory: {}, evolutionItems: {} })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Tienda/ }))
+
+    expect(screen.getByRole('heading', { name: 'Tienda' })).toBeInTheDocument()
+  })
+})
+
 describe('HubScreen — temporizador de regeneración de energía (specs/029-pulido-batalla-hud US4)', () => {
   beforeEach(() => {
     vi.useFakeTimers()
