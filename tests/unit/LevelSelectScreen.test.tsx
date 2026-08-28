@@ -1,12 +1,14 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { EventBanner } from '../../src/data/events'
 import type { Level } from '../../src/data/levels'
 
 // specs/014-banner-evento-especial: valores mutables/compartidos con los mocks de abajo — vi.mock se hoistea
 // por encima de imports/variables normales, así que vi.hoisted es la única vía soportada para exponerlos.
-const { mockEventBanners, MOCK_LEVELS } = vi.hoisted(() => ({
+const { mockEventBanners, mockTreasureFestivals, MOCK_LEVELS } = vi.hoisted(() => ({
   mockEventBanners: [] as EventBanner[],
+  // specs/032-festival-de-tesoros: mismo patrón mutable que mockEventBanners.
+  mockTreasureFestivals: [] as { id: string; name: string; currencyMultiplier: number; timeWindows: { startMs: number; endMs: number }[] }[],
   MOCK_LEVELS: [
     {
       id: 'level-1',
@@ -71,6 +73,22 @@ vi.mock('../../src/data/events', async (importOriginal) => {
   }
 })
 
+// specs/032-festival-de-tesoros: getActiveTreasureFestival/getFestivalTimeRemainingMs se reimplementan
+// igual que resolveLevel arriba, para operar sobre mockTreasureFestivals en vez del catálogo real.
+vi.mock('../../src/data/treasureFestival', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/data/treasureFestival')>()
+  return {
+    ...actual,
+    TREASURE_FESTIVALS: mockTreasureFestivals,
+    getActiveTreasureFestival: (_festivals: unknown, nowMs: number) =>
+      mockTreasureFestivals.find((festival) => festival.timeWindows.some((w) => nowMs >= w.startMs && nowMs < w.endMs)),
+    getFestivalTimeRemainingMs: (festival: (typeof mockTreasureFestivals)[number], nowMs: number) => {
+      const activeWindow = festival.timeWindows.find((w) => nowMs >= w.startMs && nowMs < w.endMs)
+      return activeWindow ? activeWindow.endMs - nowMs : 0
+    },
+  }
+})
+
 const { LevelSelectScreen } = await import('../../src/screens/LevelSelectScreen')
 const { useGameStore } = await import('../../src/state/useGameStore')
 const { useMetaStore } = await import('../../src/state/useMetaStore')
@@ -83,6 +101,7 @@ beforeEach(() => {
   })
   useGameStore.getState().reset()
   mockEventBanners.length = 0
+  mockTreasureFestivals.length = 0
 })
 
 describe('LevelSelectScreen — mapa de nodos (specs/023-mapa-de-etapas-visual US1)', () => {
@@ -341,5 +360,55 @@ describe('LevelSelectScreen — pestañas de región (specs/028-ajustes-combate-
 
     fireEvent.click(screen.getByRole('button', { name: 'Capítulo 1' }))
     expect(screen.getByRole('button', { name: 'Fase Especial de Prueba' })).toBeInTheDocument()
+  })
+})
+
+describe('LevelSelectScreen — banner de Festival de Tesoros (specs/032-festival-de-tesoros US1)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('con festival activo, muestra nombre/multiplicador y un countdown', () => {
+    const now = Date.now()
+    mockTreasureFestivals.push({
+      id: 'festival-prueba',
+      name: 'Festival de Prueba',
+      currencyMultiplier: 2,
+      timeWindows: [{ startMs: now - 1000, endMs: now + 10_000 }],
+    })
+
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByText(/Festival de Prueba/)).toBeInTheDocument()
+    expect(screen.getByText(/x2/)).toBeInTheDocument()
+  })
+
+  it('el countdown decrece con el tiempo real', () => {
+    const now = Date.now()
+    mockTreasureFestivals.push({
+      id: 'festival-prueba',
+      name: 'Festival de Prueba',
+      currencyMultiplier: 2,
+      timeWindows: [{ startMs: now - 1000, endMs: now + 10_000 }],
+    })
+
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+    const before = screen.getByTestId('treasure-festival-banner').textContent
+
+    act(() => {
+      vi.advanceTimersByTime(3000)
+    })
+
+    expect(screen.getByTestId('treasure-festival-banner').textContent).not.toBe(before)
+  })
+
+  it('fuera de cualquier ventana, no muestra ningún banner', () => {
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+
+    expect(screen.queryByTestId('treasure-festival-banner')).not.toBeInTheDocument()
   })
 })

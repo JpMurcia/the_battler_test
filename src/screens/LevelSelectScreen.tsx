@@ -1,9 +1,10 @@
 import { ArrowLeft, Gem, Zap } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getLevelState, type LevelState } from '../data/levelState'
 import { EVENT_BANNERS, isEventActive } from '../data/events'
 import { LEVELS } from '../data/levels'
 import { TREASURE_SETS } from '../data/treasureSets'
+import { TREASURE_FESTIVALS, getActiveTreasureFestival, getFestivalTimeRemainingMs } from '../data/treasureFestival'
 import { PanelOverlay } from './shared/PanelOverlay'
 import { TreasureMenuScreen } from './TreasureMenuScreen'
 import { useGameStore } from '../state/useGameStore'
@@ -12,6 +13,40 @@ import type { Screen } from '../types/screen'
 
 interface LevelSelectScreenProps {
   onNavigate: (screen: Screen) => void
+}
+
+/** Mismo formateador que `formatCountdown` de `HubScreen.tsx` (specs/029) — duplicado deliberado, trivial
+ * de mantener sincronizado, mismo criterio que `lighten()` en `cyberUnitBody.ts`/`unitFactory.ts`. */
+function formatCountdown(totalSeconds: number): string {
+  const clamped = Math.max(0, Math.ceil(totalSeconds))
+  const minutes = Math.floor(clamped / 60)
+  const seconds = clamped % 60
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
+
+/** specs/032-festival-de-tesoros (US1). Mismo patrón que `EnergyRegenTimer` (specs/029): `setInterval`
+ * local de 1s para recalcular el countdown, sin escribir a ningún store. */
+function TreasureFestivalBanner() {
+  const [, setTick] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((value) => value + 1), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const festival = getActiveTreasureFestival(TREASURE_FESTIVALS, Date.now())
+  if (!festival) return null
+
+  const remainingSeconds = getFestivalTimeRemainingMs(festival, Date.now()) / 1000
+
+  return (
+    <div className="glass-panel" data-testid="treasure-festival-banner" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px' }}>
+      <Gem size={16} aria-hidden="true" color="var(--bc-gold)" />
+      <strong>{festival.name}</strong>
+      <span>x{festival.currencyMultiplier} Moneda</span>
+      <span>⏱ {formatCountdown(remainingSeconds)}</span>
+    </div>
+  )
 }
 
 /**
@@ -129,6 +164,7 @@ export function LevelSelectScreen({ onNavigate }: LevelSelectScreenProps) {
         <Zap size={15} aria-hidden="true" color="var(--bc-cyan)" />
         Energía de misión: {Math.floor(missionEnergy.current)}/{missionEnergy.max}
       </div>
+      <TreasureFestivalBanner />
       {regions.length > 1 && (
         <div className="region-tabs">
           {regions.map((region) => (

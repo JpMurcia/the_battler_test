@@ -1,10 +1,22 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { BattleScreen } from '../../src/screens/BattleScreen'
-import { useGameStore } from '../../src/state/useGameStore'
-import { useMetaStore } from '../../src/state/useMetaStore'
 
 vi.mock('../../src/game/BattleStage', () => ({ BattleStage: () => null }))
+
+// specs/032-festival-de-tesoros: catálogo mockeable, en vez del real (que cubre todo 2026 y haría el
+// festival "siempre activo" en tests si no se controla explícitamente).
+const { mockTreasureFestivals } = vi.hoisted(() => ({
+  mockTreasureFestivals: [] as { id: string; name: string; currencyMultiplier: number; timeWindows: { startMs: number; endMs: number }[] }[],
+}))
+vi.mock('../../src/data/treasureFestival', () => ({
+  TREASURE_FESTIVALS: mockTreasureFestivals,
+  getActiveTreasureFestival: (_festivals: unknown, nowMs: number) =>
+    mockTreasureFestivals.find((festival) => festival.timeWindows.some((w) => nowMs >= w.startMs && nowMs < w.endMs)),
+}))
+
+const { BattleScreen } = await import('../../src/screens/BattleScreen')
+const { useGameStore } = await import('../../src/state/useGameStore')
+const { useMetaStore } = await import('../../src/state/useMetaStore')
 
 const noop = () => {}
 
@@ -24,6 +36,7 @@ beforeEach(() => {
     },
     activeTeamCatIds: [],
   })
+  mockTreasureFestivals.length = 0
 })
 
 describe('BattleScreen DeployBar', () => {
@@ -194,11 +207,12 @@ describe('BattleScreen — Contabilidad (specs/031-mejoras-de-base US3)', () => 
   it('en victoria, con accounting en nivel >0 la moneda otorgada es mayor que en nivel 0', () => {
     useGameStore.setState({ levelId: 'level-1', status: 'InProgress' })
     useMetaStore.setState({ currency: 0, baseUpgrades: {} })
-    render(<BattleScreen onNavigate={noop} />)
+    const first = render(<BattleScreen onNavigate={noop} />)
     act(() => {
       useGameStore.setState({ status: 'Victory' })
     })
     const currencyWithoutBonus = useMetaStore.getState().currency
+    first.unmount()
 
     useGameStore.setState({ levelId: 'level-1', status: 'InProgress' })
     useMetaStore.setState({ currency: 0, baseUpgrades: { accounting: 5 }, completedLevelIds: [] })
@@ -209,5 +223,48 @@ describe('BattleScreen — Contabilidad (specs/031-mejoras-de-base US3)', () => 
     const currencyWithBonus = useMetaStore.getState().currency
 
     expect(currencyWithBonus).toBeGreaterThan(currencyWithoutBonus)
+  })
+})
+
+describe('BattleScreen — Festival de Tesoros (specs/032-festival-de-tesoros US2)', () => {
+  it('en victoria dentro de la ventana del festival, la moneda incluye su multiplicador', () => {
+    const now = Date.now()
+
+    useGameStore.setState({ levelId: 'level-1', status: 'InProgress' })
+    useMetaStore.setState({ currency: 0, completedLevelIds: [] })
+    const first = render(<BattleScreen onNavigate={noop} />)
+    act(() => {
+      useGameStore.setState({ status: 'Victory' })
+    })
+    const currencyWithoutFestival = useMetaStore.getState().currency
+    first.unmount()
+
+    mockTreasureFestivals.push({
+      id: 'festival-prueba',
+      name: 'Festival de Prueba',
+      currencyMultiplier: 2,
+      timeWindows: [{ startMs: now - 1000, endMs: now + 60_000 }],
+    })
+    useGameStore.setState({ levelId: 'level-1', status: 'InProgress' })
+    useMetaStore.setState({ currency: 0, completedLevelIds: [] })
+    render(<BattleScreen onNavigate={noop} />)
+    act(() => {
+      useGameStore.setState({ status: 'Victory' })
+    })
+    const currencyWithFestival = useMetaStore.getState().currency
+
+    expect(currencyWithFestival).toBe(currencyWithoutFestival * 2)
+  })
+
+  it('en victoria fuera de cualquier ventana, la moneda no incluye ningún multiplicador de festival', () => {
+    useGameStore.setState({ levelId: 'level-1', status: 'InProgress' })
+    useMetaStore.setState({ currency: 0, completedLevelIds: [] })
+    render(<BattleScreen onNavigate={noop} />)
+
+    act(() => {
+      useGameStore.setState({ status: 'Victory' })
+    })
+
+    expect(useMetaStore.getState().currency).toBeGreaterThan(0)
   })
 })

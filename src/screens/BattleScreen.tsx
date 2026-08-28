@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { CATS } from '../data/cats'
 import { isEventStageId, resolveLevel } from '../data/events'
 import { findArcByLevelId } from '../data/sagaArcs'
+import { TREASURE_FESTIVALS, getActiveTreasureFestival } from '../data/treasureFestival'
 import { BattleStage } from '../game/BattleStage'
 import { useGameStore } from '../state/useGameStore'
 import { MAX_ACTIVE_TEAM_SIZE, useMetaStore } from '../state/useMetaStore'
@@ -185,12 +186,14 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
         // specs/013-escalado-capitulos-sets-tesoros (US4): bonificación pasiva de sets de tesoros ya otorgados.
         // specs/025-cat-combos (FR-003/FR-008): bonificación de Cat Combo activo, combinada con la de arriba.
         // specs/031-mejoras-de-base (US3/FR-009): "Contabilidad", combinada multiplicativamente con las 2 anteriores.
+        // specs/032-festival-de-tesoros (US2/FR-005): 4º factor, vigente al momento exacto de otorgar la recompensa.
         addCurrency(
           Math.round(
             level.currencyReward *
               getActiveBonusMultiplier('CurrencyRewardMultiplier') *
               getActiveComboBonusMultiplier('CurrencyRewardMultiplier') *
-              getBaseUpgradeCurrencyMultiplier(),
+              getBaseUpgradeCurrencyMultiplier() *
+              (getActiveTreasureFestival(TREASURE_FESTIVALS, Date.now())?.currencyMultiplier ?? 1),
           ),
         )
         // specs/014-banner-evento-especial (FR-004): la fase especial de un evento no participa del desbloqueo secuencial.
