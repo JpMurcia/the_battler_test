@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { db, ensureDefaultProfile, type GachaStorageRow } from '../db'
 import { BASE_UPGRADES, getAccountingMultiplier, getBaseUpgradeCost, getEnergyCapBonus, type BaseUpgradeId } from '../data/baseUpgrades'
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
+import { MISSIONS, getDateKey, type MissionMetric } from '../data/missions'
 import { CATS } from '../data/cats'
 import { getAllTreasureIds, resolveLevel } from '../data/events'
 import { LEVELS } from '../data/levels'
@@ -84,6 +85,12 @@ interface MetaState {
   readNewsIds: string[]
   /** specs/031-mejoras-de-base. Nivel actual por mejora de cuenta — ausente = 0 al leer. */
   baseUpgrades: Partial<Record<BaseUpgradeId, number>>
+  /** specs/033-misiones-catnip-challenges. Contador acumulado hoy por métrica — ausente = 0, sin recorte interno. */
+  missionProgress: Partial<Record<MissionMetric, number>>
+  /** specs/033-misiones-catnip-challenges. Ids de `MissionDefinition` ya reclamados hoy. */
+  claimedMissionIds: string[]
+  /** specs/033-misiones-catnip-challenges (FR-006). `getDateKey` de la última vez que se tocó el progreso. */
+  missionsResetDateKey: string
 
   hydrate: () => Promise<void>
   addCurrency: (amount: number) => void
@@ -108,6 +115,10 @@ interface MetaState {
   upgradeBaseUpgrade: (id: BaseUpgradeId) => boolean
   /** specs/031-mejoras-de-base (US3). Factor adicional para la moneda de victoria, combinado con `getActiveBonusMultiplier`/`getActiveComboBonusMultiplier`. */
   getBaseUpgradeCurrencyMultiplier: () => number
+  /** specs/033-misiones-catnip-challenges (US2). Aplica el reinicio diario si corresponde, luego suma `amount` al contador de `metric`. */
+  recordMissionProgress: (metric: MissionMetric, amount: number) => void
+  /** specs/033-misiones-catnip-challenges (US1). `false` si la misión no existe, ya fue reclamada hoy, o su progreso no alcanza el objetivo. */
+  claimMission: (missionId: string) => boolean
   selectBattleItem: (itemId: string) => boolean
   deselectBattleItem: (itemId: string) => void
   consumeSelectedBattleItems: () => { speedMultiplier: number; energyBonus: number }
@@ -189,6 +200,9 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   gachaStorage: [],
   readNewsIds: [],
   baseUpgrades: {} as Partial<Record<BaseUpgradeId, number>>,
+  missionProgress: {} as Partial<Record<MissionMetric, number>>,
+  claimedMissionIds: [] as string[],
+  missionsResetDateKey: '',
 
   hydrate: async () => {
     await ensureDefaultProfile()
@@ -209,6 +223,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       gachaStorage,
       newsReadRow,
       baseUpgradesRow,
+      missionsRow,
     ] = await Promise.all([
       db.playerProfile.get(1),
       db.settings.get(1),
@@ -226,9 +241,19 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       db.gachaStorage.toArray(),
       db.newsRead.get(1),
       db.baseUpgrades.get(1),
+      db.missions.get(1),
     ])
 
     const baseUpgrades = baseUpgradesRow?.levels ?? ({} as Partial<Record<BaseUpgradeId, number>>)
+
+    // specs/033-misiones-catnip-challenges (FR-006): fila ausente = primera vez, se trata como "hoy" sin
+    // progreso; una fila con resetDateKey de un día distinto a hoy también se descarta aquí (mismo criterio
+    // de reinicio que recordMissionProgress/claimMission — research.md Decisión 2).
+    const todayKey = getDateKey(Date.now())
+    const missionsUpToDate = missionsRow?.resetDateKey === todayKey
+    const missionProgress = missionsUpToDate ? (missionsRow?.progress ?? {}) : ({} as Partial<Record<MissionMetric, number>>)
+    const claimedMissionIds = missionsUpToDate ? (missionsRow?.claimedMissionIds ?? []) : []
+    if (!missionsUpToDate) void db.missions.put({ id: 1, resetDateKey: todayKey, progress: {}, claimedMissionIds: [] })
 
     const ownedCats = Object.fromEntries(
       ownedCatRows.map((row) => [
@@ -277,6 +302,9 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       gachaStorage,
       readNewsIds: newsReadRow?.readIds ?? [],
       baseUpgrades,
+      missionProgress,
+      claimedMissionIds,
+      missionsResetDateKey: todayKey,
     })
     void db.missionEnergy.put({ id: 1, current, max, lastUpdatedAt: now })
   },
@@ -516,6 +544,38 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   },
 
   getBaseUpgradeCurrencyMultiplier: () => getAccountingMultiplier(get().baseUpgrades.accounting ?? 0),
+
+  recordMissionProgress: (metric, amount) => {
+    // specs/033-misiones-catnip-challenges (FR-006/research.md Decisión 2): mismo chequeo de reinicio que
+    // hydrate() — duplicado deliberado, mismo criterio que missionEnergy.max en hydrate()/upgradeCat().
+    const todayKey = getDateKey(Date.now())
+    const current = get().missionsResetDateKey === todayKey ? get().missionProgress : {}
+    const claimedMissionIds = get().missionsResetDateKey === todayKey ? get().claimedMissionIds : []
+
+    const progress = { ...current, [metric]: (current[metric] ?? 0) + amount }
+    set({ missionProgress: progress, claimedMissionIds, missionsResetDateKey: todayKey })
+    void db.missions.put({ id: 1, resetDateKey: todayKey, progress, claimedMissionIds })
+  },
+
+  claimMission: (missionId) => {
+    const mission = MISSIONS.find((candidate) => candidate.id === missionId)
+    if (!mission) return false
+
+    const todayKey = getDateKey(Date.now())
+    const upToDate = get().missionsResetDateKey === todayKey
+    const progress = upToDate ? get().missionProgress : {}
+    const claimedSoFar = upToDate ? get().claimedMissionIds : []
+
+    if (claimedSoFar.includes(missionId)) return false
+    if ((progress[mission.metric] ?? 0) < mission.target) return false
+
+    const claimedMissionIds = [...claimedSoFar, missionId]
+    const currency = get().currency + mission.currencyReward
+    set({ missionProgress: progress, claimedMissionIds, missionsResetDateKey: todayKey, currency })
+    void db.playerProfile.update(1, { currency })
+    void db.missions.put({ id: 1, resetDateKey: todayKey, progress, claimedMissionIds })
+    return true
+  },
 
   selectBattleItem: (itemId) => {
     const { selectedBattleItemIds, battleItemInventory } = get()

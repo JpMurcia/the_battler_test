@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import type { BaseUpgradeId } from '../data/baseUpgrades'
 import { CATS, type RarityType } from '../data/cats'
 import { computeMissionEnergyMax } from '../data/missionEnergy'
+import type { MissionMetric } from '../data/missions'
 
 export interface PlayerProfileRow {
   id: 1 // fila única (singleton)
@@ -111,6 +112,14 @@ export interface BaseUpgradesRow {
   levels: Partial<Record<BaseUpgradeId, number>>
 }
 
+/** specs/033-misiones-catnip-challenges. `resetDateKey` (`YYYY-MM-DD`) gobierna el reinicio diario (FR-006). */
+export interface MissionsRow {
+  id: 1 // fila única (singleton)
+  resetDateKey: string
+  progress: Partial<Record<MissionMetric, number>>
+  claimedMissionIds: string[]
+}
+
 class BattleCatsDB extends Dexie {
   playerProfile!: Table<PlayerProfileRow, number>
   ownedCats!: Table<OwnedCatRow, string>
@@ -128,6 +137,7 @@ class BattleCatsDB extends Dexie {
   gachaStorage!: Table<GachaStorageRow, number>
   newsRead!: Table<NewsReadRow, number>
   baseUpgrades!: Table<BaseUpgradesRow, number>
+  missions!: Table<MissionsRow, number>
 
   constructor() {
     super('BattleCatsDB')
@@ -170,6 +180,9 @@ class BattleCatsDB extends Dexie {
     })
     this.version(12).stores({
       baseUpgrades: 'id',
+    })
+    this.version(13).stores({
+      missions: 'id',
     })
   }
 }

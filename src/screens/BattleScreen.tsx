@@ -174,6 +174,7 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
   const getActiveBonusMultiplier = useMetaStore((state) => state.getActiveBonusMultiplier)
   const getActiveComboBonusMultiplier = useMetaStore((state) => state.getActiveComboBonusMultiplier)
   const getBaseUpgradeCurrencyMultiplier = useMetaStore((state) => state.getBaseUpgradeCurrencyMultiplier)
+  const recordMissionProgress = useMetaStore((state) => state.recordMissionProgress)
   const pendingTreasureRadar = useMetaStore((state) => state.pendingTreasureRadar)
   const grantRandomUnownedTreasure = useMetaStore((state) => state.grantRandomUnownedTreasure)
   const clearPendingTreasureRadar = useMetaStore((state) => state.clearPendingTreasureRadar)
@@ -196,6 +197,8 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
               (getActiveTreasureFestival(TREASURE_FESTIVALS, Date.now())?.currencyMultiplier ?? 1),
           ),
         )
+        // specs/033-misiones-catnip-challenges (US2/FR-002): cualquier victoria cuenta, incluida la fase especial de un evento.
+        recordMissionProgress('levelsCompleted', 1)
         // specs/014-banner-evento-especial (FR-004): la fase especial de un evento no participa del desbloqueo secuencial.
         if (!isEventStageId(level.id)) {
           markLevelCompleted(level.id)
@@ -225,6 +228,7 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
     getActiveBonusMultiplier,
     getActiveComboBonusMultiplier,
     getBaseUpgradeCurrencyMultiplier,
+    recordMissionProgress,
     pendingTreasureRadar,
     grantRandomUnownedTreasure,
     clearPendingTreasureRadar,

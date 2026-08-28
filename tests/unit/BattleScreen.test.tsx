@@ -35,6 +35,9 @@ beforeEach(() => {
       'tank-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' },
     },
     activeTeamCatIds: [],
+    missionProgress: {},
+    claimedMissionIds: [],
+    missionsResetDateKey: '',
   })
   mockTreasureFestivals.length = 0
 })
@@ -254,6 +257,18 @@ describe('BattleScreen — Festival de Tesoros (specs/032-festival-de-tesoros US
     const currencyWithFestival = useMetaStore.getState().currency
 
     expect(currencyWithFestival).toBe(currencyWithoutFestival * 2)
+  })
+
+  it('specs/033-misiones-catnip-challenges: en victoria, incrementa missionProgress.levelsCompleted', () => {
+    useGameStore.setState({ levelId: 'level-1', status: 'InProgress' })
+    useMetaStore.setState({ missionProgress: {}, completedLevelIds: [] })
+    render(<BattleScreen onNavigate={noop} />)
+
+    act(() => {
+      useGameStore.setState({ status: 'Victory' })
+    })
+
+    expect(useMetaStore.getState().missionProgress.levelsCompleted).toBe(1)
   })
 
   it('en victoria fuera de cualquier ventana, la moneda no incluye ningún multiplicador de festival', () => {

@@ -137,7 +137,16 @@ beforeEach(() => {
   // orden de ejecución respecto a los tests de getActiveComboBonusMultiplier más abajo.
   // specs/031-mejoras-de-base: baseUpgrades también se resetea aquí por el mismo motivo (aislar tests
   // de esta suite de los de "Mejoras de Base" más abajo).
-  useMetaStore.setState({ ownedCats: {}, evolutionItems: {}, activeTeamCatIds: [], baseUpgrades: {} })
+  useMetaStore.setState({
+    ownedCats: {},
+    evolutionItems: {},
+    activeTeamCatIds: [],
+    baseUpgrades: {},
+    // specs/033-misiones-catnip-challenges: mismo motivo de aislamiento que baseUpgrades arriba.
+    missionProgress: {},
+    claimedMissionIds: [],
+    missionsResetDateKey: '',
+  })
 })
 
 describe('useGameStore.deployUnit', () => {
@@ -172,6 +181,22 @@ describe('useGameStore.deployUnit', () => {
     expect(state.units).toHaveLength(1)
     expect(state.energy.current).toBe(999 - cat.cost)
     expect(state.deployCooldowns[cat.id]).toBe(cat.cooldownSeconds)
+  })
+
+  it('specs/033-misiones-catnip-challenges: un despliegue exitoso incrementa missionProgress.unitsDeployed', () => {
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    expect(useMetaStore.getState().missionProgress.unitsDeployed).toBe(1)
+  })
+
+  it('specs/033-misiones-catnip-challenges: un despliegue rechazado no incrementa missionProgress', () => {
+    useGameStore.setState({ energy: { current: 0, max: 100, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    expect(useMetaStore.getState().missionProgress.unitsDeployed ?? 0).toBe(0)
   })
 })
 

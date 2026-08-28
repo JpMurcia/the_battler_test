@@ -165,6 +165,9 @@ function BattleField() {
     if (wasInProgress && freshStore.status === 'InProgress') {
       const stillActiveIds = new Set(nextActiveUnits.map((unit) => unit.instanceId))
       const newlyDead = previousUnits.filter((unit) => !stillActiveIds.has(unit.instanceId))
+      // specs/033-misiones-catnip-challenges (US2/FR-002): reutiliza el mismo diff que ya calcula death echoes.
+      const enemyDeaths = newlyDead.filter((unit) => unit.team === 'Enemy').length
+      if (enemyDeaths > 0) useMetaStore.getState().recordMissionProgress('enemiesDefeated', enemyDeaths)
       if (newlyDead.length > 0) {
         const newEchoes: DeathEchoState[] = newlyDead.map((deadUnit) => ({
           instanceId: deadUnit.instanceId,

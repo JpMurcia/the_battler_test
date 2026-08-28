@@ -141,6 +141,9 @@ const INITIAL_STATE = {
   gachaStorage: [] as { id?: number; catId: string; rarity: RarityType }[],
   readNewsIds: [] as string[],
   baseUpgrades: {} as Record<string, number>,
+  missionProgress: {} as Record<string, number>,
+  claimedMissionIds: [] as string[],
+  missionsResetDateKey: '',
 }
 
 beforeEach(async () => {
@@ -161,6 +164,7 @@ beforeEach(async () => {
     db.gachaStorage.clear(),
     db.newsRead.clear(),
     db.baseUpgrades.clear(),
+    db.missions.clear(),
   ])
   useMetaStore.setState(INITIAL_STATE)
 })
@@ -1131,5 +1135,85 @@ describe('useMetaStore — Mejoras de Base (specs/031-mejoras-de-base)', () => {
     await useMetaStore.getState().hydrate()
 
     expect(useMetaStore.getState().missionEnergy.max).toBeGreaterThan(maxWithoutBonus)
+  })
+})
+
+describe('useMetaStore — Misiones (specs/033-misiones-catnip-challenges)', () => {
+  it('hydrate() sobre una base vacía deja missionProgress/claimedMissionIds vacíos y la fecha de hoy', async () => {
+    await useMetaStore.getState().hydrate()
+
+    const state = useMetaStore.getState()
+    expect(state.missionProgress).toEqual({})
+    expect(state.claimedMissionIds).toEqual([])
+    expect(state.missionsResetDateKey).toBe(new Date().toISOString().slice(0, 10))
+  })
+
+  it('recordMissionProgress suma al contador de la métrica y persiste', async () => {
+    await useMetaStore.getState().hydrate()
+
+    useMetaStore.getState().recordMissionProgress('unitsDeployed', 1)
+    useMetaStore.getState().recordMissionProgress('unitsDeployed', 2)
+
+    expect(useMetaStore.getState().missionProgress.unitsDeployed).toBe(3)
+    await useMetaStore.getState().hydrate()
+    expect(useMetaStore.getState().missionProgress.unitsDeployed).toBe(3)
+  })
+
+  it('claimMission con progreso suficiente suma la recompensa y marca la misión como reclamada', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ currency: 0 })
+    useMetaStore.getState().recordMissionProgress('levelsCompleted', 1)
+
+    const ok = useMetaStore.getState().claimMission('mision-completar-etapa')
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().currency).toBe(50)
+    expect(useMetaStore.getState().claimedMissionIds).toContain('mision-completar-etapa')
+  })
+
+  it('claimMission con progreso insuficiente devuelve false sin mutar', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ currency: 0 })
+
+    const ok = useMetaStore.getState().claimMission('mision-completar-etapa')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().currency).toBe(0)
+  })
+
+  it('claimMission ya reclamada hoy devuelve false la segunda vez', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.getState().recordMissionProgress('levelsCompleted', 1)
+    useMetaStore.getState().claimMission('mision-completar-etapa')
+    const currencyAfterFirstClaim = useMetaStore.getState().currency
+
+    const ok = useMetaStore.getState().claimMission('mision-completar-etapa')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().currency).toBe(currencyAfterFirstClaim)
+  })
+
+  it('con missionsResetDateKey de un día distinto a hoy, la siguiente acción reinicia todo antes de aplicarse', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.getState().recordMissionProgress('levelsCompleted', 1)
+    useMetaStore.getState().claimMission('mision-completar-etapa')
+    useMetaStore.setState({ missionsResetDateKey: '2000-01-01' })
+
+    useMetaStore.getState().recordMissionProgress('unitsDeployed', 1)
+
+    const state = useMetaStore.getState()
+    expect(state.missionProgress).toEqual({ unitsDeployed: 1 })
+    expect(state.claimedMissionIds).toEqual([])
+  })
+
+  it('hydrate() con una fila persistida de un día distinto reinicia el progreso', async () => {
+    await db.missions.put({ id: 1, resetDateKey: '2000-01-01', progress: { unitsDeployed: 5 }, claimedMissionIds: ['mision-completar-etapa'] })
+
+    await useMetaStore.getState().hydrate()
+
+    const state = useMetaStore.getState()
+    expect(state.missionProgress).toEqual({})
+    expect(state.claimedMissionIds).toEqual([])
+    expect(state.missionsResetDateKey).not.toBe('2000-01-01')
   })
 })

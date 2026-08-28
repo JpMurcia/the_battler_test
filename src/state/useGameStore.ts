@@ -237,6 +237,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       deployCooldowns: { ...deployCooldowns, [catId]: effectiveCooldown },
       units: [...units, unit],
     })
+    // specs/033-misiones-catnip-challenges (US2/FR-002): progreso de la misión de despliegue.
+    useMetaStore.getState().recordMissionProgress('unitsDeployed', 1)
     return true
   },
 

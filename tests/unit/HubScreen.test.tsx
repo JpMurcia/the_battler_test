@@ -86,6 +86,33 @@ describe('HubScreen', () => {
   })
 })
 
+describe('HubScreen — Misiones (specs/033-misiones-catnip-challenges)', () => {
+  it('el botón Misiones abre el panel de misiones', () => {
+    useMetaStore.setState({ ...BASE_STATE, missionProgress: {}, claimedMissionIds: [] })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Misiones/ }))
+
+    expect(screen.getByRole('heading', { name: 'Misiones' })).toBeInTheDocument()
+  })
+
+  it('sin misiones completadas sin reclamar, no muestra badge', () => {
+    useMetaStore.setState({ ...BASE_STATE, missionProgress: {}, claimedMissionIds: [] })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: /Misiones/ }).querySelector('.hub-dock__badge')).toBeNull()
+  })
+
+  it('con al menos 1 misión completada y sin reclamar, muestra el badge con la cantidad', () => {
+    useMetaStore.setState({ ...BASE_STATE, missionProgress: { levelsCompleted: 1 }, claimedMissionIds: [] })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    const badge = screen.getByRole('button', { name: /Misiones/ }).querySelector('.hub-dock__badge')
+    expect(badge).not.toBeNull()
+    expect(badge!.textContent).toBe('1')
+  })
+})
+
 describe('HubScreen — temporizador de regeneración de energía (specs/029-pulido-batalla-hud US4)', () => {
   beforeEach(() => {
     vi.useFakeTimers()

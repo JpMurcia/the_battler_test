@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Archive, BookOpen, Coins, Mail, Settings as SettingsIcon, Sparkles, Swords, Wrench, Zap } from 'lucide-react'
+import { Archive, BookOpen, CheckSquare, Coins, Mail, Settings as SettingsIcon, Sparkles, Swords, Wrench, Zap } from 'lucide-react'
+import { MISSIONS } from '../data/missions'
 import { NEWS_ENTRIES } from '../data/news'
 import { GachaScreen } from './GachaScreen'
+import { MissionsPanel } from './MissionsPanel'
 import { NewsPanel } from './NewsPanel'
 import { LibraryPanel } from './panels/LibraryPanel'
 import { PanelOverlay } from './shared/PanelOverlay'
@@ -34,6 +36,7 @@ const PANEL_LABELS: Record<PanelId, string> = {
   TreasureMenu: 'Menú de Tesoros',
   PlayerProfile: 'Perfil de Jugador',
   News: 'Buzón de Noticias',
+  Missions: 'Misiones',
 }
 
 function formatCountdown(totalSeconds: number): string {
@@ -81,8 +84,14 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
   const currency = useMetaStore((state) => state.currency)
   const missionEnergy = useMetaStore((state) => state.missionEnergy)
   const readNewsIds = useMetaStore((state) => state.readNewsIds)
+  const missionProgress = useMetaStore((state) => state.missionProgress)
+  const claimedMissionIds = useMetaStore((state) => state.claimedMissionIds)
   const rank = characterLevelOf(ownedCats)
   const hasUnreadNews = NEWS_ENTRIES.some((entry) => !readNewsIds.includes(entry.id))
+  // specs/033-misiones-catnip-challenges (FR-005): misiones completadas y sin reclamar todavía.
+  const pendingMissionsCount = MISSIONS.filter(
+    (mission) => (missionProgress[mission.metric] ?? 0) >= mission.target && !claimedMissionIds.includes(mission.id),
+  ).length
 
   const [openPanels, setOpenPanels] = useState<OpenPanel[]>([])
   const open = (id: PanelId, opts?: Omit<OpenPanel, 'id'>) => setOpenPanels((stack) => [...stack, { id, ...opts }])
@@ -123,6 +132,9 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
       break
     case 'News':
       panelContent = <NewsPanel />
+      break
+    case 'Missions':
+      panelContent = <MissionsPanel />
       break
     default:
       panelContent = null
@@ -174,6 +186,11 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
       </div>
 
       <div className="hud-bar">
+        <button className="btn btn-ghost" style={{ position: 'relative' }} onClick={() => open('Missions')} title="Misiones">
+          <CheckSquare size={16} aria-hidden="true" />
+          Misiones
+          {pendingMissionsCount > 0 && <span className="hub-dock__badge">{pendingMissionsCount}</span>}
+        </button>
         <button className="btn btn-ghost" onClick={() => open('PlayerProfile')}>
           Perfil de Jugador
         </button>

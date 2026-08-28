@@ -23,3 +23,5 @@ export type PanelId =
   | 'TreasureMenu'
   | 'PlayerProfile'
   | 'News'
+  /** specs/033-misiones-catnip-challenges. */
+  | 'Missions'
