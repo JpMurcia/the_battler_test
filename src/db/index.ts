@@ -5,6 +5,7 @@ import { computeMissionEnergyMax } from '../data/missionEnergy'
 import type { MissionMetric } from '../data/missions'
 import type { GamatotoExpedition } from '../data/gamatoto'
 import type { OtotoConstruction } from '../data/ototoCorps'
+import type { CatTalents } from '../data/talents'
 import type { ClassificationType, EffectType } from '../engine/types'
 
 export interface PlayerProfileRow {
@@ -26,6 +27,8 @@ export interface OwnedCatRow {
   evolutionStage?: 'Base' | 'Second' | 'True'
   /** specs/024-sistema-gacha (FR-007). Ausente en filas viejas = 0 al leer (sin migración, mismo patrón que evolutionStage). */
   plusLevel?: number
+  /** specs/036-talentos-orbes. Ausente en filas viejas = sin talentos invertidos (sin migración, mismo patrón que evolutionStage/plusLevel). */
+  talents?: CatTalents
 }
 
 /** specs/024-sistema-gacha (FR-005). Una cápsula de gacha sin activar — clave autoincremental porque un mismo

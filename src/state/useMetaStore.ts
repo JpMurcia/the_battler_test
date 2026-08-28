@@ -5,6 +5,12 @@ import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { MISSIONS, getDateKey, type MissionMetric } from '../data/missions'
 import { GAMATOTO_EXPEDITION_OPTIONS, isExpeditionReady, type GamatotoExpedition } from '../data/gamatoto'
 import { OTOTO_BUILDINGS, isConstructionReady as isOtotoConstructionReady, type OtotoConstruction } from '../data/ototoCorps'
+import {
+  MAX_TALENT_POINTS,
+  getTalentPointCost,
+  isTalentEligible,
+  type CatTalents,
+} from '../data/talents'
 import type { ClassificationType, EffectType } from '../engine/types'
 import { CATS } from '../data/cats'
 import { getAllTreasureIds, resolveLevel } from '../data/events'
@@ -34,6 +40,8 @@ interface OwnedCatMeta {
   evolutionStage: 'Base' | 'Second' | 'True'
   /** specs/024-sistema-gacha (FR-007). Ausente/0 = sin cápsulas duplicadas activadas todavía. */
   plusLevel?: number
+  /** specs/036-talentos-orbes. Ausente = sin talentos invertidos todavía. */
+  talents?: CatTalents
 }
 
 interface MetaSettings {
@@ -138,6 +146,12 @@ interface MetaState {
   startOtotoConstruction: (building: 'foundation' | 'style', choice: string) => boolean
   /** specs/035-ototo-corps (US1/US2). `false` si no hay construcción o todavía no está lista. */
   claimOtotoConstruction: () => boolean
+  /** specs/036-talentos-orbes (US1/FR-004/FR-005). `false` = gato no elegible, elección distinta ya fijada, NP insuficiente, o pista al máximo. */
+  investDebuffResistanceTalent: (catId: string, effect: EffectType) => boolean
+  /** specs/036-talentos-orbes (US2/FR-006). `false` = gato no elegible, NP insuficiente, o ese contador al máximo. */
+  investStatBoostTalent: (catId: string, stat: 'hp' | 'damage') => boolean
+  /** specs/036-talentos-orbes (US3/FR-004/FR-007). `false` = gato no elegible, rasgo distinto ya fijado, NP insuficiente, o pista al máximo. */
+  investOrbTalent: (catId: string, classification: ClassificationType) => boolean
   selectBattleItem: (itemId: string) => boolean
   deselectBattleItem: (itemId: string) => void
   consumeSelectedBattleItems: () => { speedMultiplier: number; energyBonus: number }
@@ -290,6 +304,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
           experienceInvested: row.experienceInvested,
           evolutionStage: row.evolutionStage ?? 'Base',
           plusLevel: row.plusLevel ?? 0,
+          talents: row.talents,
         },
       ]),
     )
@@ -654,6 +669,71 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     const buildings = { ...get().ototoBuildings, [construction.building]: construction.choice }
     set({ ototoConstruction: null, ototoBuildings: buildings })
     void db.ototoCorps.put({ id: 1, construction: null, buildings })
+    return true
+  },
+
+  investDebuffResistanceTalent: (catId, effect) => {
+    const owned = get().ownedCats[catId]
+    const cat = CATS.find((candidate) => candidate.id === catId)
+    if (!owned || !cat || !isTalentEligible(owned.evolutionStage, cat.rarity)) return false
+
+    const current = owned.talents?.debuffResistance
+    if (current && current.points > 0 && current.effect !== effect) return false
+    const points = current?.points ?? 0
+    if (points >= MAX_TALENT_POINTS) return false
+
+    const cost = getTalentPointCost(points)
+    if (get().npCurrency < cost) return false
+
+    const talents: CatTalents = { ...owned.talents, debuffResistance: { effect, points: points + 1 } }
+    const updated: OwnedCatMeta = { ...owned, talents }
+    const npCurrency = get().npCurrency - cost
+    set({ ownedCats: { ...get().ownedCats, [catId]: updated }, npCurrency })
+    void db.ownedCats.put({ catId, ...updated })
+    void db.playerProfile.update(1, { npCurrency })
+    return true
+  },
+
+  investStatBoostTalent: (catId, stat) => {
+    const owned = get().ownedCats[catId]
+    const cat = CATS.find((candidate) => candidate.id === catId)
+    if (!owned || !cat || !isTalentEligible(owned.evolutionStage, cat.rarity)) return false
+
+    const statBoost = owned.talents?.statBoost ?? { hp: 0, damage: 0 }
+    const points = statBoost[stat]
+    if (points >= MAX_TALENT_POINTS) return false
+
+    const cost = getTalentPointCost(points)
+    if (get().npCurrency < cost) return false
+
+    const talents: CatTalents = { ...owned.talents, statBoost: { ...statBoost, [stat]: points + 1 } }
+    const updated: OwnedCatMeta = { ...owned, talents }
+    const npCurrency = get().npCurrency - cost
+    set({ ownedCats: { ...get().ownedCats, [catId]: updated }, npCurrency })
+    void db.ownedCats.put({ catId, ...updated })
+    void db.playerProfile.update(1, { npCurrency })
+    return true
+  },
+
+  investOrbTalent: (catId, classification) => {
+    const owned = get().ownedCats[catId]
+    const cat = CATS.find((candidate) => candidate.id === catId)
+    if (!owned || !cat || !isTalentEligible(owned.evolutionStage, cat.rarity)) return false
+
+    const current = owned.talents?.orb
+    if (current && current.points > 0 && current.classification !== classification) return false
+    const points = current?.points ?? 0
+    if (points >= MAX_TALENT_POINTS) return false
+
+    const cost = getTalentPointCost(points)
+    if (get().npCurrency < cost) return false
+
+    const talents: CatTalents = { ...owned.talents, orb: { classification, points: points + 1 } }
+    const updated: OwnedCatMeta = { ...owned, talents }
+    const npCurrency = get().npCurrency - cost
+    set({ ownedCats: { ...get().ownedCats, [catId]: updated }, npCurrency })
+    void db.ownedCats.put({ catId, ...updated })
+    void db.playerProfile.update(1, { npCurrency })
     return true
   },
 

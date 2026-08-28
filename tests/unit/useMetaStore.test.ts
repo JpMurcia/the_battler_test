@@ -1376,3 +1376,251 @@ describe('useMetaStore — Cuerpo Ototo (specs/035-ototo-corps)', () => {
     expect(useMetaStore.getState().ototoConstruction?.startedAtMs).toBe(startedAtMs)
   })
 })
+
+describe('useMetaStore — Talentos y Orbes (specs/036-talentos-orbes)', () => {
+  it('hydrate() sobre una fila de ownedCats sin talents deja ownedCats[catId].talents como undefined', async () => {
+    await db.ownedCats.put({ catId: 'legend-cat-eclipse', level: 1, experienceInvested: 0, evolutionStage: 'True' })
+
+    await useMetaStore.getState().hydrate()
+
+    expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents).toBeUndefined()
+  })
+
+  it('hydrate() sobre una fila con talents ya persistido lo reproduce sin alterarlo', async () => {
+    await db.ownedCats.put({
+      catId: 'legend-cat-eclipse',
+      level: 1,
+      experienceInvested: 0,
+      evolutionStage: 'True',
+      talents: { debuffResistance: { effect: 'Freeze', points: 2 } },
+    })
+
+    await useMetaStore.getState().hydrate()
+
+    expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents).toEqual({
+      debuffResistance: { effect: 'Freeze', points: 2 },
+    })
+  })
+
+  describe('investDebuffResistanceTalent (US1)', () => {
+    beforeEach(async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({
+        npCurrency: 1000,
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'legend-cat-eclipse': { level: 1, experienceInvested: 0, evolutionStage: 'True' },
+        },
+      })
+    })
+
+    it('con NP suficiente sobre un gato elegible, descuenta el costo exacto del primer punto, fija la elección y persiste', async () => {
+      const ok = useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Freeze')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().npCurrency).toBe(900) // 1000 - 100
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.debuffResistance).toEqual({
+        effect: 'Freeze',
+        points: 1,
+      })
+
+      await useMetaStore.getState().hydrate()
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.debuffResistance).toEqual({
+        effect: 'Freeze',
+        points: 1,
+      })
+    })
+
+    it('un segundo punto en la misma elección descuenta el costo creciente y sube a 2 puntos', () => {
+      useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Freeze')
+
+      const ok = useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Freeze')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().npCurrency).toBe(700) // 1000 - 100 - 200
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.debuffResistance?.points).toBe(2)
+    })
+
+    it('elegir un debuff distinto mientras la pista ya tiene puntos invertidos devuelve false sin mutar', () => {
+      useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Freeze')
+      const npBefore = useMetaStore.getState().npCurrency
+
+      const ok = useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Slow')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().npCurrency).toBe(npBefore)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.debuffResistance?.effect).toBe('Freeze')
+    })
+
+    it('sobre un gato NO elegible (forma distinta de True) devuelve false', () => {
+      useMetaStore.setState({
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'legend-cat-eclipse': { level: 1, experienceInvested: 0, evolutionStage: 'Second' },
+        },
+      })
+
+      const ok = useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Freeze')
+
+      expect(ok).toBe(false)
+    })
+
+    it('sobre un gato NO elegible (rareza distinta de Megarraro/Legendario) devuelve false', () => {
+      useMetaStore.setState({
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'True' },
+        },
+      })
+
+      const ok = useMetaStore.getState().investDebuffResistanceTalent('basic-cat', 'Freeze')
+
+      expect(ok).toBe(false)
+    })
+
+    it('con NP insuficiente devuelve false sin mutar', () => {
+      useMetaStore.setState({ npCurrency: 50 })
+
+      const ok = useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Freeze')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().npCurrency).toBe(50)
+    })
+
+    it('en el máximo de puntos devuelve false', () => {
+      useMetaStore.setState({ npCurrency: 10_000 })
+      for (let i = 0; i < 5; i += 1) useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Freeze')
+
+      const ok = useMetaStore.getState().investDebuffResistanceTalent('legend-cat-eclipse', 'Freeze')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.debuffResistance?.points).toBe(5)
+    })
+  })
+
+  describe('investStatBoostTalent (US2)', () => {
+    beforeEach(async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({
+        npCurrency: 1000,
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'legend-cat-eclipse': { level: 1, experienceInvested: 0, evolutionStage: 'True' },
+        },
+      })
+    })
+
+    it('invertir en hp descuenta el costo exacto y sube statBoost.hp en 1, sin afectar damage', () => {
+      const ok = useMetaStore.getState().investStatBoostTalent('legend-cat-eclipse', 'hp')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().npCurrency).toBe(900)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.statBoost).toEqual({ hp: 1, damage: 0 })
+    })
+
+    it('invertir en damage sube statBoost.damage en 1, sin afectar hp (independiente)', () => {
+      useMetaStore.getState().investStatBoostTalent('legend-cat-eclipse', 'hp')
+
+      const ok = useMetaStore.getState().investStatBoostTalent('legend-cat-eclipse', 'damage')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.statBoost).toEqual({ hp: 1, damage: 1 })
+    })
+
+    it('sobre un gato NO elegible devuelve false', () => {
+      useMetaStore.setState({
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'legend-cat-eclipse': { level: 1, experienceInvested: 0, evolutionStage: 'Second' },
+        },
+      })
+
+      expect(useMetaStore.getState().investStatBoostTalent('legend-cat-eclipse', 'hp')).toBe(false)
+    })
+
+    it('con NP insuficiente devuelve false', () => {
+      useMetaStore.setState({ npCurrency: 0 })
+
+      expect(useMetaStore.getState().investStatBoostTalent('legend-cat-eclipse', 'hp')).toBe(false)
+    })
+
+    it('en el máximo de puntos de ese contador devuelve false', () => {
+      useMetaStore.setState({ npCurrency: 10_000 })
+      for (let i = 0; i < 5; i += 1) useMetaStore.getState().investStatBoostTalent('legend-cat-eclipse', 'hp')
+
+      const ok = useMetaStore.getState().investStatBoostTalent('legend-cat-eclipse', 'hp')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.statBoost?.hp).toBe(5)
+    })
+  })
+
+  describe('investOrbTalent (US3)', () => {
+    beforeEach(async () => {
+      await useMetaStore.getState().hydrate()
+      useMetaStore.setState({
+        npCurrency: 1000,
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'legend-cat-eclipse': { level: 1, experienceInvested: 0, evolutionStage: 'True' },
+        },
+      })
+    })
+
+    it('con NP suficiente sobre un gato elegible, descuenta el costo exacto del primer punto, fija la elección y persiste', async () => {
+      const ok = useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Red')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().npCurrency).toBe(900)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.orb).toEqual({ classification: 'Red', points: 1 })
+
+      await useMetaStore.getState().hydrate()
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.orb).toEqual({ classification: 'Red', points: 1 })
+    })
+
+    it('un segundo punto en la misma elección sube a 2 puntos', () => {
+      useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Red')
+
+      const ok = useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Red')
+
+      expect(ok).toBe(true)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.orb?.points).toBe(2)
+    })
+
+    it('elegir un rasgo distinto mientras la pista ya tiene puntos invertidos devuelve false sin mutar', () => {
+      useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Red')
+
+      const ok = useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Black')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.orb?.classification).toBe('Red')
+    })
+
+    it('sobre un gato NO elegible devuelve false', () => {
+      useMetaStore.setState({
+        ownedCats: {
+          ...useMetaStore.getState().ownedCats,
+          'legend-cat-eclipse': { level: 1, experienceInvested: 0, evolutionStage: 'Second' },
+        },
+      })
+
+      expect(useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Red')).toBe(false)
+    })
+
+    it('con NP insuficiente devuelve false', () => {
+      useMetaStore.setState({ npCurrency: 0 })
+
+      expect(useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Red')).toBe(false)
+    })
+
+    it('en el máximo de puntos devuelve false', () => {
+      useMetaStore.setState({ npCurrency: 10_000 })
+      for (let i = 0; i < 5; i += 1) useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Red')
+
+      const ok = useMetaStore.getState().investOrbTalent('legend-cat-eclipse', 'Red')
+
+      expect(ok).toBe(false)
+      expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.orb?.points).toBe(5)
+    })
+  })
+})

@@ -232,6 +232,88 @@ describe('useGameStore.deployUnit', () => {
   })
 })
 
+describe('useGameStore.deployUnit — Talentos y Orbes (specs/036-talentos-orbes)', () => {
+  it('US1: con debuffResistance invertido, la unidad recibe la entrada resistantTo antepuesta a la de Ototo/el propio gato', () => {
+    useMetaStore.setState({
+      ownedCats: { [cat.id]: { level: 1, experienceInvested: 0, evolutionStage: 'True', talents: { debuffResistance: { effect: 'Freeze', points: 3 } } } },
+      ototoBuildings: { style: 'Slow' },
+    })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.resistantTo).toContainEqual({ effect: 'Freeze', durationMultiplier: 0.7 })
+    expect(unit.resistantTo).toContainEqual({ effect: 'Slow', durationMultiplier: 0.5 })
+  })
+
+  it('sin talentos, resistantTo es exactamente el ya resuelto por Ototo/el propio gato (sin regresión)', () => {
+    useMetaStore.setState({ ototoBuildings: { style: 'Slow' } })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.resistantTo).toEqual([{ effect: 'Slow', durationMultiplier: 0.5 }, ...(cat.resistantTo ?? [])])
+  })
+
+  it('US2: con statBoost.hp = 5, la unidad recibe +10% de HP sobre getEffectiveCatStats, sin afectar el Daño', () => {
+    useMetaStore.setState({
+      ownedCats: { [cat.id]: { level: 1, experienceInvested: 0, evolutionStage: 'True', talents: { statBoost: { hp: 5, damage: 0 } } } },
+    })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.hp).toBeCloseTo(cat.hp * 1.1)
+    expect(unit.maxHp).toBeCloseTo(cat.hp * 1.1)
+    expect(unit.damage).toBe(cat.damage)
+  })
+
+  it('US2: con statBoost.damage = 5, la unidad recibe +10% de Daño, sin afectar el HP (caso simétrico)', () => {
+    useMetaStore.setState({
+      ownedCats: { [cat.id]: { level: 1, experienceInvested: 0, evolutionStage: 'True', talents: { statBoost: { hp: 0, damage: 5 } } } },
+    })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.damage).toBeCloseTo(cat.damage * 1.1)
+    expect(unit.hp).toBe(cat.hp)
+  })
+
+  it('US3: con orb.classification = Red, points = 5, la unidad recibe una TraitTargeting antepuesta a las abilities propias', () => {
+    useMetaStore.setState({
+      ownedCats: { [cat.id]: { level: 1, experienceInvested: 0, evolutionStage: 'True', talents: { orb: { classification: 'Red', points: 5 } } } },
+    })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.abilities?.[0]).toEqual({ kind: 'TraitTargeting', targetClassifications: ['Red'], damageMultiplier: 1.2 })
+    expect(unit.abilities).toEqual([
+      { kind: 'TraitTargeting', targetClassifications: ['Red'], damageMultiplier: 1.2 },
+      ...(cat.abilities ?? []),
+    ])
+  })
+
+  it('sin orb, abilities es exactamente el del Cat original (más cualquier bono de Ototo ya existente)', () => {
+    useMetaStore.setState({ ototoBuildings: { foundation: 'Floating' } })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.abilities).toEqual([
+      { kind: 'TraitResistance', targetClassifications: ['Floating'], damageTakenMultiplier: 0.7 },
+      ...(cat.abilities ?? []),
+    ])
+  })
+})
+
 describe('useGameStore.deployUnit — evolución (specs/010-evolucion-de-gatos)', () => {
   it('US1/FR-008: en evolutionStage Second aplica hpMultiplier/damageMultiplier a la unidad creada', () => {
     useMetaStore.setState({

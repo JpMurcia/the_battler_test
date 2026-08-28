@@ -9,6 +9,7 @@ import {
   getResearchCooldownReduction,
 } from '../data/baseUpgrades'
 import { OTOTO_DAMAGE_REDUCTION, OTOTO_DEBUFF_RESISTANCE } from '../data/ototoCorps'
+import { getDebuffResistanceMultiplier, getOrbDamageMultiplier, getStatBoostMultiplier } from '../data/talents'
 import { CATS, getEffectiveCatStats } from '../data/cats'
 import { resolveLevel } from '../data/events'
 import { findArcByLevelId } from '../data/sagaArcs'
@@ -200,16 +201,50 @@ export const useGameStore = create<GameState>((set, get) => ({
     const evolutionStage = useMetaStore.getState().ownedCats[catId]?.evolutionStage ?? 'Base'
     const effectiveStats = getEffectiveCatStats(cat, evolutionStage)
 
+    // specs/036-talentos-orbes (US2/FR-006): multiplicador adicional sobre effectiveStats, no sobre
+    // getEffectiveCatStats (que solo conoce el Cat de catálogo, no datos por-gato-poseído; research.md Decisión 3).
+    const statBoostTalent = useMetaStore.getState().ownedCats[catId]?.talents?.statBoost
+    const boostedStats = {
+      hp: effectiveStats.hp * getStatBoostMultiplier(statBoostTalent?.hp ?? 0),
+      damage: effectiveStats.damage * getStatBoostMultiplier(statBoostTalent?.damage ?? 0),
+    }
+
     // specs/035-ototo-corps (US1/US2/FR-006): antepuesto (no `push`) para que, si el propio gato ya tiene
     // una entrada para el mismo rasgo/debuff, el motor (que devuelve la primera coincidencia) prefiera el
     // bono de Ototo — research.md Decisión 3, sin cambios en src/engine/.
     const { foundation, style } = useMetaStore.getState().ototoBuildings
-    const abilities = foundation
+    const abilitiesWithOtoto = foundation
       ? [{ kind: 'TraitResistance' as const, targetClassifications: [foundation], damageTakenMultiplier: OTOTO_DAMAGE_REDUCTION }, ...(cat.abilities ?? [])]
       : cat.abilities
-    const resistantTo = style
+    const resistantToWithOtoto = style
       ? [{ effect: style, durationMultiplier: OTOTO_DEBUFF_RESISTANCE }, ...(cat.resistantTo ?? [])]
       : cat.resistantTo
+
+    // specs/036-talentos-orbes (US1/FR-005): antepuesto igual que Ototo Corps (research.md Decisión 3).
+    const debuffResistanceTalent = useMetaStore.getState().ownedCats[catId]?.talents?.debuffResistance
+    const resistantTo = debuffResistanceTalent
+      ? [
+          {
+            effect: debuffResistanceTalent.effect,
+            durationMultiplier: getDebuffResistanceMultiplier(debuffResistanceTalent.points),
+          },
+          ...(resistantToWithOtoto ?? []),
+        ]
+      : resistantToWithOtoto
+
+    // specs/036-talentos-orbes (US3/FR-004/FR-007): antepuesto igual que la Resistencia a Debuff (research.md Decisión 3) —
+    // necesario porque resolveAbilityMultiplier (src/engine/combat.ts) devuelve la primera Ability que coincide.
+    const orbTalent = useMetaStore.getState().ownedCats[catId]?.talents?.orb
+    const abilities = orbTalent
+      ? [
+          {
+            kind: 'TraitTargeting' as const,
+            targetClassifications: [orbTalent.classification],
+            damageMultiplier: getOrbDamageMultiplier(orbTalent.points),
+          },
+          ...(abilitiesWithOtoto ?? []),
+        ]
+      : abilitiesWithOtoto
 
     const unit: BattleUnit = {
       instanceId: `${catId}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -217,9 +252,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       team: 'Player',
       x: 0,
       width: cat.width,
-      hp: effectiveStats.hp,
-      maxHp: effectiveStats.hp,
-      damage: effectiveStats.damage,
+      hp: boostedStats.hp,
+      maxHp: boostedStats.hp,
+      damage: boostedStats.damage,
       attackIntervalSeconds: cat.attackIntervalSeconds,
       attackCooldownRemaining: 0,
       // specs/017-objetos-de-batalla (US2/FR-008): "Aceleración de Velocidad" consumida, simétrica jugador/enemigo.

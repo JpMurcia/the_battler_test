@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import type { Ability } from '../../engine/types'
 import { CATS, RARITY_TAG_CLASS, getEffectiveCatStats, type EvolutionStage } from '../../data/cats'
+import {
+  DEBUFF_RESISTANCE_OPTIONS,
+  MAX_TALENT_POINTS,
+  ORB_CLASSIFICATION_OPTIONS,
+  getTalentPointCost,
+  isTalentEligible,
+} from '../../data/talents'
 import { useMetaStore } from '../../state/useMetaStore'
 import { PanelOverlay } from './PanelOverlay'
 
@@ -16,6 +23,111 @@ interface UnitDetailPanelProps {
 }
 
 const FORM_LABELS: Record<EvolutionStage, string> = { Base: 'Base', Second: 'Evolucionada', True: 'Verdadera' }
+
+/** specs/036-talentos-orbes (US1). Sección visible solo para un gato elegible (Forma Verdadera + Megarraro/Legendario). */
+function TalentsSection({ catId }: { catId: string }) {
+  const owned = useMetaStore((state) => state.ownedCats[catId])
+  const npCurrency = useMetaStore((state) => state.npCurrency)
+  const investDebuffResistanceTalent = useMetaStore((state) => state.investDebuffResistanceTalent)
+  const investStatBoostTalent = useMetaStore((state) => state.investStatBoostTalent)
+  const investOrbTalent = useMetaStore((state) => state.investOrbTalent)
+  const [debuffChoice, setDebuffChoice] = useState(DEBUFF_RESISTANCE_OPTIONS[0])
+  const [orbChoice, setOrbChoice] = useState(ORB_CLASSIFICATION_OPTIONS[0])
+
+  const debuffResistance = owned?.talents?.debuffResistance
+  const debuffPoints = debuffResistance?.points ?? 0
+  const debuffCost = getTalentPointCost(debuffPoints)
+  const debuffMaxed = debuffPoints >= MAX_TALENT_POINTS
+
+  const statBoost = owned?.talents?.statBoost ?? { hp: 0, damage: 0 }
+
+  const orb = owned?.talents?.orb
+  const orbPoints = orb?.points ?? 0
+  const orbCost = getTalentPointCost(orbPoints)
+  const orbMaxed = orbPoints >= MAX_TALENT_POINTS
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <h3>Talentos</h3>
+      <span className="hud-chip">NP: {npCurrency}</span>
+
+      <ul className="list-card">
+        <li className="list-card__row">
+          <div className="list-card__main">
+            <span className="list-card__title">Resistencia a Debuff</span>
+            <span className="list-card__meta">
+              {debuffResistance ? `${debuffResistance.effect} — ${debuffPoints}/${MAX_TALENT_POINTS} puntos` : `0/${MAX_TALENT_POINTS} puntos`}
+            </span>
+          </div>
+          {debuffPoints === 0 && (
+            <select aria-label="Elegir debuff" value={debuffChoice} onChange={(event) => setDebuffChoice(event.target.value as typeof debuffChoice)}>
+              {DEBUFF_RESISTANCE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            className="btn btn-primary"
+            disabled={debuffMaxed || npCurrency < debuffCost}
+            onClick={() => investDebuffResistanceTalent(catId, debuffResistance?.effect ?? debuffChoice)}
+          >
+            +1 punto ({debuffCost} NP)
+          </button>
+        </li>
+        <li className="list-card__row">
+          <div className="list-card__main">
+            <span className="list-card__title">Aumento de HP</span>
+            <span className="list-card__meta">{statBoost.hp}/{MAX_TALENT_POINTS} puntos</span>
+          </div>
+          <button
+            className="btn btn-primary"
+            disabled={statBoost.hp >= MAX_TALENT_POINTS || npCurrency < getTalentPointCost(statBoost.hp)}
+            onClick={() => investStatBoostTalent(catId, 'hp')}
+          >
+            +1 punto ({getTalentPointCost(statBoost.hp)} NP)
+          </button>
+        </li>
+        <li className="list-card__row">
+          <div className="list-card__main">
+            <span className="list-card__title">Aumento de Daño</span>
+            <span className="list-card__meta">{statBoost.damage}/{MAX_TALENT_POINTS} puntos</span>
+          </div>
+          <button
+            className="btn btn-primary"
+            disabled={statBoost.damage >= MAX_TALENT_POINTS || npCurrency < getTalentPointCost(statBoost.damage)}
+            onClick={() => investStatBoostTalent(catId, 'damage')}
+          >
+            +1 punto ({getTalentPointCost(statBoost.damage)} NP)
+          </button>
+        </li>
+        <li className="list-card__row">
+          <div className="list-card__main">
+            <span className="list-card__title">Orbe</span>
+            <span className="list-card__meta">{orb ? `${orb.classification} — ${orbPoints}/${MAX_TALENT_POINTS} puntos` : `0/${MAX_TALENT_POINTS} puntos`}</span>
+          </div>
+          {orbPoints === 0 && (
+            <select aria-label="Elegir rasgo" value={orbChoice} onChange={(event) => setOrbChoice(event.target.value as typeof orbChoice)}>
+              {ORB_CLASSIFICATION_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            className="btn btn-primary"
+            disabled={orbMaxed || npCurrency < orbCost}
+            onClick={() => investOrbTalent(catId, orb?.classification ?? orbChoice)}
+          >
+            +1 punto ({orbCost} NP)
+          </button>
+        </li>
+      </ul>
+    </div>
+  )
+}
 
 function describeAbility(ability: Ability): string {
   if (ability.kind === 'Neutral') return `Neutral x${ability.damageMultiplier}`
@@ -103,6 +215,8 @@ export function UnitDetailPanel({ catId, onClose }: UnitDetailPanelProps) {
           )}
         </div>
       )}
+
+      {isTalentEligible(owned.evolutionStage, cat.rarity) && <TalentsSection catId={catId} />}
     </PanelOverlay>
   )
 }

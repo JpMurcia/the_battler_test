@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // specs/030-filtro-detalle-unidad (US2): gato de prueba con evolutions.second SOLAMENTE (sin .true),
@@ -117,5 +117,91 @@ describe('UnitDetailPanel (specs/030-filtro-detalle-unidad US2)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Cerrar/ }))
 
     expect(onClose).toHaveBeenCalled()
+  })
+})
+
+describe('UnitDetailPanel — Talentos y Orbes (specs/036-talentos-orbes)', () => {
+  beforeEach(() => {
+    useMetaStore.setState({
+      ownedCats: {
+        'legend-cat-eclipse': { level: 1, experienceInvested: 0, evolutionStage: 'True' },
+      },
+      evolutionItems: {},
+      npCurrency: 1000,
+    })
+  })
+
+  it('para un gato NO elegible, la sección Talentos no aparece', () => {
+    useMetaStore.setState({ ownedCats: { 'basic-cat': { level: 1, experienceInvested: 0, evolutionStage: 'Base' } } })
+    render(<UnitDetailPanel catId="basic-cat" onClose={noop} />)
+
+    expect(screen.queryByText('Talentos')).not.toBeInTheDocument()
+  })
+
+  it('para un gato elegible, muestra el NP disponible y el control de Resistencia a Debuff', () => {
+    render(<UnitDetailPanel catId="legend-cat-eclipse" onClose={noop} />)
+
+    expect(screen.getByText('Talentos')).toBeInTheDocument()
+    expect(screen.getByText(/NP: 1000/)).toBeInTheDocument()
+  })
+
+  it('elegir un debuff e invertir invoca investDebuffResistanceTalent con esos argumentos', () => {
+    render(<UnitDetailPanel catId="legend-cat-eclipse" onClose={noop} />)
+
+    const row = screen.getByText('Resistencia a Debuff').closest('li')!
+    fireEvent.change(within(row).getByRole('combobox'), { target: { value: 'Freeze' } })
+    fireEvent.click(within(row).getByRole('button', { name: /\+1 punto/ }))
+
+    expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.debuffResistance).toEqual({
+      effect: 'Freeze',
+      points: 1,
+    })
+  })
+
+  it('con NP insuficiente, el botón de invertir está deshabilitado', () => {
+    useMetaStore.setState({ npCurrency: 0 })
+    render(<UnitDetailPanel catId="legend-cat-eclipse" onClose={noop} />)
+
+    const row = screen.getByText('Resistencia a Debuff').closest('li')!
+    expect(within(row).getByRole('button', { name: /\+1 punto/ })).toBeDisabled()
+  })
+
+  it('en el máximo de puntos, el botón de invertir está deshabilitado', () => {
+    useMetaStore.setState({
+      ownedCats: {
+        'legend-cat-eclipse': {
+          level: 1,
+          experienceInvested: 0,
+          evolutionStage: 'True',
+          talents: { debuffResistance: { effect: 'Freeze', points: 5 } },
+        },
+      },
+    })
+    render(<UnitDetailPanel catId="legend-cat-eclipse" onClose={noop} />)
+
+    const row = screen.getByText('Resistencia a Debuff').closest('li')!
+    expect(within(row).getByRole('button', { name: /\+1 punto/ })).toBeDisabled()
+  })
+
+  it('muestra 2 contadores independientes (HP/Daño); invertir en cada uno invoca investStatBoostTalent con el argumento correcto', () => {
+    render(<UnitDetailPanel catId="legend-cat-eclipse" onClose={noop} />)
+
+    const hpRow = screen.getByText('Aumento de HP').closest('li')!
+    fireEvent.click(within(hpRow).getByRole('button', { name: /\+1 punto/ }))
+    expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.statBoost).toEqual({ hp: 1, damage: 0 })
+
+    const damageRow = screen.getByText('Aumento de Daño').closest('li')!
+    fireEvent.click(within(damageRow).getByRole('button', { name: /\+1 punto/ }))
+    expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.statBoost).toEqual({ hp: 1, damage: 1 })
+  })
+
+  it('elegir un rasgo e invertir en Orbe invoca investOrbTalent con esos argumentos', () => {
+    render(<UnitDetailPanel catId="legend-cat-eclipse" onClose={noop} />)
+
+    const row = screen.getByText('Orbe').closest('li')!
+    fireEvent.change(within(row).getByRole('combobox'), { target: { value: 'Red' } })
+    fireEvent.click(within(row).getByRole('button', { name: /\+1 punto/ }))
+
+    expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.orb).toEqual({ classification: 'Red', points: 1 })
   })
 })
