@@ -427,6 +427,14 @@
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 6px;
+  flex: 1;
+}
+
+/* specs/029-pulido-batalla-hud (US5): toggle de disposición — mismas MAX_ACTIVE_TEAM_SIZE unidades,
+   redistribuidas en 2 filas de 3 columnas en vez de 1 fila de 6, sin cambiar su orden en el DOM. */
+.deploy-bar--two-rows {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
 }
 
 /* specs/028-ajustes-combate-mapa-disenos (US2/FR-006): pestañas de región, arriba de .stage-map. */

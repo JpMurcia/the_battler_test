@@ -1,11 +1,11 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { HubScreen } from '../../src/screens/HubScreen'
 import { useMetaStore } from '../../src/state/useMetaStore'
 
 const BASE_STATE = {
   currency: 500,
-  missionEnergy: { current: 8, max: 10 },
+  missionEnergy: { current: 8, max: 10, regenPerSecond: 0, lastUpdatedAt: 0 },
   ownedCats: {
     'basic-cat': { level: 3, experienceInvested: 0, evolutionStage: 'Base' as const, plusLevel: 0 },
   },
@@ -83,5 +83,57 @@ describe('HubScreen', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Cerrar Buzón de Noticias/ }))
     expect(screen.getByRole('button', { name: /Buzón de Noticias/ }).querySelector('.hub-dock__badge')).toBeNull()
+  })
+})
+
+describe('HubScreen — temporizador de regeneración de energía (specs/029-pulido-batalla-hud US4)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('con energía por debajo del máximo, muestra un countdown hasta la próxima unidad', () => {
+    const now = Date.now()
+    useMetaStore.setState({
+      ...BASE_STATE,
+      missionEnergy: { current: 5, max: 10, regenPerSecond: 0.1, lastUpdatedAt: now },
+    })
+
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    // (6 - 5) / 0.1 = 10s hasta el próximo punto entero.
+    expect(screen.getByText(/0:10/)).toBeInTheDocument()
+  })
+
+  it('el countdown avanza con el tiempo real (setInterval local)', () => {
+    const now = Date.now()
+    useMetaStore.setState({
+      ...BASE_STATE,
+      missionEnergy: { current: 5, max: 10, regenPerSecond: 0.1, lastUpdatedAt: now },
+    })
+
+    render(<HubScreen onNavigate={vi.fn()} />)
+    expect(screen.getByText(/0:10/)).toBeInTheDocument()
+
+    act(() => {
+      vi.advanceTimersByTime(4000)
+    })
+
+    // Tras 4s reales, quedan (6 - 5.4) / 0.1 = 6s.
+    expect(screen.getByText(/0:06/)).toBeInTheDocument()
+  })
+
+  it('con energía ya al máximo, no muestra ningún temporizador', () => {
+    useMetaStore.setState({
+      ...BASE_STATE,
+      missionEnergy: { current: 10, max: 10, regenPerSecond: 0.1, lastUpdatedAt: Date.now() },
+    })
+
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    expect(screen.queryByTestId('energy-regen-timer')).not.toBeInTheDocument()
   })
 })

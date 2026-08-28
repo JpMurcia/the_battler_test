@@ -6,8 +6,10 @@ import { IMPERIO_CAP1_DESIGNS } from '../data/imperioCap1Design'
 import { SEED_ENEMIES, SEED_UNITS } from '../data/seedData'
 import type { BattleUnit } from '../engine/types'
 import { getOrCreateUnitTexture } from './graphics/unitFactory'
+import { getHpFraction } from './graphics/baseTower'
 import { computeCyberBodyLayout, drawCyberBodyBase, drawCyberThruster, drawCyberVisor, getGlowPulseAlpha } from './graphics/cyberUnitBody'
 import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
+import { drawUnitHpBar } from './graphics/unitHpBar'
 import { useGameStore } from '../state/useGameStore'
 import { ANIMATION_STATE_TO_SPRITE_FOLDER, getAnimationPose, getAnimationState, getVisualProfile } from './animation'
 import { loadSpriteTextures, resolveSpriteAnimationSet } from './spriteAssets'
@@ -17,6 +19,8 @@ extend({ Container, Graphics, AnimatedSprite, Sprite })
 const SPRITE_ANIMATION_SPEED = 0.3
 const VISOR_PULSE_HZ = 1.8
 const THRUSTER_PULSE_HZ = 6
+/** specs/029-pulido-batalla-hud (US3). Mismo umbral que BaseTower.tsx — evita redibujar por ruido de punto flotante. */
+const HP_BAR_REDRAW_THRESHOLD = 0.004
 
 interface UnitSpriteProps {
   instanceId: string
@@ -113,6 +117,10 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
 
   const visorRef = useRef<Graphics>(null)
   const thrusterRef = useRef<Graphics>(null)
+  // specs/029-pulido-batalla-hud (US3): barra de HP redibujada imperativamente, solo cuando la
+  // fracción cambia más allá de HP_BAR_REDRAW_THRESHOLD (mismo patrón que BaseTower.tsx).
+  const hpBarRef = useRef<Graphics>(null)
+  const lastDrawnHpFractionRef = useRef(-1)
 
   const drawBody = useCallback(
     (g: Graphics) => {
@@ -139,6 +147,10 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     },
     [bodyLayout, team],
   )
+
+  // La barra de HP se dibuja imperativamente por ref en el useTick de abajo (solo cuando cambia la
+  // fracción) — este `draw` inicial solo deja el Graphics listo para recibir esas llamadas.
+  const drawHpBarPlaceholder = useCallback((g: Graphics) => g.clear(), [])
 
   useTick(({ deltaMS }) => {
     const container = containerRef.current
@@ -184,6 +196,15 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
         spriteRef.current.play()
       }
     }
+
+    // specs/029-pulido-batalla-hud (US3): HP individual, redibujado solo cuando cambia perceptiblemente.
+    if (hpBarRef.current && bodyLayout) {
+      const fraction = getHpFraction(unit.hp, unit.maxHp)
+      if (Math.abs(fraction - lastDrawnHpFractionRef.current) > HP_BAR_REDRAW_THRESHOLD) {
+        lastDrawnHpFractionRef.current = fraction
+        drawUnitHpBar(hpBarRef.current, bodyLayout, team, fraction)
+      }
+    }
   })
 
   if (!profile) return null
@@ -222,6 +243,7 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
           <pixiGraphics ref={thrusterRef} draw={drawThrusterLayer} />
         </>
       )}
+      <pixiGraphics ref={hpBarRef} draw={drawHpBarPlaceholder} />
     </pixiContainer>
   )
 }

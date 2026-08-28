@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Archive, BookOpen, Coins, Mail, Settings as SettingsIcon, Sparkles, Swords, Wrench, Zap } from 'lucide-react'
 import { NEWS_ENTRIES } from '../data/news'
 import { GachaScreen } from './GachaScreen'
@@ -34,6 +34,42 @@ const PANEL_LABELS: Record<PanelId, string> = {
   TreasureMenu: 'Menú de Tesoros',
   PlayerProfile: 'Perfil de Jugador',
   News: 'Buzón de Noticias',
+}
+
+function formatCountdown(totalSeconds: number): string {
+  const clamped = Math.max(0, Math.ceil(totalSeconds))
+  const minutes = Math.floor(clamped / 60)
+  const seconds = clamped % 60
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
+
+/** specs/029-pulido-batalla-hud (US4). Countdown hasta la próxima unidad de energía de misión
+ * recuperada, extrapolado localmente a partir de `regenPerSecond`/`lastUpdatedAt` ya expuestos por
+ * `useMetaStore` (research.md Decisión 5) — un `setInterval` de 1s propio del componente fuerza el
+ * re-render, sin escribir de vuelta al store ni a Dexie. */
+function EnergyRegenTimer() {
+  const missionEnergy = useMetaStore((state) => state.missionEnergy)
+  const [, setTick] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((value) => value + 1), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  if (missionEnergy.current >= missionEnergy.max || missionEnergy.regenPerSecond <= 0) return null
+
+  const elapsedSeconds = Math.max(0, (Date.now() - missionEnergy.lastUpdatedAt) / 1000)
+  const liveCurrent = Math.min(missionEnergy.max, missionEnergy.current + elapsedSeconds * missionEnergy.regenPerSecond)
+  if (liveCurrent >= missionEnergy.max) return null
+
+  const nextPoint = Math.floor(liveCurrent) + 1
+  const secondsUntilNext = (nextPoint - liveCurrent) / missionEnergy.regenPerSecond
+
+  return (
+    <span className="hud-chip" data-testid="energy-regen-timer">
+      ↻ {formatCountdown(secondsUntilNext)}
+    </span>
+  )
 }
 
 /** specs/026-navegacion-hub-mockup (FR-001..FR-004). Sustituye a `MainMenuScreen`: HUD persistente + dock
@@ -101,6 +137,7 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
           <Zap size={14} aria-hidden="true" color="var(--bc-cyan)" />
           Energía de misión: {Math.floor(missionEnergy.current)}/{missionEnergy.max}
         </span>
+        <EnergyRegenTimer />
         <span className="hud-chip">
           <Coins size={14} aria-hidden="true" color="var(--bc-gold)" />
           Moneda: {currency}

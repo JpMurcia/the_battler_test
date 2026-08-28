@@ -49,6 +49,10 @@ interface GameFields {
   unitSpeedMultiplier: number
   /** specs/020-barrera-de-base (FR-002). Derivado por `stepSimulation` en cada `tick()` — solo lectura, nunca escrito directamente aquí. */
   bossBarrierActive: boolean
+  /** specs/029-pulido-batalla-hud (US2). Multiplicador manual de velocidad de batalla — distinto de `unitSpeedMultiplier` (specs/017, objeto de batalla), nunca combinado con él. */
+  speedMultiplier: 1 | 2
+  /** specs/029-pulido-batalla-hud (US2). Mientras es `true`, `BattleField` (BattleStage.tsx) no llama a `tick()`. */
+  paused: boolean
 }
 
 interface BattleItemEffects {
@@ -62,6 +66,8 @@ interface GameState extends GameFields {
   deployUnit: (catId: string) => boolean
   activateSpecialCannon: () => boolean
   boostEnergyRegen: (cost: number, increment: number) => boolean
+  setSpeedMultiplier: (value: 1 | 2) => void
+  setPaused: (value: boolean) => void
   reset: () => void
 }
 
@@ -79,6 +85,8 @@ const IDLE_STATE: GameFields = {
   laneLength: LANE_LENGTH,
   unitSpeedMultiplier: 1,
   bossBarrierActive: false,
+  speedMultiplier: 1,
+  paused: false,
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -134,6 +142,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       laneLength: level.laneLength ?? LANE_LENGTH,
       // specs/017-objetos-de-batalla (US2/FR-008): "Aceleración de Velocidad" consumida, aplicada a toda unidad creada.
       unitSpeedMultiplier: battleItemEffects.speedMultiplier ?? 1,
+      // specs/029-pulido-batalla-hud (US2): control manual de ritmo, reseteado a cada nivel nuevo.
+      speedMultiplier: 1,
+      paused: false,
     })
   },
 
@@ -227,6 +238,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ energy: { ...energy, current: energy.current - cost, regenPerSecond: energy.regenPerSecond + increment } })
     return true
   },
+
+  setSpeedMultiplier: (value) => set({ speedMultiplier: value }),
+
+  setPaused: (value) => set({ paused: value }),
 
   reset: () => set({ ...IDLE_STATE, specialCannon: { ...SPECIAL_CANNON_DEFAULTS } }),
 }))

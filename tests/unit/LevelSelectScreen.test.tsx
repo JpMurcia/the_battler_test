@@ -79,7 +79,7 @@ beforeEach(() => {
   useMetaStore.setState({
     highestUnlockedLevelIndex: 0,
     completedLevelIds: [],
-    missionEnergy: { current: 100, max: 100 },
+    missionEnergy: { current: 100, max: 100, regenPerSecond: 0, lastUpdatedAt: 0 },
   })
   useGameStore.getState().reset()
   mockEventBanners.length = 0
@@ -137,7 +137,7 @@ describe('LevelSelectScreen — mapa de nodos (specs/023-mapa-de-etapas-visual U
   })
 
   it('"¡Atacar!" queda deshabilitado sin energía de misión suficiente y no navega', () => {
-    useMetaStore.setState({ missionEnergy: { current: 5, max: 100 } })
+    useMetaStore.setState({ missionEnergy: { current: 5, max: 100, regenPerSecond: 0, lastUpdatedAt: 0 } })
     const onNavigate = vi.fn()
     render(<LevelSelectScreen onNavigate={onNavigate} />)
 
@@ -158,7 +158,7 @@ describe('LevelSelectScreen — mapa de nodos (specs/023-mapa-de-etapas-visual U
     expect(screen.getByRole('button', { name: '¡Atacar!' })).not.toBeDisabled()
 
     act(() => {
-      useMetaStore.setState({ missionEnergy: { current: 0, max: 100 } })
+      useMetaStore.setState({ missionEnergy: { current: 0, max: 100, regenPerSecond: 0, lastUpdatedAt: 0 } })
     })
 
     expect(screen.getByRole('button', { name: '¡Atacar!' })).toBeDisabled()
@@ -221,7 +221,7 @@ describe('LevelSelectScreen — banner de evento (specs/014-banner-evento-especi
 
   it('sin energía de misión suficiente, "¡Atacar!" del nodo de evento está deshabilitado y no navega', () => {
     mockEventBanners.push(activeBanner)
-    useMetaStore.setState({ missionEnergy: { current: 5, max: 100 } })
+    useMetaStore.setState({ missionEnergy: { current: 5, max: 100, regenPerSecond: 0, lastUpdatedAt: 0 } })
     const onNavigate = vi.fn()
     render(<LevelSelectScreen onNavigate={onNavigate} />)
 

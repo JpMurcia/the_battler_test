@@ -126,6 +126,9 @@ function BattleField() {
   useTick(({ deltaTime }) => {
     const deltaSeconds = deltaTime / 60
     const store = useGameStore.getState()
+    // specs/029-pulido-batalla-hud (US2): en pausa, la simulación no avanza — el resto del frame
+    // (Pixi, animaciones idle) sigue renderizando con normalidad, solo se salta stepSimulation.
+    if (store.paused) return
     const wasInProgress = store.status === 'InProgress'
     // Snapshot completo (con x/width) tomado antes del tick — es la única fuente de la última
     // posición conocida de una unidad que muere en este tick, porque tick() ya la elimina de `units`.
@@ -136,7 +139,9 @@ function BattleField() {
     const previousPlayerBaseHp = store.playerBase.hp
     const previousEnemyBaseHp = store.enemyBase.hp
 
-    store.tick(deltaSeconds)
+    // specs/029-pulido-batalla-hud (US2): escala el tiempo simulado, no el número de llamadas a
+    // stepSimulation — mantiene el resultado determinista sin importar la velocidad elegida (FR-010).
+    store.tick(deltaSeconds * store.speedMultiplier)
 
     const freshStore = useGameStore.getState()
     const nextActiveUnits = freshStore.units.map((unit) => ({

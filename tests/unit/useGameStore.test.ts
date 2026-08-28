@@ -487,3 +487,48 @@ describe('useGameStore.startLevel — bonificación de Cat Combo (specs/025-cat-
     expect(useGameStore.getState().energy.regenPerSecond).toBe(5)
   })
 })
+
+describe('useGameStore — velocidad y pausa (specs/029-pulido-batalla-hud US2)', () => {
+  it('speedMultiplier inicia en 1 y paused en false', () => {
+    const state = useGameStore.getState()
+    expect(state.speedMultiplier).toBe(1)
+    expect(state.paused).toBe(false)
+  })
+
+  it('setSpeedMultiplier(2) lo cambia a 2', () => {
+    useGameStore.getState().setSpeedMultiplier(2)
+    expect(useGameStore.getState().speedMultiplier).toBe(2)
+  })
+
+  it('setPaused(true) lo cambia a true', () => {
+    useGameStore.getState().setPaused(true)
+    expect(useGameStore.getState().paused).toBe(true)
+  })
+
+  it('startLevel() restaura speedMultiplier a 1 y paused a false', () => {
+    useGameStore.getState().setSpeedMultiplier(2)
+    useGameStore.getState().setPaused(true)
+
+    useGameStore.getState().startLevel('level-1')
+
+    expect(useGameStore.getState().speedMultiplier).toBe(1)
+    expect(useGameStore.getState().paused).toBe(false)
+  })
+
+  it('reset() restaura speedMultiplier a 1 y paused a false', () => {
+    useGameStore.getState().startLevel('level-1')
+    useGameStore.getState().setSpeedMultiplier(2)
+    useGameStore.getState().setPaused(true)
+
+    useGameStore.getState().reset()
+
+    expect(useGameStore.getState().speedMultiplier).toBe(1)
+    expect(useGameStore.getState().paused).toBe(false)
+  })
+
+  // La escala real de deltaSeconds por speedMultiplier, y el salto de tick() mientras paused,
+  // ocurren en el useTick de BattleField (src/game/BattleStage.tsx) — ese componente no tiene test
+  // unitario propio en este repo (se mockea por completo en BattleScreen.test.tsx, igual que el resto
+  // de la lógica dependiente de Pixi), consistente con research.md Decisión 3. tick() en sí mismo no
+  // conoce speedMultiplier/paused — solo aplica el deltaSeconds que se le pase, sin cambios en esta spec.
+})

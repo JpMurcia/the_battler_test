@@ -1,5 +1,5 @@
-import { Heart, X, Zap } from 'lucide-react'
-import { useEffect } from 'react'
+import { Heart, Pause, Play, Rows2, Target, X, Zap } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { CATS } from '../data/cats'
 import { isEventStageId, resolveLevel } from '../data/events'
 import { findArcByLevelId } from '../data/sagaArcs'
@@ -65,12 +65,70 @@ function EnemyBaseReadout() {
   )
 }
 
+/** specs/029-pulido-batalla-hud (US1): expone `activateSpecialCannon()` (ya existente en useGameStore
+ * desde specs/012) con un botón + indicador de progreso — mismo patrón `.hud-chip`/`.progress-bar`
+ * que EnergyReadout/PlayerBaseReadout, sin campo de estado nuevo (research.md Decisión 1). */
+function CannonControl() {
+  const specialCannon = useGameStore((state) => state.specialCannon)
+  const activateSpecialCannon = useGameStore((state) => state.activateSpecialCannon)
+  const ready = specialCannon.rechargeRemaining <= 0
+  const pct =
+    specialCannon.rechargeDurationSeconds > 0
+      ? Math.min(100, ((specialCannon.rechargeDurationSeconds - specialCannon.rechargeRemaining) / specialCannon.rechargeDurationSeconds) * 100)
+      : 100
+  return (
+    <button
+      className={`hud-chip btn${ready ? ' btn-primary' : ''}`}
+      disabled={!ready}
+      onClick={() => activateSpecialCannon()}
+    >
+      <Target size={14} aria-hidden="true" color={ready ? undefined : 'var(--bc-cyan)'} />
+      <span>Cañón</span>
+      <div className="progress-bar" style={{ width: 60 }}>
+        <div className="progress-bar__fill progress-bar__fill--gold" style={{ width: `${pct}%` }} />
+      </div>
+    </button>
+  )
+}
+
+/** specs/029-pulido-batalla-hud (US2): x1/x2 escalan `deltaSeconds` en BattleStage.tsx; pausa detiene
+ * por completo la llamada a `tick()` ese frame — ver research.md Decisiones 2/3. */
+function SpeedControls() {
+  const speedMultiplier = useGameStore((state) => state.speedMultiplier)
+  const paused = useGameStore((state) => state.paused)
+  const setSpeedMultiplier = useGameStore((state) => state.setSpeedMultiplier)
+  const setPaused = useGameStore((state) => state.setPaused)
+  return (
+    <div className="hud-chip" style={{ gap: 6 }}>
+      <button className={`btn${speedMultiplier === 1 ? ' btn-primary' : ''}`} onClick={() => setSpeedMultiplier(1)}>
+        x1
+      </button>
+      <button className={`btn${speedMultiplier === 2 ? ' btn-primary' : ''}`} onClick={() => setSpeedMultiplier(2)}>
+        x2
+      </button>
+      <button className="btn btn-ghost" onClick={() => setPaused(!paused)}>
+        {paused ? (
+          <>
+            <Play size={14} aria-hidden="true" /> Reanudar
+          </>
+        ) : (
+          <>
+            <Pause size={14} aria-hidden="true" /> Pausar
+          </>
+        )}
+      </button>
+    </div>
+  )
+}
+
 function DeployBar() {
   const ownedCatsById = useMetaStore((state) => state.ownedCats)
   const activeTeamCatIds = useMetaStore((state) => state.activeTeamCatIds)
   const energyCurrent = useGameStore((state) => state.energy.current)
   const deployCooldowns = useGameStore((state) => state.deployCooldowns)
   const deployUnit = useGameStore((state) => state.deployUnit)
+  // specs/029-pulido-batalla-hud (US5): preferencia de sesión, no persistida (research.md Decisión 6).
+  const [rowLayout, setRowLayout] = useState<1 | 2>(1)
 
   const deployableCats = CATS.filter((cat) => cat.id in ownedCatsById)
   const ownedCats = (
@@ -80,16 +138,25 @@ function DeployBar() {
   ).slice(0, MAX_ACTIVE_TEAM_SIZE) // specs/023-mapa-de-etapas-visual (FR-016): equipos heredados de más de 6 no rompen la grilla.
 
   return (
-    <div className="deploy-bar">
-      {ownedCats.map((cat) => {
-        const onCooldown = (deployCooldowns[cat.id] ?? 0) > 0
-        const disabled = onCooldown || energyCurrent < cat.cost
-        return (
-          <button key={cat.id} className="btn" disabled={disabled} onClick={() => deployUnit(cat.id)}>
-            {cat.name} ({cat.cost})
-          </button>
-        )
-      })}
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
+      <div className={`deploy-bar${rowLayout === 2 ? ' deploy-bar--two-rows' : ''}`}>
+        {ownedCats.map((cat) => {
+          const onCooldown = (deployCooldowns[cat.id] ?? 0) > 0
+          const disabled = onCooldown || energyCurrent < cat.cost
+          return (
+            <button key={cat.id} className="btn" disabled={disabled} onClick={() => deployUnit(cat.id)}>
+              {cat.name} ({cat.cost})
+            </button>
+          )
+        })}
+      </div>
+      <button
+        className="btn btn-ghost"
+        aria-label="Alternar filas de despliegue"
+        onClick={() => setRowLayout((current) => (current === 1 ? 2 : 1))}
+      >
+        <Rows2 size={16} aria-hidden="true" />
+      </button>
     </div>
   )
 }
@@ -174,6 +241,8 @@ export function BattleScreen({ onNavigate }: BattleScreenProps) {
         <EnergyReadout />
         <PlayerBaseReadout />
         <EnemyBaseReadout />
+        <CannonControl />
+        <SpeedControls />
         <button className="btn btn-ghost" onClick={handleExit}>
           <X size={16} aria-hidden="true" />
           Salir

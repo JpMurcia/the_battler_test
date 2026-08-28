@@ -40,6 +40,10 @@ interface MetaSettings {
 interface MissionEnergyState {
   current: number
   max: number
+  /** specs/029-pulido-batalla-hud (US4). Mismo valor ya calculado por `computeRegenPerSecond` en `hydrate()`/`upgradeCat()` — antes descartado tras usarse, ahora expuesto para el countdown del Hub. */
+  regenPerSecond: number
+  /** specs/029-pulido-batalla-hud (US4). Mismo timestamp ya persistido en la tabla Dexie `missionEnergy` — expuesto en el estado reactivo para poder extrapolar el countdown sin volver a leer Dexie. */
+  lastUpdatedAt: number
 }
 
 interface MetaState {
@@ -163,7 +167,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   ownedCats: {},
   settings: DEFAULT_SETTINGS,
   activeTeamCatIds: [],
-  missionEnergy: { current: 0, max: 0 },
+  missionEnergy: { current: 0, max: 0, regenPerSecond: 0, lastUpdatedAt: 0 },
   evolutionItems: {},
   obtainedTreasureIds: [],
   grantedArcRewardIds: [],
@@ -247,7 +251,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       ownedCats,
       settings: settings ?? DEFAULT_SETTINGS,
       activeTeamCatIds: teamFormation?.catIds ?? [],
-      missionEnergy: { current, max },
+      missionEnergy: { current, max, regenPerSecond, lastUpdatedAt: now },
       evolutionItems: evolutionItemsRow?.counts ?? {},
       obtainedTreasureIds: treasuresRow?.obtainedIds ?? [],
       grantedArcRewardIds: arcProgressRow?.grantedRewardArcIds ?? [],
@@ -318,10 +322,13 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     void db.playerProfile.update(1, { currency })
     void db.ownedCats.put({ catId, ...updated })
 
-    // El máximo de energía de misión escala con el nivel de personaje (specs/007, FR-007) — nunca reduce `current`.
-    const max = computeMissionEnergyMax(characterLevelOf(ownedCats))
-    if (max !== get().missionEnergy.max) {
-      set({ missionEnergy: { ...get().missionEnergy, max } })
+    // El máximo y la tasa de regeneración de energía de misión escalan con el nivel de personaje
+    // (specs/007, FR-007; specs/029-pulido-batalla-hud US4 para regenPerSecond) — nunca reducen `current`.
+    const characterLevel = characterLevelOf(ownedCats)
+    const max = computeMissionEnergyMax(characterLevel)
+    const regenPerSecond = computeRegenPerSecond(characterLevel)
+    if (max !== get().missionEnergy.max || regenPerSecond !== get().missionEnergy.regenPerSecond) {
+      set({ missionEnergy: { ...get().missionEnergy, max, regenPerSecond } })
       void db.missionEnergy.update(1, { max })
     }
 
@@ -350,12 +357,12 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     const arc = findArcByLevelId(levelId)
     const cost = (arc && level.energyCostByArc?.[arc.id]) ?? level.energyCost
 
-    const { current, max } = get().missionEnergy
+    const { current, max, regenPerSecond } = get().missionEnergy
     if (current < cost) return false
 
     const updatedCurrent = current - cost
     const lastUpdatedAt = Date.now()
-    set({ missionEnergy: { current: updatedCurrent, max } })
+    set({ missionEnergy: { current: updatedCurrent, max, regenPerSecond, lastUpdatedAt } })
     void db.missionEnergy.put({ id: 1, current: updatedCurrent, max, lastUpdatedAt })
     return true
   },

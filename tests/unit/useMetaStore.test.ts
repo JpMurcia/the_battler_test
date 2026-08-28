@@ -126,7 +126,7 @@ const INITIAL_STATE = {
   ownedCats: {},
   settings: { musicVolume: 1, sfxVolume: 1, language: 'es' },
   activeTeamCatIds: [] as string[],
-  missionEnergy: { current: 0, max: 0 },
+  missionEnergy: { current: 0, max: 0, regenPerSecond: 0, lastUpdatedAt: 0 },
   evolutionItems: {} as Record<string, number>,
   obtainedTreasureIds: [] as string[],
   grantedArcRewardIds: [] as string[],
@@ -275,6 +275,18 @@ describe('useMetaStore', () => {
     expect(missionEnergy.max).toBeGreaterThan(0)
   })
 
+  it('hydrate() expone regenPerSecond y lastUpdatedAt en el estado reactivo (specs/029-pulido-batalla-hud US4)', async () => {
+    const before = Date.now()
+
+    await useMetaStore.getState().hydrate()
+
+    const { missionEnergy } = useMetaStore.getState()
+    expect(missionEnergy.regenPerSecond).toBeGreaterThan(0)
+    expect(missionEnergy.lastUpdatedAt).toBeGreaterThanOrEqual(before)
+    const persisted = await db.missionEnergy.get(1)
+    expect(persisted?.lastUpdatedAt).toBe(missionEnergy.lastUpdatedAt)
+  })
+
   it('spendMissionEnergy con energía suficiente descuenta el costo exacto del nivel', async () => {
     await useMetaStore.getState().hydrate()
     const before = useMetaStore.getState().missionEnergy.current
@@ -285,9 +297,20 @@ describe('useMetaStore', () => {
     expect(useMetaStore.getState().missionEnergy.current).toBe(before - LEVELS[0].energyCost)
   })
 
+  it('spendMissionEnergy actualiza lastUpdatedAt y conserva regenPerSecond (specs/029-pulido-batalla-hud US4)', async () => {
+    await useMetaStore.getState().hydrate()
+    const { regenPerSecond, lastUpdatedAt: before } = useMetaStore.getState().missionEnergy
+
+    useMetaStore.getState().spendMissionEnergy(LEVELS[0].id)
+
+    const { missionEnergy } = useMetaStore.getState()
+    expect(missionEnergy.regenPerSecond).toBe(regenPerSecond)
+    expect(missionEnergy.lastUpdatedAt).toBeGreaterThanOrEqual(before)
+  })
+
   it('spendMissionEnergy sin energía suficiente devuelve false y no muta el estado', async () => {
     await useMetaStore.getState().hydrate()
-    useMetaStore.setState({ missionEnergy: { current: 1, max: 100 } })
+    useMetaStore.setState({ missionEnergy: { current: 1, max: 100, regenPerSecond: 0, lastUpdatedAt: 0 } })
 
     const ok = useMetaStore.getState().spendMissionEnergy(LEVELS[0].id)
 
