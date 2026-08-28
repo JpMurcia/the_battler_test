@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BattleScreen } from '../../src/screens/BattleScreen'
 import { useGameStore } from '../../src/state/useGameStore'
@@ -187,5 +187,27 @@ describe('BattleScreen — disposición de filas de despliegue (specs/029-pulido
     fireEvent.click(toggle)
 
     expect(container.querySelector('.deploy-bar')).not.toHaveClass('deploy-bar--two-rows')
+  })
+})
+
+describe('BattleScreen — Contabilidad (specs/031-mejoras-de-base US3)', () => {
+  it('en victoria, con accounting en nivel >0 la moneda otorgada es mayor que en nivel 0', () => {
+    useGameStore.setState({ levelId: 'level-1', status: 'InProgress' })
+    useMetaStore.setState({ currency: 0, baseUpgrades: {} })
+    render(<BattleScreen onNavigate={noop} />)
+    act(() => {
+      useGameStore.setState({ status: 'Victory' })
+    })
+    const currencyWithoutBonus = useMetaStore.getState().currency
+
+    useGameStore.setState({ levelId: 'level-1', status: 'InProgress' })
+    useMetaStore.setState({ currency: 0, baseUpgrades: { accounting: 5 }, completedLevelIds: [] })
+    render(<BattleScreen onNavigate={noop} />)
+    act(() => {
+      useGameStore.setState({ status: 'Victory' })
+    })
+    const currencyWithBonus = useMetaStore.getState().currency
+
+    expect(currencyWithBonus).toBeGreaterThan(currencyWithoutBonus)
   })
 })

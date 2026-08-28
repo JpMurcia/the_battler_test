@@ -1,4 +1,13 @@
 import { create } from 'zustand'
+import {
+  MIN_CANNON_RECHARGE_SECONDS,
+  MIN_UNIT_COOLDOWN_SECONDS,
+  getBaseDefenseBonus,
+  getCannonChargeReduction,
+  getCannonPowerBonus,
+  getCannonRangeBonus,
+  getResearchCooldownReduction,
+} from '../data/baseUpgrades'
 import { CATS, getEffectiveCatStats } from '../data/cats'
 import { resolveLevel } from '../data/events'
 import { findArcByLevelId } from '../data/sagaArcs'
@@ -119,6 +128,21 @@ export const useGameStore = create<GameState>((set, get) => ({
     // specs/025-cat-combos (FR-003/FR-008): bonificación de Cat Combo activo, combinada (no exclusiva) con la de arriba.
     const comboEnergyRegenMultiplier = useMetaStore.getState().getActiveComboBonusMultiplier('EnergyRegenMultiplier')
 
+    // specs/031-mejoras-de-base (US2/US3): bonos de cuenta ya resueltos, aplicados una sola vez al iniciar el nivel —
+    // igual patrón que enemyStrengthMultiplier/energyRegenMultiplier arriba, sin tocar src/engine/.
+    const baseUpgrades = useMetaStore.getState().baseUpgrades
+    const playerBaseMaxHp = level.playerBaseHp + getBaseDefenseBonus(baseUpgrades.baseDefense ?? 0)
+    const specialCannon: SpecialCannonState = {
+      damage: SPECIAL_CANNON_DEFAULTS.damage + getCannonPowerBonus(baseUpgrades.cannonPower ?? 0),
+      areaRadius: SPECIAL_CANNON_DEFAULTS.areaRadius + getCannonRangeBonus(baseUpgrades.cannonRange ?? 0),
+      rechargeDurationSeconds: Math.max(
+        MIN_CANNON_RECHARGE_SECONDS,
+        SPECIAL_CANNON_DEFAULTS.rechargeDurationSeconds - getCannonChargeReduction(baseUpgrades.cannonCharge ?? 0),
+      ),
+      rechargeRemaining: 0,
+    }
+    specialCannon.rechargeRemaining = specialCannon.rechargeDurationSeconds
+
     set({
       status: 'InProgress',
       levelId,
@@ -128,7 +152,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         max: level.maxEnergy,
         regenPerSecond: level.energyRegenPerSecond * energyRegenMultiplier * comboEnergyRegenMultiplier,
       },
-      playerBase: { hp: level.playerBaseHp, maxHp: level.playerBaseHp },
+      playerBase: { hp: playerBaseMaxHp, maxHp: playerBaseMaxHp },
       enemyBase: { hp: enemyBaseHp, maxHp: enemyBaseHp },
       units: [],
       deployCooldowns: {},
@@ -137,7 +161,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       activeEnemyWave,
       pendingReinforcements: [],
       triggeredBaseHpThresholdPercents: [],
-      specialCannon: { ...SPECIAL_CANNON_DEFAULTS, rechargeRemaining: SPECIAL_CANNON_DEFAULTS.rechargeDurationSeconds },
+      specialCannon,
       // specs/013-escalado-capitulos-sets-tesoros (US3/FR-004/FR-005).
       laneLength: level.laneLength ?? LANE_LENGTH,
       // specs/017-objetos-de-batalla (US2/FR-008): "Aceleración de Velocidad" consumida, aplicada a toda unidad creada.
@@ -204,9 +228,13 @@ export const useGameStore = create<GameState>((set, get) => ({
       criticalChance: cat.criticalChance,
     }
 
+    // specs/031-mejoras-de-base (US3/FR-008): "Investigación" reduce el cooldown de redespliegue, sin bajar del piso.
+    const researchLevel = useMetaStore.getState().baseUpgrades.research ?? 0
+    const effectiveCooldown = Math.max(MIN_UNIT_COOLDOWN_SECONDS, cat.cooldownSeconds - getResearchCooldownReduction(researchLevel))
+
     set({
       energy: { ...energy, current: energy.current - effectiveCost },
-      deployCooldowns: { ...deployCooldowns, [catId]: cat.cooldownSeconds },
+      deployCooldowns: { ...deployCooldowns, [catId]: effectiveCooldown },
       units: [...units, unit],
     })
     return true

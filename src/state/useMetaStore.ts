@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { db, ensureDefaultProfile, type GachaStorageRow } from '../db'
+import { BASE_UPGRADES, getAccountingMultiplier, getBaseUpgradeCost, getEnergyCapBonus, type BaseUpgradeId } from '../data/baseUpgrades'
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { CATS } from '../data/cats'
 import { getAllTreasureIds, resolveLevel } from '../data/events'
@@ -81,6 +82,8 @@ interface MetaState {
   gachaStorage: GachaStorageRow[]
   /** specs/026-navegacion-hub-mockup (FR-009). Monótono — un id de NewsEntry leído nunca vuelve a "no leído". */
   readNewsIds: string[]
+  /** specs/031-mejoras-de-base. Nivel actual por mejora de cuenta — ausente = 0 al leer. */
+  baseUpgrades: Partial<Record<BaseUpgradeId, number>>
 
   hydrate: () => Promise<void>
   addCurrency: (amount: number) => void
@@ -101,6 +104,10 @@ interface MetaState {
   /** specs/025-cat-combos (FR-002/FR-004/FR-009). Deriva de activeTeamCatIds en cada llamada — sin campo de
    * estado propio ni persistencia (a diferencia de getActiveBonusMultiplier/grantedTreasureSetIds). */
   getActiveComboBonusMultiplier: (type: CatComboBonus['type']) => number
+  /** specs/031-mejoras-de-base (US1). Mismo patrón que `upgradeCat` — valida tope de nivel y costo, descuenta `currency`, persiste. */
+  upgradeBaseUpgrade: (id: BaseUpgradeId) => boolean
+  /** specs/031-mejoras-de-base (US3). Factor adicional para la moneda de victoria, combinado con `getActiveBonusMultiplier`/`getActiveComboBonusMultiplier`. */
+  getBaseUpgradeCurrencyMultiplier: () => number
   selectBattleItem: (itemId: string) => boolean
   deselectBattleItem: (itemId: string) => void
   consumeSelectedBattleItems: () => { speedMultiplier: number; energyBonus: number }
@@ -181,6 +188,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   npCurrency: 0,
   gachaStorage: [],
   readNewsIds: [],
+  baseUpgrades: {} as Partial<Record<BaseUpgradeId, number>>,
 
   hydrate: async () => {
     await ensureDefaultProfile()
@@ -200,6 +208,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       userRankRow,
       gachaStorage,
       newsReadRow,
+      baseUpgradesRow,
     ] = await Promise.all([
       db.playerProfile.get(1),
       db.settings.get(1),
@@ -216,7 +225,10 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       db.userRank.get(1),
       db.gachaStorage.toArray(),
       db.newsRead.get(1),
+      db.baseUpgrades.get(1),
     ])
+
+    const baseUpgrades = baseUpgradesRow?.levels ?? ({} as Partial<Record<BaseUpgradeId, number>>)
 
     const ownedCats = Object.fromEntries(
       ownedCatRows.map((row) => [
@@ -230,7 +242,8 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       ]),
     )
     const characterLevel = characterLevelOf(ownedCats)
-    const max = computeMissionEnergyMax(characterLevel)
+    // specs/031-mejoras-de-base (US3/FR-010): bono fijo de la mejora "Energía", sumado al máximo ya derivado del nivel de personaje.
+    const max = computeMissionEnergyMax(characterLevel) + getEnergyCapBonus(baseUpgrades.energyCap ?? 0)
     const regenPerSecond = computeRegenPerSecond(characterLevel)
     const now = Date.now()
     // Fila ausente/ilegible se trata como ausencia de progreso: energía al máximo (FR-010).
@@ -263,6 +276,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       npCurrency: profile?.npCurrency ?? 0,
       gachaStorage,
       readNewsIds: newsReadRow?.readIds ?? [],
+      baseUpgrades,
     })
     void db.missionEnergy.put({ id: 1, current, max, lastUpdatedAt: now })
   },
@@ -325,7 +339,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     // El máximo y la tasa de regeneración de energía de misión escalan con el nivel de personaje
     // (specs/007, FR-007; specs/029-pulido-batalla-hud US4 para regenPerSecond) — nunca reducen `current`.
     const characterLevel = characterLevelOf(ownedCats)
-    const max = computeMissionEnergyMax(characterLevel)
+    const max = computeMissionEnergyMax(characterLevel) + getEnergyCapBonus(get().baseUpgrades.energyCap ?? 0)
     const regenPerSecond = computeRegenPerSecond(characterLevel)
     if (max !== get().missionEnergy.max || regenPerSecond !== get().missionEnergy.regenPerSecond) {
       set({ missionEnergy: { ...get().missionEnergy, max, regenPerSecond } })
@@ -482,6 +496,26 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       .filter((combo) => combo.bonus.type === type)
       .reduce((product, combo) => product * combo.bonus.value, 1)
   },
+
+  upgradeBaseUpgrade: (id) => {
+    const definition = BASE_UPGRADES.find((candidate) => candidate.id === id)
+    if (!definition) return false
+
+    const { baseUpgrades, currency } = get()
+    const currentLevel = baseUpgrades[id] ?? 0
+    if (currentLevel >= definition.maxLevel) return false
+
+    const cost = getBaseUpgradeCost(currentLevel)
+    if (currency < cost) return false
+
+    const levels = { ...baseUpgrades, [id]: currentLevel + 1 }
+    set({ baseUpgrades: levels, currency: currency - cost })
+    void db.playerProfile.update(1, { currency: currency - cost })
+    void db.baseUpgrades.put({ id: 1, levels })
+    return true
+  },
+
+  getBaseUpgradeCurrencyMultiplier: () => getAccountingMultiplier(get().baseUpgrades.accounting ?? 0),
 
   selectBattleItem: (itemId) => {
     const { selectedBattleItemIds, battleItemInventory } = get()

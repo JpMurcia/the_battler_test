@@ -135,7 +135,9 @@ beforeEach(() => {
   useGameStore.getState().reset()
   // specs/025-cat-combos: activeTeamCatIds se resetea aquí para que ningún test de esta suite dependa del
   // orden de ejecución respecto a los tests de getActiveComboBonusMultiplier más abajo.
-  useMetaStore.setState({ ownedCats: {}, evolutionItems: {}, activeTeamCatIds: [] })
+  // specs/031-mejoras-de-base: baseUpgrades también se resetea aquí por el mismo motivo (aislar tests
+  // de esta suite de los de "Mejoras de Base" más abajo).
+  useMetaStore.setState({ ownedCats: {}, evolutionItems: {}, activeTeamCatIds: [], baseUpgrades: {} })
 })
 
 describe('useGameStore.deployUnit', () => {
@@ -531,4 +533,74 @@ describe('useGameStore — velocidad y pausa (specs/029-pulido-batalla-hud US2)'
   // unitario propio en este repo (se mockea por completo en BattleScreen.test.tsx, igual que el resto
   // de la lógica dependiente de Pixi), consistente con research.md Decisión 3. tick() en sí mismo no
   // conoce speedMultiplier/paused — solo aplica el deltaSeconds que se le pase, sin cambios en esta spec.
+})
+
+describe('useGameStore.startLevel — bonos de cañón especial (specs/031-mejoras-de-base US2)', () => {
+  it('con cannonPower/cannonRange/cannonCharge en nivel 0, specialCannon usa los valores por defecto de specs/012', () => {
+    useGameStore.getState().startLevel('level-1')
+
+    const { specialCannon } = useGameStore.getState()
+    expect(specialCannon.damage).toBe(50)
+    expect(specialCannon.areaRadius).toBe(40)
+    expect(specialCannon.rechargeDurationSeconds).toBe(20)
+  })
+
+  it('con las 3 mejoras de cañón en nivel >0, specialCannon incluye sus bonos', () => {
+    useMetaStore.setState({ baseUpgrades: { cannonPower: 3, cannonRange: 2, cannonCharge: 4 } })
+
+    useGameStore.getState().startLevel('level-1')
+
+    const { specialCannon } = useGameStore.getState()
+    expect(specialCannon.damage).toBe(50 + 3 * 10)
+    expect(specialCannon.areaRadius).toBe(40 + 2 * 5)
+    expect(specialCannon.rechargeDurationSeconds).toBe(20 - 4 * 1)
+    expect(specialCannon.rechargeRemaining).toBe(specialCannon.rechargeDurationSeconds)
+  })
+
+  it('Recarga de Cañón nunca baja de MIN_CANNON_RECHARGE_SECONDS', () => {
+    useMetaStore.setState({ baseUpgrades: { cannonCharge: 10 } })
+
+    useGameStore.getState().startLevel('level-1')
+
+    expect(useGameStore.getState().specialCannon.rechargeDurationSeconds).toBeGreaterThanOrEqual(5)
+  })
+})
+
+describe('useGameStore.startLevel — Defensa de Base (specs/031-mejoras-de-base US3)', () => {
+  it('con baseDefense en nivel 0, playerBase.maxHp es el valor base del nivel', () => {
+    useGameStore.getState().startLevel('level-1')
+
+    expect(useGameStore.getState().playerBase.maxHp).toBe(1000)
+  })
+
+  it('con baseDefense en nivel >0, playerBase.maxHp incluye el bono', () => {
+    useMetaStore.setState({ baseUpgrades: { baseDefense: 2 } })
+
+    useGameStore.getState().startLevel('level-1')
+
+    const { playerBase } = useGameStore.getState()
+    expect(playerBase.maxHp).toBe(1000 + 2 * 100)
+    expect(playerBase.hp).toBe(playerBase.maxHp)
+  })
+})
+
+describe('useGameStore.deployUnit — Investigación (specs/031-mejoras-de-base US3)', () => {
+  it('con research en nivel 0, el cooldown asignado es el cooldownSeconds base del gato', () => {
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    expect(useGameStore.getState().deployCooldowns[cat.id]).toBe(cat.cooldownSeconds)
+  })
+
+  it('con research en nivel >0, el cooldown asignado es menor que el base, sin bajar del piso', () => {
+    useMetaStore.setState({ baseUpgrades: { research: 5 } })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const assigned = useGameStore.getState().deployCooldowns[cat.id]
+    expect(assigned).toBeLessThan(cat.cooldownSeconds)
+    expect(assigned).toBeGreaterThanOrEqual(0.5)
+  })
 })

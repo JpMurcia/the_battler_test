@@ -140,6 +140,7 @@ const INITIAL_STATE = {
   npCurrency: 0,
   gachaStorage: [] as { id?: number; catId: string; rarity: RarityType }[],
   readNewsIds: [] as string[],
+  baseUpgrades: {} as Record<string, number>,
 }
 
 beforeEach(async () => {
@@ -159,6 +160,7 @@ beforeEach(async () => {
     db.userRank.clear(),
     db.gachaStorage.clear(),
     db.newsRead.clear(),
+    db.baseUpgrades.clear(),
   ])
   useMetaStore.setState(INITIAL_STATE)
 })
@@ -1062,5 +1064,72 @@ describe('useMetaStore', () => {
 
       expect(useMetaStore.getState().readNewsIds).toEqual(['news-cat-combos'])
     })
+  })
+})
+
+describe('useMetaStore — Mejoras de Base (specs/031-mejoras-de-base)', () => {
+  it('hydrate() sobre una base vacía deja baseUpgrades en {}', async () => {
+    await useMetaStore.getState().hydrate()
+
+    expect(useMetaStore.getState().baseUpgrades).toEqual({})
+  })
+
+  it('upgradeBaseUpgrade con moneda suficiente sube el nivel y descuenta el costo exacto', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ currency: 1000 })
+
+    const ok = useMetaStore.getState().upgradeBaseUpgrade('cannonPower')
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().baseUpgrades.cannonPower).toBe(1)
+    expect(useMetaStore.getState().currency).toBe(1000 - 100) // getBaseUpgradeCost(0) = 100
+  })
+
+  it('upgradeBaseUpgrade persiste tras re-hidratar', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ currency: 1000 })
+    useMetaStore.getState().upgradeBaseUpgrade('research')
+
+    await useMetaStore.getState().hydrate()
+
+    expect(useMetaStore.getState().baseUpgrades.research).toBe(1)
+  })
+
+  it('upgradeBaseUpgrade sin moneda suficiente devuelve false y no muta nada', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ currency: 0 })
+
+    const ok = useMetaStore.getState().upgradeBaseUpgrade('cannonPower')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().baseUpgrades.cannonPower ?? 0).toBe(0)
+  })
+
+  it('upgradeBaseUpgrade en el tope de nivel devuelve false', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ currency: 1_000_000, baseUpgrades: { cannonPower: 10 } as never })
+
+    const ok = useMetaStore.getState().upgradeBaseUpgrade('cannonPower')
+
+    expect(ok).toBe(false)
+  })
+
+  it('getBaseUpgradeCurrencyMultiplier refleja el nivel de accounting', async () => {
+    await useMetaStore.getState().hydrate()
+    expect(useMetaStore.getState().getBaseUpgradeCurrencyMultiplier()).toBe(1)
+
+    useMetaStore.setState({ baseUpgrades: { accounting: 3 } as never })
+    expect(useMetaStore.getState().getBaseUpgradeCurrencyMultiplier()).toBeCloseTo(1.15)
+  })
+
+  it('con energyCap en nivel >0, missionEnergy.max incluye el bono fijo tras hydrate()', async () => {
+    await useMetaStore.getState().hydrate()
+    const maxWithoutBonus = useMetaStore.getState().missionEnergy.max
+
+    useMetaStore.setState({ currency: 1_000_000 })
+    useMetaStore.getState().upgradeBaseUpgrade('energyCap')
+    await useMetaStore.getState().hydrate()
+
+    expect(useMetaStore.getState().missionEnergy.max).toBeGreaterThan(maxWithoutBonus)
   })
 })

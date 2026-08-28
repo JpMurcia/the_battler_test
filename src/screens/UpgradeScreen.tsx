@@ -1,4 +1,6 @@
 import { ArrowLeft, BookOpen, Gem, Skull, Users } from 'lucide-react'
+import { useState } from 'react'
+import { BASE_UPGRADES, getBaseUpgradeCost } from '../data/baseUpgrades'
 import { CATS, RARITY_TAG_CLASS } from '../data/cats'
 import { USER_RANK_THRESHOLDS } from '../data/userRankThresholds'
 import { characterLevelOf, formatCatLevel, useMetaStore } from '../state/useMetaStore'
@@ -48,10 +50,44 @@ function UserRankSection() {
   )
 }
 
+/** specs/031-mejoras-de-base (US1). Segunda pestaña del panel Mejorar — meta-progresión de cuenta,
+ * pagada con la misma `currency`, sin efecto en unidades ni en el comportamiento de "Unidades" (FR-011). */
+function BaseUpgradesSection() {
+  const currency = useMetaStore((state) => state.currency)
+  const baseUpgrades = useMetaStore((state) => state.baseUpgrades)
+  const upgradeBaseUpgrade = useMetaStore((state) => state.upgradeBaseUpgrade)
+
+  return (
+    <ul className="list-card">
+      {BASE_UPGRADES.map((def) => {
+        const level = baseUpgrades[def.id] ?? 0
+        const atMax = level >= def.maxLevel
+        const cost = getBaseUpgradeCost(level)
+        const disabled = atMax || currency < cost
+        return (
+          <li key={def.id} className="list-card__row">
+            <div className="list-card__main">
+              <span className="list-card__title">{def.name}</span>
+              <span className="list-card__meta">
+                Nivel {level}/{def.maxLevel}
+                {atMax ? ' (máximo)' : ` — siguiente mejora: ${cost}`}
+              </span>
+            </div>
+            <button className="btn btn-primary" disabled={disabled} onClick={() => upgradeBaseUpgrade(def.id)}>
+              Mejorar
+            </button>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 export function UpgradeScreen({ onNavigate }: UpgradeScreenProps) {
   const currency = useMetaStore((state) => state.currency)
   const ownedCats = useMetaStore((state) => state.ownedCats)
   const upgradeCat = useMetaStore((state) => state.upgradeCat)
+  const [tab, setTab] = useState<'units' | 'base'>('units')
 
   const characterLevel = characterLevelOf(ownedCats)
 
@@ -65,32 +101,45 @@ export function UpgradeScreen({ onNavigate }: UpgradeScreenProps) {
           Moneda: {currency}
         </span>
       </div>
-      {/* Única región con scroll interno de esta pantalla — lista de gatos + Rango de Usuario juntos,
-          para que la fila de navegación y "Volver" de abajo queden siempre visibles (nunca clipeados
-          por el alto fijo de `.screen`). */}
+      <div className="hud-bar">
+        <button className={`btn${tab === 'units' ? ' btn-primary' : ' btn-ghost'}`} onClick={() => setTab('units')}>
+          Unidades
+        </button>
+        <button className={`btn${tab === 'base' ? ' btn-primary' : ' btn-ghost'}`} onClick={() => setTab('base')}>
+          Mejoras de Base
+        </button>
+      </div>
+      {/* Única región con scroll interno de esta pantalla — para que la fila de navegación y "Volver"
+          de abajo queden siempre visibles (nunca clipeados por el alto fijo de `.screen`). */}
       <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <ul className="list-card">
-          {CATS.filter((cat) => cat.id in ownedCats).map((cat) => {
-            const owned = ownedCats[cat.id]
-            const cost = upgradeCost(owned.level)
-            const disabled = currency < cost
-            return (
-              <li key={cat.id} className="list-card__row">
-                <div className="list-card__main">
-                  <span className="list-card__title">
-                    {cat.name} — Nivel {formatCatLevel(owned)}
-                  </span>
-                  <span className="list-card__meta">siguiente mejora: {cost}</span>
-                </div>
-                {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
-                <button className="btn btn-primary" disabled={disabled} onClick={() => upgradeCat(cat.id)}>
-                  Mejorar
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-        <UserRankSection />
+        {tab === 'units' ? (
+          <>
+            <ul className="list-card">
+              {CATS.filter((cat) => cat.id in ownedCats).map((cat) => {
+                const owned = ownedCats[cat.id]
+                const cost = upgradeCost(owned.level)
+                const disabled = currency < cost
+                return (
+                  <li key={cat.id} className="list-card__row">
+                    <div className="list-card__main">
+                      <span className="list-card__title">
+                        {cat.name} — Nivel {formatCatLevel(owned)}
+                      </span>
+                      <span className="list-card__meta">siguiente mejora: {cost}</span>
+                    </div>
+                    {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
+                    <button className="btn btn-primary" disabled={disabled} onClick={() => upgradeCat(cat.id)}>
+                      Mejorar
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+            <UserRankSection />
+          </>
+        ) : (
+          <BaseUpgradesSection />
+        )}
       </div>
       <div className="hud-bar">
         <button className="btn btn-outline--cyan" onClick={() => onNavigate('Team')}>

@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie'
+import type { BaseUpgradeId } from '../data/baseUpgrades'
 import { CATS, type RarityType } from '../data/cats'
 import { computeMissionEnergyMax } from '../data/missionEnergy'
 
@@ -104,6 +105,12 @@ export interface NewsReadRow {
   readIds: string[]
 }
 
+/** specs/031-mejoras-de-base. Nivel actual por mejora de cuenta — ausente = 0 (mismo patrón que `EvolutionItemsRow.counts`). */
+export interface BaseUpgradesRow {
+  id: 1 // fila única (singleton)
+  levels: Partial<Record<BaseUpgradeId, number>>
+}
+
 class BattleCatsDB extends Dexie {
   playerProfile!: Table<PlayerProfileRow, number>
   ownedCats!: Table<OwnedCatRow, string>
@@ -120,6 +127,7 @@ class BattleCatsDB extends Dexie {
   userRank!: Table<UserRankRow, number>
   gachaStorage!: Table<GachaStorageRow, number>
   newsRead!: Table<NewsReadRow, number>
+  baseUpgrades!: Table<BaseUpgradesRow, number>
 
   constructor() {
     super('BattleCatsDB')
@@ -159,6 +167,9 @@ class BattleCatsDB extends Dexie {
     })
     this.version(11).stores({
       newsRead: 'id',
+    })
+    this.version(12).stores({
+      baseUpgrades: 'id',
     })
   }
 }

@@ -172,6 +172,7 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
   const claimArcRewardsIfComplete = useMetaStore((state) => state.claimArcRewardsIfComplete)
   const getActiveBonusMultiplier = useMetaStore((state) => state.getActiveBonusMultiplier)
   const getActiveComboBonusMultiplier = useMetaStore((state) => state.getActiveComboBonusMultiplier)
+  const getBaseUpgradeCurrencyMultiplier = useMetaStore((state) => state.getBaseUpgradeCurrencyMultiplier)
   const pendingTreasureRadar = useMetaStore((state) => state.pendingTreasureRadar)
   const grantRandomUnownedTreasure = useMetaStore((state) => state.grantRandomUnownedTreasure)
   const clearPendingTreasureRadar = useMetaStore((state) => state.clearPendingTreasureRadar)
@@ -183,11 +184,13 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
       if (level) {
         // specs/013-escalado-capitulos-sets-tesoros (US4): bonificación pasiva de sets de tesoros ya otorgados.
         // specs/025-cat-combos (FR-003/FR-008): bonificación de Cat Combo activo, combinada con la de arriba.
+        // specs/031-mejoras-de-base (US3/FR-009): "Contabilidad", combinada multiplicativamente con las 2 anteriores.
         addCurrency(
           Math.round(
             level.currencyReward *
               getActiveBonusMultiplier('CurrencyRewardMultiplier') *
-              getActiveComboBonusMultiplier('CurrencyRewardMultiplier'),
+              getActiveComboBonusMultiplier('CurrencyRewardMultiplier') *
+              getBaseUpgradeCurrencyMultiplier(),
           ),
         )
         // specs/014-banner-evento-especial (FR-004): la fase especial de un evento no participa del desbloqueo secuencial.
@@ -218,6 +221,7 @@ function BattleOutcomeWatcher({ onNavigate }: BattleScreenProps) {
     claimArcRewardsIfComplete,
     getActiveBonusMultiplier,
     getActiveComboBonusMultiplier,
+    getBaseUpgradeCurrencyMultiplier,
     pendingTreasureRadar,
     grantRandomUnownedTreasure,
     clearPendingTreasureRadar,
