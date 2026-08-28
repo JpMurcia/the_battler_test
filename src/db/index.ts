@@ -4,6 +4,8 @@ import { CATS, type RarityType } from '../data/cats'
 import { computeMissionEnergyMax } from '../data/missionEnergy'
 import type { MissionMetric } from '../data/missions'
 import type { GamatotoExpedition } from '../data/gamatoto'
+import type { OtotoConstruction } from '../data/ototoCorps'
+import type { ClassificationType, EffectType } from '../engine/types'
 
 export interface PlayerProfileRow {
   id: 1 // fila única (singleton)
@@ -128,6 +130,13 @@ export interface GamatotoRow {
   materials: number
 }
 
+/** specs/035-ototo-corps. `construction: null` = sin construcción en curso. `buildings` son las elecciones ya completadas. */
+export interface OtotoCorpsRow {
+  id: 1 // fila única (singleton)
+  construction: OtotoConstruction | null
+  buildings: { foundation?: ClassificationType; style?: EffectType }
+}
+
 class BattleCatsDB extends Dexie {
   playerProfile!: Table<PlayerProfileRow, number>
   ownedCats!: Table<OwnedCatRow, string>
@@ -147,6 +156,7 @@ class BattleCatsDB extends Dexie {
   baseUpgrades!: Table<BaseUpgradesRow, number>
   missions!: Table<MissionsRow, number>
   gamatoto!: Table<GamatotoRow, number>
+  ototoCorps!: Table<OtotoCorpsRow, number>
 
   constructor() {
     super('BattleCatsDB')
@@ -195,6 +205,9 @@ class BattleCatsDB extends Dexie {
     })
     this.version(14).stores({
       gamatoto: 'id',
+    })
+    this.version(15).stores({
+      ototoCorps: 'id',
     })
   }
 }

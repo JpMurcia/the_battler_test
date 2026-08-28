@@ -3,6 +3,7 @@ import type { RarityType } from '../../src/data/cats'
 import { LEVELS } from '../../src/data/levels'
 import { db } from '../../src/db'
 import { useMetaStore } from '../../src/state/useMetaStore'
+import type { ClassificationType, EffectType } from '../../src/engine/types'
 
 // specs/010-evolucion-de-gatos: gato de prueba con `evolutions` declarado, añadido al catálogo
 // real vía importOriginal — el catálogo de producción (CATS[0..3]) no declara evoluciones
@@ -146,6 +147,8 @@ const INITIAL_STATE = {
   missionsResetDateKey: '',
   gamatotoExpedition: null as { optionId: string; startedAtMs: number } | null,
   gamatotoMaterials: 0,
+  ototoConstruction: null as { building: 'foundation' | 'style'; choice: string; startedAtMs: number } | null,
+  ototoBuildings: {} as { foundation?: ClassificationType; style?: EffectType },
 }
 
 beforeEach(async () => {
@@ -168,6 +171,7 @@ beforeEach(async () => {
     db.baseUpgrades.clear(),
     db.missions.clear(),
     db.gamatoto.clear(),
+    db.ototoCorps.clear(),
   ])
   useMetaStore.setState(INITIAL_STATE)
 })
@@ -1290,5 +1294,85 @@ describe('useMetaStore — Gamatoto (specs/034-gamatoto)', () => {
     await useMetaStore.getState().hydrate()
 
     expect(useMetaStore.getState().gamatotoExpedition?.startedAtMs).toBe(startedAtMs)
+  })
+})
+
+describe('useMetaStore — Cuerpo Ototo (specs/035-ototo-corps)', () => {
+  it('hydrate() sobre una base vacía deja ototoConstruction en null y ototoBuildings en {}', async () => {
+    await useMetaStore.getState().hydrate()
+
+    const state = useMetaStore.getState()
+    expect(state.ototoConstruction).toBeNull()
+    expect(state.ototoBuildings).toEqual({})
+  })
+
+  it('startOtotoConstruction con materiales suficientes descuenta el costo exacto, registra la construcción y persiste', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ gamatotoMaterials: 100 })
+
+    const ok = useMetaStore.getState().startOtotoConstruction('foundation', 'Floating')
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().gamatotoMaterials).toBe(60) // 100 - 40
+    expect(useMetaStore.getState().ototoConstruction).toEqual(
+      expect.objectContaining({ building: 'foundation', choice: 'Floating' }),
+    )
+
+    await useMetaStore.getState().hydrate()
+    expect(useMetaStore.getState().ototoConstruction?.choice).toBe('Floating')
+  })
+
+  it('startOtotoConstruction sin materiales suficientes devuelve false sin mutar', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ gamatotoMaterials: 0 })
+
+    const ok = useMetaStore.getState().startOtotoConstruction('foundation', 'Floating')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().ototoConstruction).toBeNull()
+  })
+
+  it('startOtotoConstruction con una ya activa devuelve false sin mutar', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ gamatotoMaterials: 1000 })
+    useMetaStore.getState().startOtotoConstruction('foundation', 'Floating')
+    const materialsAfterFirst = useMetaStore.getState().gamatotoMaterials
+
+    const ok = useMetaStore.getState().startOtotoConstruction('style', 'Freeze')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().gamatotoMaterials).toBe(materialsAfterFirst)
+  })
+
+  it('claimOtotoConstruction sin construcción o todavía no lista devuelve false', async () => {
+    await useMetaStore.getState().hydrate()
+    expect(useMetaStore.getState().claimOtotoConstruction()).toBe(false)
+
+    useMetaStore.setState({ gamatotoMaterials: 1000 })
+    useMetaStore.getState().startOtotoConstruction('foundation', 'Floating')
+    expect(useMetaStore.getState().claimOtotoConstruction()).toBe(false)
+  })
+
+  it('claimOtotoConstruction lista escribe la elección en ototoBuildings y limpia el slot', async () => {
+    await useMetaStore.getState().hydrate()
+    const now = Date.now()
+    useMetaStore.setState({ ototoConstruction: { building: 'foundation', choice: 'Floating', startedAtMs: now - 16 * 60_000 } })
+
+    const ok = useMetaStore.getState().claimOtotoConstruction()
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().ototoBuildings.foundation).toBe('Floating')
+    expect(useMetaStore.getState().ototoConstruction).toBeNull()
+  })
+
+  it('specs/035-ototo-corps US3: hydrate() no altera startedAtMs de una construcción en curso', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ gamatotoMaterials: 1000 })
+    useMetaStore.getState().startOtotoConstruction('foundation', 'Floating')
+    const startedAtMs = useMetaStore.getState().ototoConstruction?.startedAtMs
+
+    await useMetaStore.getState().hydrate()
+
+    expect(useMetaStore.getState().ototoConstruction?.startedAtMs).toBe(startedAtMs)
   })
 })

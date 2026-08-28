@@ -1,11 +1,12 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Archive, BookOpen, CheckSquare, Coins, Mail, Settings as SettingsIcon, Sparkles, Swords, Tent, Wrench, Zap } from 'lucide-react'
+import { Archive, BookOpen, CheckSquare, Coins, Hammer, Mail, Settings as SettingsIcon, Sparkles, Swords, Tent, Wrench, Zap } from 'lucide-react'
 import { GAMATOTO_EXPEDITION_OPTIONS, isExpeditionReady } from '../data/gamatoto'
 import { MISSIONS } from '../data/missions'
 import { NEWS_ENTRIES } from '../data/news'
 import { GachaScreen } from './GachaScreen'
 import { GamatotoPanel } from './GamatotoPanel'
 import { MissionsPanel } from './MissionsPanel'
+import { OtotoCorpsPanel } from './OtotoCorpsPanel'
 import { NewsPanel } from './NewsPanel'
 import { LibraryPanel } from './panels/LibraryPanel'
 import { PanelOverlay } from './shared/PanelOverlay'
@@ -40,6 +41,7 @@ const PANEL_LABELS: Record<PanelId, string> = {
   News: 'Buzón de Noticias',
   Missions: 'Misiones',
   Gamatoto: 'Gamatoto',
+  OtotoCorps: 'Cuerpo Ototo',
 }
 
 function formatCountdown(totalSeconds: number): string {
@@ -148,6 +150,9 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
     case 'Gamatoto':
       panelContent = <GamatotoPanel />
       break
+    case 'OtotoCorps':
+      panelContent = <OtotoCorpsPanel />
+      break
     default:
       panelContent = null
   }
@@ -191,6 +196,10 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
           <Tent size={16} aria-hidden="true" color="var(--bc-gold)" />
           Gamatoto
           {gamatotoReady && <span className="hub-dock__badge">!</span>}
+        </button>
+        <button className="btn hub-dock__button" onClick={() => open('OtotoCorps')} title="Cuerpo Ototo">
+          <Hammer size={16} aria-hidden="true" />
+          Cuerpo Ototo
         </button>
         <button className="btn hub-dock__button" onClick={() => open('Gacha')} title="Cápsula de Gatos">
           <Sparkles size={16} aria-hidden="true" color="var(--bc-purple)" />

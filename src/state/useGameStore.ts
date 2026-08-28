@@ -8,6 +8,7 @@ import {
   getCannonRangeBonus,
   getResearchCooldownReduction,
 } from '../data/baseUpgrades'
+import { OTOTO_DAMAGE_REDUCTION, OTOTO_DEBUFF_RESISTANCE } from '../data/ototoCorps'
 import { CATS, getEffectiveCatStats } from '../data/cats'
 import { resolveLevel } from '../data/events'
 import { findArcByLevelId } from '../data/sagaArcs'
@@ -199,6 +200,17 @@ export const useGameStore = create<GameState>((set, get) => ({
     const evolutionStage = useMetaStore.getState().ownedCats[catId]?.evolutionStage ?? 'Base'
     const effectiveStats = getEffectiveCatStats(cat, evolutionStage)
 
+    // specs/035-ototo-corps (US1/US2/FR-006): antepuesto (no `push`) para que, si el propio gato ya tiene
+    // una entrada para el mismo rasgo/debuff, el motor (que devuelve la primera coincidencia) prefiera el
+    // bono de Ototo — research.md Decisión 3, sin cambios en src/engine/.
+    const { foundation, style } = useMetaStore.getState().ototoBuildings
+    const abilities = foundation
+      ? [{ kind: 'TraitResistance' as const, targetClassifications: [foundation], damageTakenMultiplier: OTOTO_DAMAGE_REDUCTION }, ...(cat.abilities ?? [])]
+      : cat.abilities
+    const resistantTo = style
+      ? [{ effect: style, durationMultiplier: OTOTO_DEBUFF_RESISTANCE }, ...(cat.resistantTo ?? [])]
+      : cat.resistantTo
+
     const unit: BattleUnit = {
       instanceId: `${catId}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       catId,
@@ -219,11 +231,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       areaRadius: cat.areaRadius,
       classification: cat.classification,
       specialClassification: cat.specialClassification,
-      abilities: cat.abilities,
+      abilities,
       immuneEffects: cat.immuneEffects,
       appliesEffect: cat.appliesEffect,
       curseRemainingSeconds: 0,
-      resistantTo: cat.resistantTo,
+      resistantTo,
       hitsPerSequence: cat.hitsPerSequence,
       criticalChance: cat.criticalChance,
     }

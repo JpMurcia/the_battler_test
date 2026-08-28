@@ -146,6 +146,8 @@ beforeEach(() => {
     missionProgress: {},
     claimedMissionIds: [],
     missionsResetDateKey: '',
+    // specs/035-ototo-corps: mismo motivo de aislamiento.
+    ototoBuildings: {},
   })
 })
 
@@ -197,6 +199,36 @@ describe('useGameStore.deployUnit', () => {
     useGameStore.getState().deployUnit(cat.id)
 
     expect(useMetaStore.getState().missionProgress.unitsDeployed ?? 0).toBe(0)
+  })
+
+  it('specs/035-ototo-corps: con foundation construida, la unidad desplegada recibe la TraitResistance correspondiente', () => {
+    useMetaStore.setState({ ototoBuildings: { foundation: 'Floating' } })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.abilities).toContainEqual({ kind: 'TraitResistance', targetClassifications: ['Floating'], damageTakenMultiplier: 0.7 })
+  })
+
+  it('specs/035-ototo-corps: con style construido, la unidad desplegada recibe la entrada resistantTo correspondiente', () => {
+    useMetaStore.setState({ ototoBuildings: { style: 'Freeze' } })
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.resistantTo).toContainEqual({ effect: 'Freeze', durationMultiplier: 0.5 })
+  })
+
+  it('specs/035-ototo-corps: sin ninguna construcción, abilities/resistantTo son exactamente los del Cat original', () => {
+    useGameStore.setState({ energy: { current: 999, max: 999, regenPerSecond: 0 } })
+
+    useGameStore.getState().deployUnit(cat.id)
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit.abilities).toEqual(cat.abilities)
+    expect(unit.resistantTo).toEqual(cat.resistantTo)
   })
 })
 

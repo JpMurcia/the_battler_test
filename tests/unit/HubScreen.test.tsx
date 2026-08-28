@@ -149,6 +149,17 @@ describe('HubScreen — Gamatoto (specs/034-gamatoto)', () => {
   })
 })
 
+describe('HubScreen — Cuerpo Ototo (specs/035-ototo-corps)', () => {
+  it('el botón Cuerpo Ototo abre su panel', () => {
+    useMetaStore.setState({ ...BASE_STATE, ototoConstruction: null, ototoBuildings: {} })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Cuerpo Ototo/ }))
+
+    expect(screen.getByRole('heading', { name: 'Cuerpo Ototo' })).toBeInTheDocument()
+  })
+})
+
 describe('HubScreen — temporizador de regeneración de energía (specs/029-pulido-batalla-hud US4)', () => {
   beforeEach(() => {
     vi.useFakeTimers()

@@ -27,3 +27,5 @@ export type PanelId =
   | 'Missions'
   /** specs/034-gamatoto. */
   | 'Gamatoto'
+  /** specs/035-ototo-corps. */
+  | 'OtotoCorps'
