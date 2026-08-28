@@ -3,6 +3,7 @@ import type { BaseUpgradeId } from '../data/baseUpgrades'
 import { CATS, type RarityType } from '../data/cats'
 import { computeMissionEnergyMax } from '../data/missionEnergy'
 import type { MissionMetric } from '../data/missions'
+import type { GamatotoExpedition } from '../data/gamatoto'
 
 export interface PlayerProfileRow {
   id: 1 // fila única (singleton)
@@ -120,6 +121,13 @@ export interface MissionsRow {
   claimedMissionIds: string[]
 }
 
+/** specs/034-gamatoto. `expedition: null` = sin expedición en curso — el progreso se deriva de `startedAtMs`, nunca se persiste un remanente. */
+export interface GamatotoRow {
+  id: 1 // fila única (singleton)
+  expedition: GamatotoExpedition | null
+  materials: number
+}
+
 class BattleCatsDB extends Dexie {
   playerProfile!: Table<PlayerProfileRow, number>
   ownedCats!: Table<OwnedCatRow, string>
@@ -138,6 +146,7 @@ class BattleCatsDB extends Dexie {
   newsRead!: Table<NewsReadRow, number>
   baseUpgrades!: Table<BaseUpgradesRow, number>
   missions!: Table<MissionsRow, number>
+  gamatoto!: Table<GamatotoRow, number>
 
   constructor() {
     super('BattleCatsDB')
@@ -183,6 +192,9 @@ class BattleCatsDB extends Dexie {
     })
     this.version(13).stores({
       missions: 'id',
+    })
+    this.version(14).stores({
+      gamatoto: 'id',
     })
   }
 }

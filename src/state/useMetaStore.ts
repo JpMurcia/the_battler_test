@@ -3,6 +3,7 @@ import { db, ensureDefaultProfile, type GachaStorageRow } from '../db'
 import { BASE_UPGRADES, getAccountingMultiplier, getBaseUpgradeCost, getEnergyCapBonus, type BaseUpgradeId } from '../data/baseUpgrades'
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { MISSIONS, getDateKey, type MissionMetric } from '../data/missions'
+import { GAMATOTO_EXPEDITION_OPTIONS, isExpeditionReady, type GamatotoExpedition } from '../data/gamatoto'
 import { CATS } from '../data/cats'
 import { getAllTreasureIds, resolveLevel } from '../data/events'
 import { LEVELS } from '../data/levels'
@@ -91,6 +92,10 @@ interface MetaState {
   claimedMissionIds: string[]
   /** specs/033-misiones-catnip-challenges (FR-006). `getDateKey` de la última vez que se tocó el progreso. */
   missionsResetDateKey: string
+  /** specs/034-gamatoto. `null` = sin expedición en curso — el progreso se deriva de `startedAtMs`, nunca de un remanente persistido. */
+  gamatotoExpedition: GamatotoExpedition | null
+  /** specs/034-gamatoto. Contador de cuenta, sin consumidor todavía (primer consumidor previsto: specs/035-ototo-corps). */
+  gamatotoMaterials: number
 
   hydrate: () => Promise<void>
   addCurrency: (amount: number) => void
@@ -119,6 +124,10 @@ interface MetaState {
   recordMissionProgress: (metric: MissionMetric, amount: number) => void
   /** specs/033-misiones-catnip-challenges (US1). `false` si la misión no existe, ya fue reclamada hoy, o su progreso no alcanza el objetivo. */
   claimMission: (missionId: string) => boolean
+  /** specs/034-gamatoto (US1). `false` si ya hay una expedición activa o `optionId` no existe en el catálogo. */
+  startGamatotoExpedition: (optionId: string) => boolean
+  /** specs/034-gamatoto (US3). `false` si no hay expedición o todavía no está lista. */
+  claimGamatotoExpedition: () => boolean
   selectBattleItem: (itemId: string) => boolean
   deselectBattleItem: (itemId: string) => void
   consumeSelectedBattleItems: () => { speedMultiplier: number; energyBonus: number }
@@ -203,6 +212,8 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   missionProgress: {} as Partial<Record<MissionMetric, number>>,
   claimedMissionIds: [] as string[],
   missionsResetDateKey: '',
+  gamatotoExpedition: null as GamatotoExpedition | null,
+  gamatotoMaterials: 0,
 
   hydrate: async () => {
     await ensureDefaultProfile()
@@ -224,6 +235,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       newsReadRow,
       baseUpgradesRow,
       missionsRow,
+      gamatotoRow,
     ] = await Promise.all([
       db.playerProfile.get(1),
       db.settings.get(1),
@@ -242,6 +254,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       db.newsRead.get(1),
       db.baseUpgrades.get(1),
       db.missions.get(1),
+      db.gamatoto.get(1),
     ])
 
     const baseUpgrades = baseUpgradesRow?.levels ?? ({} as Partial<Record<BaseUpgradeId, number>>)
@@ -305,6 +318,8 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       missionProgress,
       claimedMissionIds,
       missionsResetDateKey: todayKey,
+      gamatotoExpedition: gamatotoRow?.expedition ?? null,
+      gamatotoMaterials: gamatotoRow?.materials ?? 0,
     })
     void db.missionEnergy.put({ id: 1, current, max, lastUpdatedAt: now })
   },
@@ -574,6 +589,29 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     set({ missionProgress: progress, claimedMissionIds, missionsResetDateKey: todayKey, currency })
     void db.playerProfile.update(1, { currency })
     void db.missions.put({ id: 1, resetDateKey: todayKey, progress, claimedMissionIds })
+    return true
+  },
+
+  startGamatotoExpedition: (optionId) => {
+    if (get().gamatotoExpedition) return false
+    const option = GAMATOTO_EXPEDITION_OPTIONS.find((candidate) => candidate.id === optionId)
+    if (!option) return false
+
+    const expedition: GamatotoExpedition = { optionId, startedAtMs: Date.now() }
+    set({ gamatotoExpedition: expedition })
+    void db.gamatoto.put({ id: 1, expedition, materials: get().gamatotoMaterials })
+    return true
+  },
+
+  claimGamatotoExpedition: () => {
+    const expedition = get().gamatotoExpedition
+    if (!expedition) return false
+    const option = GAMATOTO_EXPEDITION_OPTIONS.find((candidate) => candidate.id === expedition.optionId)
+    if (!option || !isExpeditionReady(expedition, option, Date.now())) return false
+
+    const materials = get().gamatotoMaterials + option.materialsReward
+    set({ gamatotoExpedition: null, gamatotoMaterials: materials })
+    void db.gamatoto.put({ id: 1, expedition: null, materials })
     return true
   },
 

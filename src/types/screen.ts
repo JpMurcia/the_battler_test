@@ -25,3 +25,5 @@ export type PanelId =
   | 'News'
   /** specs/033-misiones-catnip-challenges. */
   | 'Missions'
+  /** specs/034-gamatoto. */
+  | 'Gamatoto'

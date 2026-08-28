@@ -113,6 +113,42 @@ describe('HubScreen — Misiones (specs/033-misiones-catnip-challenges)', () => 
   })
 })
 
+describe('HubScreen — Gamatoto (specs/034-gamatoto)', () => {
+  it('el botón Gamatoto abre el panel de Gamatoto', () => {
+    useMetaStore.setState({ ...BASE_STATE, gamatotoExpedition: null, gamatotoMaterials: 0 })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Gamatoto/ }))
+
+    expect(screen.getByRole('heading', { name: 'Gamatoto' })).toBeInTheDocument()
+  })
+
+  it('sin expedición, no muestra badge', () => {
+    useMetaStore.setState({ ...BASE_STATE, gamatotoExpedition: null, gamatotoMaterials: 0 })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: /Gamatoto/ }).querySelector('.hub-dock__badge')).toBeNull()
+  })
+
+  it('con una expedición todavía en curso, no muestra badge', () => {
+    useMetaStore.setState({ ...BASE_STATE, gamatotoExpedition: { optionId: 'gamatoto-larga', startedAtMs: Date.now() }, gamatotoMaterials: 0 })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: /Gamatoto/ }).querySelector('.hub-dock__badge')).toBeNull()
+  })
+
+  it('con una expedición completa sin reclamar, muestra badge', () => {
+    useMetaStore.setState({
+      ...BASE_STATE,
+      gamatotoExpedition: { optionId: 'gamatoto-corta', startedAtMs: Date.now() - 6 * 60_000 },
+      gamatotoMaterials: 0,
+    })
+    render(<HubScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: /Gamatoto/ }).querySelector('.hub-dock__badge')).not.toBeNull()
+  })
+})
+
 describe('HubScreen — temporizador de regeneración de energía (specs/029-pulido-batalla-hud US4)', () => {
   beforeEach(() => {
     vi.useFakeTimers()

@@ -1,8 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Archive, BookOpen, CheckSquare, Coins, Mail, Settings as SettingsIcon, Sparkles, Swords, Wrench, Zap } from 'lucide-react'
+import { Archive, BookOpen, CheckSquare, Coins, Mail, Settings as SettingsIcon, Sparkles, Swords, Tent, Wrench, Zap } from 'lucide-react'
+import { GAMATOTO_EXPEDITION_OPTIONS, isExpeditionReady } from '../data/gamatoto'
 import { MISSIONS } from '../data/missions'
 import { NEWS_ENTRIES } from '../data/news'
 import { GachaScreen } from './GachaScreen'
+import { GamatotoPanel } from './GamatotoPanel'
 import { MissionsPanel } from './MissionsPanel'
 import { NewsPanel } from './NewsPanel'
 import { LibraryPanel } from './panels/LibraryPanel'
@@ -37,6 +39,7 @@ const PANEL_LABELS: Record<PanelId, string> = {
   PlayerProfile: 'Perfil de Jugador',
   News: 'Buzón de Noticias',
   Missions: 'Misiones',
+  Gamatoto: 'Gamatoto',
 }
 
 function formatCountdown(totalSeconds: number): string {
@@ -86,12 +89,18 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
   const readNewsIds = useMetaStore((state) => state.readNewsIds)
   const missionProgress = useMetaStore((state) => state.missionProgress)
   const claimedMissionIds = useMetaStore((state) => state.claimedMissionIds)
+  const gamatotoExpedition = useMetaStore((state) => state.gamatotoExpedition)
   const rank = characterLevelOf(ownedCats)
   const hasUnreadNews = NEWS_ENTRIES.some((entry) => !readNewsIds.includes(entry.id))
   // specs/033-misiones-catnip-challenges (FR-005): misiones completadas y sin reclamar todavía.
   const pendingMissionsCount = MISSIONS.filter(
     (mission) => (missionProgress[mission.metric] ?? 0) >= mission.target && !claimedMissionIds.includes(mission.id),
   ).length
+  // specs/034-gamatoto (FR-005): badge solo con expedición completa sin reclamar.
+  const gamatotoOption = gamatotoExpedition
+    ? GAMATOTO_EXPEDITION_OPTIONS.find((option) => option.id === gamatotoExpedition.optionId)
+    : undefined
+  const gamatotoReady = !!(gamatotoExpedition && gamatotoOption && isExpeditionReady(gamatotoExpedition, gamatotoOption, Date.now()))
 
   const [openPanels, setOpenPanels] = useState<OpenPanel[]>([])
   const open = (id: PanelId, opts?: Omit<OpenPanel, 'id'>) => setOpenPanels((stack) => [...stack, { id, ...opts }])
@@ -136,6 +145,9 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
     case 'Missions':
       panelContent = <MissionsPanel />
       break
+    case 'Gamatoto':
+      panelContent = <GamatotoPanel />
+      break
     default:
       panelContent = null
   }
@@ -174,6 +186,11 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
         <button className="btn hub-dock__button" onClick={() => open('Library')} title="Biblioteca">
           <BookOpen size={16} aria-hidden="true" color="var(--bc-pink)" />
           Biblioteca
+        </button>
+        <button className="btn hub-dock__button" style={{ position: 'relative' }} onClick={() => open('Gamatoto')} title="Gamatoto">
+          <Tent size={16} aria-hidden="true" color="var(--bc-gold)" />
+          Gamatoto
+          {gamatotoReady && <span className="hub-dock__badge">!</span>}
         </button>
         <button className="btn hub-dock__button" onClick={() => open('Gacha')} title="Cápsula de Gatos">
           <Sparkles size={16} aria-hidden="true" color="var(--bc-purple)" />

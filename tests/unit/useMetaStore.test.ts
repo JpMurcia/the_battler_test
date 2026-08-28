@@ -144,6 +144,8 @@ const INITIAL_STATE = {
   missionProgress: {} as Record<string, number>,
   claimedMissionIds: [] as string[],
   missionsResetDateKey: '',
+  gamatotoExpedition: null as { optionId: string; startedAtMs: number } | null,
+  gamatotoMaterials: 0,
 }
 
 beforeEach(async () => {
@@ -165,6 +167,7 @@ beforeEach(async () => {
     db.newsRead.clear(),
     db.baseUpgrades.clear(),
     db.missions.clear(),
+    db.gamatoto.clear(),
   ])
   useMetaStore.setState(INITIAL_STATE)
 })
@@ -1215,5 +1218,77 @@ describe('useMetaStore — Misiones (specs/033-misiones-catnip-challenges)', () 
     expect(state.missionProgress).toEqual({})
     expect(state.claimedMissionIds).toEqual([])
     expect(state.missionsResetDateKey).not.toBe('2000-01-01')
+  })
+})
+
+describe('useMetaStore — Gamatoto (specs/034-gamatoto)', () => {
+  it('hydrate() sobre una base vacía deja gamatotoExpedition en null y gamatotoMaterials en 0', async () => {
+    await useMetaStore.getState().hydrate()
+
+    const state = useMetaStore.getState()
+    expect(state.gamatotoExpedition).toBeNull()
+    expect(state.gamatotoMaterials).toBe(0)
+  })
+
+  it('startGamatotoExpedition sin expedición activa la registra y persiste', async () => {
+    await useMetaStore.getState().hydrate()
+
+    const ok = useMetaStore.getState().startGamatotoExpedition('gamatoto-corta')
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().gamatotoExpedition?.optionId).toBe('gamatoto-corta')
+
+    await useMetaStore.getState().hydrate()
+    expect(useMetaStore.getState().gamatotoExpedition?.optionId).toBe('gamatoto-corta')
+  })
+
+  it('startGamatotoExpedition con una ya activa devuelve false sin mutar', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.getState().startGamatotoExpedition('gamatoto-corta')
+    const before = useMetaStore.getState().gamatotoExpedition
+
+    const ok = useMetaStore.getState().startGamatotoExpedition('gamatoto-larga')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().gamatotoExpedition).toEqual(before)
+  })
+
+  it('claimGamatotoExpedition sin expedición devuelve false', async () => {
+    await useMetaStore.getState().hydrate()
+
+    expect(useMetaStore.getState().claimGamatotoExpedition()).toBe(false)
+  })
+
+  it('claimGamatotoExpedition todavía no lista devuelve false sin mutar', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.getState().startGamatotoExpedition('gamatoto-corta')
+
+    const ok = useMetaStore.getState().claimGamatotoExpedition()
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().gamatotoMaterials).toBe(0)
+    expect(useMetaStore.getState().gamatotoExpedition).not.toBeNull()
+  })
+
+  it('claimGamatotoExpedition lista suma los materiales y limpia el slot', async () => {
+    await useMetaStore.getState().hydrate()
+    const now = Date.now()
+    useMetaStore.setState({ gamatotoExpedition: { optionId: 'gamatoto-corta', startedAtMs: now - 6 * 60_000 } })
+
+    const ok = useMetaStore.getState().claimGamatotoExpedition()
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().gamatotoMaterials).toBe(5)
+    expect(useMetaStore.getState().gamatotoExpedition).toBeNull()
+  })
+
+  it('specs/034-gamatoto US2: hydrate() no altera startedAtMs de una expedición ya en curso', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.getState().startGamatotoExpedition('gamatoto-media')
+    const startedAtMs = useMetaStore.getState().gamatotoExpedition?.startedAtMs
+
+    await useMetaStore.getState().hydrate()
+
+    expect(useMetaStore.getState().gamatotoExpedition?.startedAtMs).toBe(startedAtMs)
   })
 })
