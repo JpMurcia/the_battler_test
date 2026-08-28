@@ -19,4 +19,11 @@ export const TREASURE_SETS: TreasureSet[] = [
     treasureIds: ['tesoro-nivel-1', 'tesoro-nivel-2'],
     passiveBonus: { type: 'EnergyRegenMultiplier', value: 1.1 },
   },
+  /** specs/027-capitulo-1-imperio-gatos (FR-011). Los 48 tesoros del capítulo, generados por el mismo patrón que sus id de nivel. */
+  {
+    id: 'set-imperio-de-los-gatos-cap1',
+    name: 'Set Imperio de los Gatos — Capítulo 1',
+    treasureIds: Array.from({ length: 48 }, (_, index) => `tesoro-imperio-cap1-etapa-${index + 1}`),
+    passiveBonus: { type: 'CurrencyRewardMultiplier', value: 1.15 },
+  },
 ]

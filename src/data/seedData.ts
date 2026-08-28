@@ -22,12 +22,19 @@ export interface SeedUnitStats {
   spawnCooldown: number
 }
 
+/**
+ * Rasgo distintivo dibujado sobre el cuerpo procedural (src/game/graphics/unitFactory.ts). specs/028
+ * (US3/FR-010, research.md Decisión 5) añadió los 5 últimos — mapeados a arquetipos de `specs/027`
+ * (tanque → 'horns', anti-Flotante/aéreo → 'wings', defensivo → 'shield', agresivo/área → 'spikes', rápido → 'tail').
+ */
+export type ProceduralDistinctiveFeature = 'cat-ears' | 'fangs' | 'fin' | 'crest' | 'none' | 'horns' | 'wings' | 'shield' | 'spikes' | 'tail'
+
 /** Parámetros consumidos por src/game/graphics/unitFactory.ts para generar la textura procedimental (FR-004). */
 export interface ProceduralDesign {
   primaryColor: number
   baseShape: ProceduralShape
   size: number
-  distinctiveFeature: 'cat-ears' | 'fangs' | 'fin' | 'crest' | 'none'
+  distinctiveFeature: ProceduralDistinctiveFeature
 }
 
 export interface SeedUnit {

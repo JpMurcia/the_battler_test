@@ -139,6 +139,7 @@ const INITIAL_STATE = {
   gachaCurrency: 0,
   npCurrency: 0,
   gachaStorage: [] as { id?: number; catId: string; rarity: RarityType }[],
+  readNewsIds: [] as string[],
 }
 
 beforeEach(async () => {
@@ -157,6 +158,7 @@ beforeEach(async () => {
     db.encounteredEnemies.clear(),
     db.userRank.clear(),
     db.gachaStorage.clear(),
+    db.newsRead.clear(),
   ])
   useMetaStore.setState(INITIAL_STATE)
 })
@@ -170,13 +172,18 @@ describe('useMetaStore', () => {
     expect(state.currency).toBe(0)
     expect(state.highestUnlockedLevelIndex).toBe(0)
     expect(state.completedLevelIds).toEqual([])
+    // specs/027-capitulo-1-imperio-gatos (FR-001, US2 Escenario 1): "cat-recluta" es un segundo gato inicial
+    // garantizado, aditivo sobre CATS[0] — ver db/index.ts ensureDefaultProfile.
     expect(state.ownedCats).toEqual({
       [CATS[0].id]: { level: 1, experienceInvested: 0, evolutionStage: 'Base', plusLevel: 0 },
+      'cat-recluta': { level: 1, experienceInvested: 0, evolutionStage: 'Base', plusLevel: 0 },
     })
     // specs/024-sistema-gacha.
     expect(state.gachaCurrency).toBe(0)
     expect(state.npCurrency).toBe(0)
     expect(state.gachaStorage).toEqual([])
+    // specs/026-navegacion-hub-mockup.
+    expect(state.readNewsIds).toEqual([])
     // specs/012-saga-imperio-de-los-gatos.
     expect(state.obtainedTreasureIds).toEqual([])
     expect(state.grantedArcRewardIds).toEqual([])
@@ -1003,6 +1010,34 @@ describe('useMetaStore', () => {
       expect(ok).toBe(false)
       expect(useMetaStore.getState().npCurrency).toBe(0)
       expect(useMetaStore.getState().gachaStorage).toHaveLength(1)
+    })
+  })
+
+  describe('Buzón de Noticias (specs/026-navegacion-hub-mockup, FR-008/FR-009)', () => {
+    it('hydrate() puebla readNewsIds desde Dexie', async () => {
+      await db.newsRead.put({ id: 1, readIds: ['news-cat-combos'] })
+
+      await useMetaStore.getState().hydrate()
+
+      expect(useMetaStore.getState().readNewsIds).toEqual(['news-cat-combos'])
+    })
+
+    it('markNewsRead agrega el id a readNewsIds en memoria y en Dexie', async () => {
+      await useMetaStore.getState().hydrate()
+
+      await useMetaStore.getState().markNewsRead('news-cat-combos')
+
+      expect(useMetaStore.getState().readNewsIds).toEqual(['news-cat-combos'])
+      expect(await db.newsRead.get(1)).toEqual({ id: 1, readIds: ['news-cat-combos'] })
+    })
+
+    it('markNewsRead no duplica un id ya marcado como leído', async () => {
+      await useMetaStore.getState().hydrate()
+      await useMetaStore.getState().markNewsRead('news-cat-combos')
+
+      await useMetaStore.getState().markNewsRead('news-cat-combos')
+
+      expect(useMetaStore.getState().readNewsIds).toEqual(['news-cat-combos'])
     })
   })
 })

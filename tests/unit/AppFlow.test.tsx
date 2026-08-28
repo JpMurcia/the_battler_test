@@ -37,13 +37,14 @@ beforeEach(async () => {
 })
 
 describe('Flujo de navegación completo (spec.md US3)', () => {
-  it('Título → Menú → Mejoras → Equipo → Selección de Nivel → Batalla → Victoria → Resultado → Selección de Nivel → Menú', async () => {
+  it('Título → Hub → Mejoras → Equipo → Selección de Nivel → Batalla → Victoria → Resultado → Selección de Nivel → Hub', async () => {
     render(<App />)
 
-    // 1. Título carga el progreso guardado (FR-007) y avanza a Menú Principal.
+    // 1. Título carga el progreso guardado (FR-007) y avanza al Hub (specs/026-navegacion-hub-mockup, US1
+    // — reemplaza al antiguo Menú Principal de página completa).
     const playButton = await screen.findByRole('button', { name: /Jugar/ })
     fireEvent.click(playButton)
-    expect(await screen.findByRole('heading', { name: 'Menú Principal' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Base de Gatos' })).toBeInTheDocument()
     expect(screen.getByText(/Moneda: 500/)).toBeInTheDocument()
 
     // 2. Menú → Mejoras: invertir experiencia en una unidad del catálogo semilla (US3 Scenario 3).
@@ -59,16 +60,18 @@ describe('Flujo de navegación completo (spec.md US3)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar equipo' }))
     expect(useMetaStore.getState().activeTeamCatIds).toHaveLength(SEED_UNITS.length)
 
-    // Equipo vuelve a Mejoras, y desde ahí de regreso al Menú Principal.
+    // Equipo (panel superpuesto sobre Mejorar, specs/026-navegacion-hub-mockup FR-013) vuelve a mostrar
+    // Mejorar al cerrarse, y desde ahí de regreso al Hub.
     fireEvent.click(screen.getByRole('button', { name: /Volver/ }))
     expect(await screen.findByRole('heading', { name: 'Base' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Volver/ }))
-    expect(await screen.findByRole('heading', { name: 'Menú Principal' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Base de Gatos' })).toBeInTheDocument()
 
-    // 4. Menú → Selección de Nivel: el nivel de demostración semilla está disponible (FR-002, research.md Decisión 3).
+    // 4. Hub → Selección de Nivel: el nivel de demostración semilla está disponible (FR-002, research.md Decisión 3).
     // specs/023-mapa-de-etapas-visual (US1): el nodo del mapa reemplaza la fila de lista — tocar el nodo abre
-    // el panel de detalle, y "¡Atacar!" reemplaza el "Jugar" anterior (FR-006).
-    fireEvent.click(screen.getByRole('button', { name: /Niveles/ }))
+    // el panel de detalle, y "¡Atacar!" reemplaza el "Jugar" anterior (FR-006). specs/026-navegacion-hub-mockup
+    // (US1): el acceso ya no se llama "Niveles" sino "¡Batalla!", mismo destino (FR-003 Acceptance Scenario 3).
+    fireEvent.click(screen.getByRole('button', { name: /¡Batalla!/ }))
     expect(await screen.findByRole('heading', { name: 'Selección de Nivel' })).toBeInTheDocument()
     const demoLevelNode = screen.getByRole('button', { name: 'Nivel Semilla (Demo)' })
     expect(demoLevelNode).not.toBeDisabled()
@@ -97,11 +100,11 @@ describe('Flujo de navegación completo (spec.md US3)', () => {
     // 7. Confirmar resultado — progreso ya reflejado en el estado guardado antes de continuar (FR-012).
     fireEvent.click(screen.getByRole('button', { name: /Volver/ }))
 
-    // El resultado devuelve a Selección de Nivel (parte del mismo flujo de menú que Menú Principal —
+    // El resultado devuelve a Selección de Nivel (parte del mismo flujo de menú que el Hub —
     // ambas son alcanzables entre sí con un clic, ver AppFlow.test.tsx nota de research/tasks T016).
     expect(await screen.findByRole('heading', { name: 'Selección de Nivel' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Volver/ }))
-    expect(await screen.findByRole('heading', { name: 'Menú Principal' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Base de Gatos' })).toBeInTheDocument()
   })
 
   it('forzar Derrota muestra el modal de Derrota y navega de vuelta a Selección de Nivel al confirmar (US3 Scenario 6)', () => {

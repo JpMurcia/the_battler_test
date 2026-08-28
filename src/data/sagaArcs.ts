@@ -48,6 +48,25 @@ export const SAGA_ARCS: SagaArc[] = [
       unlockCatIds: ['triple-strike-cat', 'lucky-cat', 'seed-cat-basic', 'seed-cat-wall', 'seed-cat-ranged', 'seed-cat-titan'],
     },
   },
+  /**
+   * specs/027-capitulo-1-imperio-gatos (FR-009). Los 48 niveles nuevos del Capítulo 1 — costMultiplier/
+   * enemyStrengthMultiplier tomados del manual §8.3 (33% más barato, magnificación 100%). `cat-veterano`
+   * se otorga aquí (recompensa de fin de capítulo), no por firstVictoryUnlockCatId de ningún nivel.
+   */
+  {
+    // specs/027-capitulo-1-imperio-gatos (FR-009). Ids generados por el mismo patrón que levels.ts
+    // (`imperio-cap1-etapa-{N}`), sin importar IMPERIO_CAP1_LEVELS — evita acoplar sagaArcs.ts a la forma
+    // interna del módulo de niveles, mismo criterio de bajo acoplamiento que el resto de SAGA_ARCS (levelIds
+    // como arreglo de strings plano). Verificado 1:1 contra IMPERIO_CAP1_LEVELS por tests/unit/data/levels.test.ts.
+    id: 'arco-imperio-de-los-gatos-cap1',
+    name: 'Imperio de los Gatos — Capítulo 1',
+    levelIds: Array.from({ length: 48 }, (_, index) => `imperio-cap1-etapa-${index + 1}`),
+    costMultiplier: 0.67,
+    enemyStrengthMultiplier: 1,
+    bossLevelId: 'imperio-cap1-etapa-48',
+    bossCatId: 'enemy-la-mascara',
+    completionRewards: { unlockCatIds: ['cat-veterano'] },
+  },
 ]
 
 /** `deployUnit`/`spawnEnemyUnit`/`startLevel` resuelven el arco activo con este helper (FR-004: sin match, `undefined`). */

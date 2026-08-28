@@ -180,6 +180,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       state: 'Moving',
       attackType: cat.attackType,
       attackRange: cat.attackRange,
+      attackMinRange: cat.attackMinRange,
       areaRadius: cat.areaRadius,
       classification: cat.classification,
       specialClassification: cat.specialClassification,

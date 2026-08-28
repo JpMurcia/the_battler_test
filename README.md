@@ -37,7 +37,9 @@ El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB
 
 ## Estado actual
 
-El proyecto completó 25 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**55 archivos, 495 tests**) al momento de escribir esto — las 25 specs están 100% completas, incluidas sus tareas de verificación manual en navegador.
+El proyecto completó 27 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas, más una 28ª en curso (ver nota abajo). `npx tsc -b` limpio y `npm test` en verde (**62 archivos, 540 tests**) al momento de escribir esto — las 27 specs cerradas están 100% completas, incluidas sus tareas de verificación manual en navegador.
+
+> **`028-ajustes-combate-mapa-disenos` — EN CURSO, sesión pausada aquí.** Solo `spec.md`/`plan.md`/`research.md` están escritos (decisiones técnicas ya validadas con el usuario, incluido el amendment de Constitución a v2.0.0, ya aplicado en `.specify/memory/constitution.md`). **Faltan**: `data-model.md`, `quickstart.md`, `tasks.md` (fase `/speckit-tasks`) y toda la implementación — ningún archivo de código fuente de esta spec fue tocado todavía. Para retomar: `/speckit-plan` ya corrió (Fase 0/1 research completa), falta cerrar Fase 1 (`data-model.md`/`quickstart.md`) y correr `/speckit-tasks` → `/speckit-implement`. Cubre 3 ajustes pedidos por el usuario tras jugar `specs/027`: (1) combate — unidades bloqueadas en fila se suman al combate de la aliada del frente en vez de esperar inactivas ("Refuerzo de fila", `src/engine/simulation.ts`); (2) mapa de etapas — pestañas por `Level.region` + scroll vertical de altura dinámica, en vez de los 52 nodos amontonados hoy (`LevelSelectScreen.tsx`); (3) diseños visuales — extender el sistema procedural rico de `specs/022` (`unitFactory.ts`) a las 30 unidades nuevas de `specs/027`, hoy todas con el mismo cuerpo genérico. Detalle completo en [`specs/028-ajustes-combate-mapa-disenos/`](specs/028-ajustes-combate-mapa-disenos/).
 
 | Spec | Contenido | Tareas |
 |---|---|---|
@@ -66,17 +68,22 @@ El proyecto completó 25 specs numeradas bajo `specs/`, cada una construida sobr
 | [`023-mapa-de-etapas-visual`](specs/023-mapa-de-etapas-visual/) | Mapa visual de etapas, catálogo completo de gatos obtenibles y grilla de despliegue fija | ✅ 23/23 |
 | [`024-sistema-gacha`](specs/024-sistema-gacha/) | Sistema de gacha completo: banners con tasas propias, tirada simple/x11, Almacén de cápsulas, duplicados como nivel "+" | ✅ 37/37 |
 | [`025-cat-combos`](specs/025-cat-combos/) | Cat Combos: bonificación pasiva automática por combinación de unidades en la formación activa | ✅ 18/18 |
+| [`026-navegacion-hub-mockup`](specs/026-navegacion-hub-mockup/) | Hub persistente con dock inferior; Equipar/Mejorar/Cápsula/Biblioteca/Ajustes/Menú de Tesoros como paneles superpuestos; Perfil de Jugador y Buzón de Noticias nuevos | ✅ 45/45 |
+| [`027-capitulo-1-imperio-gatos`](specs/027-capitulo-1-imperio-gatos/) | Contenido del Capítulo 1 de Imperio de los Gatos, basado en el manual técnico: 14 gatos jugables + 16 enemigos nuevos, 48 etapas (13 hito a mano + 35 por plantilla), arco y set de tesoros propios | ✅ 19/19 |
+| [`028-ajustes-combate-mapa-disenos`](specs/028-ajustes-combate-mapa-disenos/) | Ajustes tras jugar `027`: combate por "Refuerzo de fila" (Constitución v2.0.0), pestañas de mapa con scroll, diseños procedurales distintos para las 30 unidades nuevas | 🚧 spec+plan+research listos, sin tasks ni implementar |
 
 ### Contenido de juego
 
-- **20 gatos jugables** en [`src/data/cats.ts`](src/data/cats.ts): 12 de producción (cada uno con `spriteKey` propio `hero_1`…`hero_12` y sprites reales de idle/ataque en `public/sprites/`), 4 gatos semilla con diseño procedimental (`specs/022`) y 4 exclusivos de gacha (`Legendario`/`Colaboración`, [`src/data/gachaUnits.ts`](src/data/gachaUnits.ts), sin sprite propio — usan el fallback `Graphics`). Los 13 gatos sin recompensa asignada (núcleo original, habilidades de combate, multigolpe/crítico y los 4 semilla) se otorgan al completar los arcos de saga (`specs/023`); los 4 de gacha solo se obtienen tirando en la Cápsula (`specs/024`).
-- **3 niveles** en [`src/data/levels.ts`](src/data/levels.ts), agrupados en **2 arcos de saga** ([`src/data/sagaArcs.ts`](src/data/sagaArcs.ts)), presentados como **mapa visual de nodos** conectados (`LevelSelectScreen`, `specs/023`) en vez de lista vertical.
+- **34 gatos jugables** en [`src/data/cats.ts`](src/data/cats.ts): 12 de producción (cada uno con `spriteKey` propio `hero_1`…`hero_12` y sprites reales de idle/ataque en `public/sprites/`), 4 gatos semilla con diseño procedimental (`specs/022`), 4 exclusivos de gacha (`Legendario`/`Colaboración`, [`src/data/gachaUnits.ts`](src/data/gachaUnits.ts), sin sprite propio — usan el fallback `Graphics`) y 14 del Capítulo 1 (`specs/027`: 10 Normal + 3 Especial + `cat-veterano`, hoy también sin sprite propio, mismo fallback `Graphics` genérico — ver nota de `specs/028` arriba). Los 13 gatos sin recompensa asignada (núcleo original, habilidades de combate, multigolpe/crítico y los 4 semilla) se otorgan al completar los arcos de saga (`specs/023`); los 4 de gacha solo se obtienen tirando en la Cápsula (`specs/024`); los 14 del Capítulo 1 se obtienen jugando sus etapas (`specs/027`).
+- **51 niveles** en [`src/data/levels.ts`](src/data/levels.ts) (3 fixture + 48 del Capítulo 1, `specs/027`), agrupados en **3 arcos de saga** ([`src/data/sagaArcs.ts`](src/data/sagaArcs.ts)), presentados como **mapa visual de nodos** conectados (`LevelSelectScreen`, `specs/023`) en vez de lista vertical — el mapa con 51+ nodos amontonados sin pestañas es justo lo que ajusta `specs/028` (en curso, ver nota arriba).
 - **Sets de tesoros** con bonificación pasiva ([`src/data/treasureSets.ts`](src/data/treasureSets.ts)) y **eventos especiales** con banner propio ([`src/data/events.ts`](src/data/events.ts)), representado como nodo de borde dorado en el mapa.
 - **3 objetos de batalla** seleccionables antes del combate ([`src/data/battleItems.ts`](src/data/battleItems.ts)): aceleración de velocidad, energía extra, radar de tesoro.
 - **Umbrales de rango de usuario** reclamables ([`src/data/userRankThresholds.ts`](src/data/userRankThresholds.ts)).
 - **Equipo activo tope de 6** (`MAX_ACTIVE_TEAM_SIZE`, `useMetaStore.ts`) — la barra de despliegue en batalla es una grilla fija de 6 columnas, sin scroll horizontal (`specs/023`).
 - **Gacha completo** ([`src/data/gacha.ts`](src/data/gacha.ts)): 3 banners (`UBERFEST`/`EPICFEST`/Estándar) con tasas propias por rareza, tirada simple (150 Cat Food) o x11 (1.500), resultado depositado sin activar en el Almacén (`gachaStorage`) y duplicados convertidos en nivel "+" (`plusLevel`) — todo en `GachaScreen` (`specs/024`).
 - **Cat Combos** ([`src/data/catCombos.ts`](src/data/catCombos.ts)): 2 combinaciones fijas de catIds (`combo-nucleo-original`, `combo-especialistas-control`) que otorgan una bonificación pasiva (energía o recompensa de moneda) al llevarlas completas a la formación activa — visibles y con estado en vivo (completo/incompleto, no-poseído vs. no-en-formación) en `TeamScreen` (`specs/025`).
+- **Buzón de Noticias** ([`src/data/news.ts`](src/data/news.ts)): catálogo estático de novedades del juego (título/fecha/descripción), con estado de lectura persistido (`newsRead`) e indicador en el Hub mientras haya alguna sin leer (`specs/026`).
+- **Capítulo 1 de Imperio de los Gatos** (`specs/027`): 14 gatos jugables nuevos (10 Normal + 3 Especial + `cat-veterano` de recompensa de arco) y 16 enemigos nuevos (incl. el jefe `enemy-la-mascara`) en [`src/data/cats.ts`](src/data/cats.ts); 48 etapas nuevas (`imperio-cap1-etapa-1`…`-48`, 13 hito a mano + 35 generadas por plantilla) en [`src/data/levels.ts`](src/data/levels.ts), agrupadas en el arco `arco-imperio-de-los-gatos-cap1` ([`src/data/sagaArcs.ts`](src/data/sagaArcs.ts), 33% más barato/100% de fuerza) con su propio `TreasureSet` de 48 tesoros ([`src/data/treasureSets.ts`](src/data/treasureSets.ts), +15% de moneda). `cat-recluta` es un segundo gato inicial garantizado junto al de siempre (`ensureDefaultProfile`, `src/db/index.ts`).
 
 ---
 
@@ -101,11 +108,17 @@ Principio central (Constitución § VI): la simulación de combate vive en funci
 ```
 src/
 ├── main.tsx              # Entry point (ReactDOM.createRoot)
-├── App.tsx                # Router manual por useState<Screen> — sin librería de routing
-├── types/screen.ts        # type Screen = 'Title' | 'MainMenu' | 'LevelSelect' | 'Gacha' | 'Upgrade'
-│                           #             | 'Team' | 'Battle' | 'Result' | 'Settings'
-│                           #             | 'CatGuide' | 'EnemyGuide' | 'TreasureMenu'
+├── App.tsx                # Router manual por useState<Screen> — sin librería de routing. Solo 5 vistas base
+│                           # (Title/MainMenu/LevelSelect/Battle/Result); el resto vive dentro de HubScreen
+│                           # como paneles superpuestos (specs/026)
+├── types/screen.ts        # type Screen (sin cambios, 12 valores) + type PanelId (nuevo, specs/026):
+│                           # 'Equip' | 'Upgrade' | 'Gacha' | 'Library' | 'Settings' | 'TreasureMenu'
+│                           # | 'PlayerProfile' | 'News' — stack de paneles del Hub, independiente de Screen
 ├── screens/                # Una pantalla por archivo, navegación vía prop onNavigate
+│   ├── HubScreen.tsx      # Hub persistente (specs/026): HUD + dock + accesos destacados + panel stack
+│   ├── PlayerProfilePanel.tsx / NewsPanel.tsx  # Paneles nuevos del Hub (specs/026)
+│   ├── panels/LibraryPanel.tsx                 # Agrupa CatGuide/EnemyGuide en tabs bajo "Biblioteca"
+│   └── shared/PanelOverlay.tsx                 # Contenedor de overlay reutilizable (backdrop + focus trap)
 ├── state/
 │   ├── useGameStore.ts    # Estado efímero de la partida en curso (nunca persistido)
 │   └── useMetaStore.ts    # Progreso persistente del jugador, hidratado desde Dexie al arrancar
@@ -135,28 +148,34 @@ src/
 │   ├── seedData.ts         # Datos semilla de bootstrap (specs/022)
 │   ├── gacha.ts             # Banners, tasas por rareza y rollOne/rollMany (specs/024)
 │   ├── gachaUnits.ts       # 4 gatos exclusivos de gacha (Legendario/Colaboración, specs/024)
-│   └── catCombos.ts        # Cat Combos, su bonificación pasiva y getCompletedCombos (specs/025)
-└── db/index.ts             # Esquema Dexie (10 versiones) + ensureDefaultProfile()
+│   ├── catCombos.ts        # Cat Combos, su bonificación pasiva y getCompletedCombos (specs/025)
+│   └── news.ts              # Catálogo estático del Buzón de Noticias (specs/026)
+└── db/index.ts             # Esquema Dexie (11 versiones) + ensureDefaultProfile()
 ```
 
 ### Flujo de pantallas
 
-`App.tsx` mantiene un `useState<Screen>` simple (sin router) y renderiza la pantalla activa por `switch`. Al montar, hidrata `useMetaStore` desde IndexedDB antes de mostrar nada.
+`App.tsx` mantiene un `useState<Screen>` simple (sin router) y renderiza la vista base activa por `switch` — solo 5 casos (`Title`/`MainMenu`/`LevelSelect`/`Battle`/`Result`). Al montar, hidrata `useMetaStore` desde IndexedDB antes de mostrar nada.
+
+Desde `specs/026-navegacion-hub-mockup`, `MainMenu` es `HubScreen`: un Hub persistente (rango/energía/moneda + dock inferior) sobre el que Equipar/Mejorar/Cápsula/Biblioteca/Ajustes/Menú de Tesoros/Perfil de Jugador/Buzón de Noticias se abren como **paneles superpuestos** (`PanelOverlay`, con foco atrapado y fondo del Hub siempre visible detrás) en vez de pantallas de página completa — un stack local (`PanelId[]`) permite apilar un panel sobre otro (p. ej. Ajustes abierto desde Mejorar vuelve a Mejorar al cerrarse, no al Hub):
 
 ```
-Title ──▶ MainMenu ──┬──▶ LevelSelect ──▶ Battle ──▶ Result ──(Volver)──▶ LevelSelect
-                      │        ▲
-                      │        └────────────────────────────────────────────┘ (Volver)
-                      ├──▶ Gacha (banners, tirada simple/x11, Almacén, activar/intercambiar cápsulas)
-                      ├──▶ Settings ──(Guardar/Volver)──▶ MainMenu
-                      └──▶ Upgrade ──┬──▶ Team
-                                     ├──▶ CatGuide
-                                     ├──▶ EnemyGuide
-                                     └──▶ TreasureMenu
-                           (las 4 subpantallas de Upgrade vuelven a Upgrade)
+Title ──▶ Hub (HubScreen) ──┬──▶ LevelSelect ──▶ Battle ──▶ Result ──(Volver)──▶ LevelSelect
+                             │        ▲                                             │
+                             │        └─────────────────────────────────────────────┘ (Volver)
+                             │        └──▶ [panel propio] TreasureMenu (specs/026 US5, no comparte stack con el Hub)
+                             │
+                             ├──▶ [panel] Equip (Team)
+                             ├──▶ [panel] Upgrade ──┬──▶ [panel] Equip
+                             │                      ├──▶ [panel] Library (CatGuide/EnemyGuide, tabs)
+                             │                      └──▶ [panel] TreasureMenu
+                             ├──▶ [panel] Gacha (Tirar / Almacén — el dock "Almacén" abre esta pestaña directo)
+                             ├──▶ [panel] Settings
+                             ├──▶ [panel] PlayerProfile ──▶ [panel] Settings (vuelve a PlayerProfile al cerrarse)
+                             └──▶ [panel] News (marca todo como leído al abrir)
 ```
 
-`LevelSelectScreen` renderiza el progreso como un **mapa visual de nodos** (círculos conectados por líneas punteadas, posicionados por `Level.mapPosition`; el evento especial activo aparece como nodo aparte de borde dorado) en vez de la lista vertical original — tocar un nodo disponible o completado abre un panel de detalle con dificultad en estrellas, costo de energía y el botón "¡Atacar!", que llama a `useGameStore.startLevel(levelId)` y navega a `Battle` (`specs/023`). `Upgrade` funciona como hub hacia `Team` (formación activa, tope `MAX_ACTIVE_TEAM_SIZE`, con una sección "Cat Combos" que muestra en vivo qué combinaciones de gatos están completas o incompletas según la selección aún sin guardar, `specs/025`), `CatGuide`/`EnemyGuide` (bibliotecas de consulta, specs/018) y `TreasureMenu`. `Gacha` ofrece selector de banner con desglose de tasas, tirada simple/x11 con pantalla de revelado, y el Almacén de cápsulas para activar (nueva unidad jugable) o intercambiar duplicados por XP/NP (`specs/024`).
+`LevelSelectScreen` renderiza el progreso como un **mapa visual de nodos** (círculos conectados por líneas punteadas, posicionados por `Level.mapPosition`; el evento especial activo aparece como nodo aparte de borde dorado) en vez de la lista vertical original — tocar un nodo disponible o completado abre un panel de detalle con dificultad en estrellas, costo de energía y el botón "¡Atacar!", que llama a `useGameStore.startLevel(levelId)` y navega a `Battle` (`specs/023`); un botón "Tesoros X%" propio abre el Menú de Tesoros superpuesto sobre el mapa (`specs/026`). `Upgrade` (panel "Mejorar") funciona como hub hacia `Equip` (formación activa, tope `MAX_ACTIVE_TEAM_SIZE`, con una sección "Cat Combos" que muestra en vivo qué combinaciones de gatos están completas o incompletas según la selección aún sin guardar, `specs/025`), `Library` (bibliotecas de consulta, specs/018, agrupadas bajo tabs "Cat Guide"/"Enemy Guide" desde `specs/026`) y `TreasureMenu`. `Gacha` ofrece selector de banner con desglose de tasas, tirada simple/x11 con pantalla de revelado, y el Almacén de cápsulas para activar (nueva unidad jugable) o intercambiar duplicados por XP/NP (`specs/024`).
 
 ### Motor de combate (`src/engine/`)
 
@@ -181,20 +200,20 @@ Determinista y puro — `stepSimulation(state, deltaSeconds) → nextState`, sin
 ### Estado (Zustand)
 
 - **`useGameStore`** — estado de la partida en curso: `status`, energía, HP de bases, `units[]`, cooldowns de despliegue, objetos de batalla seleccionados, tiempo transcurrido. Completamente efímero: `reset()` lo vuelve a `Idle`, nunca se persiste (Constitución § V).
-- **`useMetaStore`** — progreso persistente del jugador: moneda, niveles desbloqueados/completados, gatos poseídos (nivel, XP, `evolutionStage`, `plusLevel` de duplicados de gacha), formación activa (`setActiveTeam`, tope `MAX_ACTIVE_TEAM_SIZE = 6`), energía de misión, ítems de evolución, tesoros obtenidos, recompensas de arco/set otorgadas (incluye `unlockCatIds` de los 13 gatos previamente inalcanzables, `specs/023`), inventario de objetos de batalla, enemigos avistados, rango reclamado, moneda de gacha/NP y cápsulas sin activar (`gachaStorage`, `specs/024`), y ajustes. Se hidrata una vez desde Dexie al arrancar (`hydrate()`) y cada acción de mutación escribe de inmediato en IndexedDB (sin paso de "guardar" separado).
+- **`useMetaStore`** — progreso persistente del jugador: moneda, niveles desbloqueados/completados, gatos poseídos (nivel, XP, `evolutionStage`, `plusLevel` de duplicados de gacha), formación activa (`setActiveTeam`, tope `MAX_ACTIVE_TEAM_SIZE = 6`), energía de misión, ítems de evolución, tesoros obtenidos, recompensas de arco/set otorgadas (incluye `unlockCatIds` de los 13 gatos previamente inalcanzables, `specs/023`), inventario de objetos de batalla, enemigos avistados, rango reclamado, moneda de gacha/NP y cápsulas sin activar (`gachaStorage`, `specs/024`), novedades del Buzón ya leídas (`readNewsIds`/`markNewsRead`, `specs/026`), y ajustes. Se hidrata una vez desde Dexie al arrancar (`hydrate()`) y cada acción de mutación escribe de inmediato en IndexedDB (sin paso de "guardar" separado).
 
 ### Persistencia (`src/db/index.ts`)
 
-Dexie sobre IndexedDB, base `BattleCatsDB`, con 10 versiones de esquema acumuladas spec sobre spec. Tablas actuales: `playerProfile`, `ownedCats`, `levelProgress`, `settings`, `teamFormation`, `missionEnergy`, `evolutionItems`, `treasures`, `arcProgress`, `treasureSetBonuses`, `battleItems`, `encounteredEnemies`, `userRank`, `gachaStorage`. `ensureDefaultProfile()` es idempotente y siembra el perfil por defecto y el primer gato garantizado en la primera sesión.
+Dexie sobre IndexedDB, base `BattleCatsDB`, con 11 versiones de esquema acumuladas spec sobre spec. Tablas actuales: `playerProfile`, `ownedCats`, `levelProgress`, `settings`, `teamFormation`, `missionEnergy`, `evolutionItems`, `treasures`, `arcProgress`, `treasureSetBonuses`, `battleItems`, `encounteredEnemies`, `userRank`, `gachaStorage`, `newsRead`. `ensureDefaultProfile()` es idempotente y siembra el perfil por defecto y el primer gato garantizado en la primera sesión.
 
 ### Testing
 
-Vitest + Testing Library + `fake-indexeddb` (jsdom). La suite cubre `src/engine/` (colisión, combate, simulación, tipos de ataque, clasificación/habilidades, efectos, multi-golpe/crítico), `src/data/*` (niveles, eventos, datos semilla), los stores (`useGameStore`, `useMetaStore`, incluyendo Dexie con `fake-indexeddb`), `src/game/*` (animación, sprites, encuentros de enemigos, fábrica de unidades) y todas las pantallas, incluido un test de flujo end-to-end (`AppFlow.test.tsx`). El motor de combate se testea sin canvas ni árbol de componentes, por diseño (Constitución § VI).
+Vitest + Testing Library + `fake-indexeddb` (jsdom). La suite cubre `src/engine/` (colisión, combate, simulación, tipos de ataque, clasificación/habilidades, efectos, multi-golpe/crítico), `src/data/*` (niveles, eventos, datos semilla), los stores (`useGameStore`, `useMetaStore`, incluyendo Dexie con `fake-indexeddb`), `src/game/*` (animación, sprites, encuentros de enemigos, fábrica de unidades) y todas las pantallas/paneles, incluido un test de flujo end-to-end (`AppFlow.test.tsx`) y uno del contenedor de overlay compartido (`PanelOverlay.test.tsx`, focus trap incluido). El motor de combate se testea sin canvas ni árbol de componentes, por diseño (Constitución § VI).
 
 ---
 
 ## Documentación adicional
 
 - [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — principios de diseño no negociables del proyecto.
-- [`specs/`](specs/) — spec/plan/tasks de cada una de las 25 features, en orden cronológico.
+- [`specs/`](specs/) — spec/plan/tasks de cada una de las 26 features, en orden cronológico.
 - [`docs/`](docs/) — material de diseño y rediseño visual adicional (guías de estilo, roadmap de fases, referencia de manual técnico).

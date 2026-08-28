@@ -6,6 +6,7 @@ beforeEach(async () => {
   await db.playerProfile.clear()
   await db.settings.clear()
   await db.ownedCats.clear()
+  await db.newsRead.clear()
 })
 
 describe('ensureDefaultProfile', () => {
@@ -31,19 +32,20 @@ describe('ensureDefaultProfile', () => {
     expect(await db.settings.count()).toBe(1)
   })
 
-  it('siembra el gato inicial garantizado en ownedCats sobre un roster vacío (FR-011)', async () => {
+  it('siembra los gatos iniciales garantizados en ownedCats sobre un roster vacío (FR-011, specs/027-capitulo-1-imperio-gatos FR-001)', async () => {
     await ensureDefaultProfile()
 
     const ownedCats = await db.ownedCats.toArray()
-    expect(ownedCats).toHaveLength(1)
-    expect(ownedCats[0]).toMatchObject({ catId: CATS[0].id, level: 1, experienceInvested: 0 })
+    expect(ownedCats).toHaveLength(2)
+    expect(ownedCats.find((row) => row.catId === CATS[0].id)).toMatchObject({ catId: CATS[0].id, level: 1, experienceInvested: 0 })
+    expect(ownedCats.find((row) => row.catId === 'cat-recluta')).toMatchObject({ catId: 'cat-recluta', level: 1, experienceInvested: 0 })
   })
 
-  it('no duplica el gato inicial en una segunda llamada', async () => {
+  it('no duplica los gatos iniciales en una segunda llamada', async () => {
     await ensureDefaultProfile()
     await ensureDefaultProfile()
 
-    expect(await db.ownedCats.count()).toBe(1)
+    expect(await db.ownedCats.count()).toBe(2)
   })
 
   it('no siembra ningún gato inicial si el roster ya tiene al menos uno', async () => {
@@ -54,5 +56,21 @@ describe('ensureDefaultProfile', () => {
     const ownedCats = await db.ownedCats.toArray()
     expect(ownedCats).toHaveLength(1)
     expect(ownedCats[0].catId).toBe('tank-cat')
+  })
+
+  it('crea la fila newsRead con readIds vacío si no existía (specs/026-navegacion-hub-mockup)', async () => {
+    await ensureDefaultProfile()
+
+    const newsRead = await db.newsRead.get(1)
+    expect(newsRead).toEqual({ id: 1, readIds: [] })
+  })
+
+  it('no sobreescribe newsRead si ya existía (idempotencia)', async () => {
+    await db.newsRead.put({ id: 1, readIds: ['news-cat-combos'] })
+
+    await ensureDefaultProfile()
+
+    const newsRead = await db.newsRead.get(1)
+    expect(newsRead).toEqual({ id: 1, readIds: ['news-cat-combos'] })
   })
 })

@@ -24,12 +24,33 @@ describe('drawSeedUnit', () => {
     expect(g1.height).toBe(g2.height)
   })
 
-  it('no lanza para role="enemy" con cualquier distinctiveFeature', () => {
-    const features: ProceduralDesign['distinctiveFeature'][] = ['cat-ears', 'fangs', 'fin', 'crest', 'none']
+  it('no lanza para role="enemy" con cualquier distinctiveFeature (incluye los 5 rasgos de specs/028)', () => {
+    const features: ProceduralDesign['distinctiveFeature'][] = [
+      'cat-ears',
+      'fangs',
+      'fin',
+      'crest',
+      'none',
+      'horns',
+      'wings',
+      'shield',
+      'spikes',
+      'tail',
+    ]
     for (const distinctiveFeature of features) {
       const g = new Graphics()
       expect(() => drawSeedUnit(g, { ...RECT_DESIGN, distinctiveFeature }, 'enemy')).not.toThrow()
     }
+  })
+
+  it('specs/028-ajustes-combate-mapa-disenos (research.md Decisión 5, punto 5): role="ally" ya no fuerza orejas de gato, respeta distinctiveFeature igual que "enemy"', () => {
+    const withEars = new Graphics()
+    const withHorns = new Graphics()
+    drawSeedUnit(withEars, { ...RECT_DESIGN, distinctiveFeature: 'cat-ears' }, 'ally')
+    drawSeedUnit(withHorns, { ...RECT_DESIGN, distinctiveFeature: 'horns' }, 'ally')
+
+    // Ambos dibujan (no lanzan) y producen bounds distintos — 'ally' ya no ignora distinctiveFeature.
+    expect(withEars.width).not.toBe(withHorns.width)
   })
 
   it('produce un dibujo con tamaño distinto para designs de tamaño distinto', () => {

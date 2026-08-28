@@ -149,4 +149,11 @@ describe('GachaScreen — Almacén', () => {
 
     expect(screen.getByText('Sin cápsulas pendientes.')).toBeInTheDocument()
   })
+
+  it('specs/026-navegacion-hub-mockup: initialTab="storage" arranca mostrando la pestaña Almacén', () => {
+    useMetaStore.setState({ gachaStorage: [{ id: 1, catId: 'tank-cat', rarity: 'Raro' }] })
+    render(<GachaScreen onNavigate={noop} initialTab="storage" />)
+
+    expect(screen.queryByText('Tirada Simple (150)')).not.toBeInTheDocument()
+  })
 })

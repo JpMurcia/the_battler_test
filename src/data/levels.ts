@@ -136,3 +136,215 @@ export const LEVELS: Level[] = [
     mapPosition: { x: 75, y: 30 },
   },
 ]
+
+/**
+ * specs/027-capitulo-1-imperio-gatos (T003, research.md Decisión 2). Roster de enemigos disponible
+ * para la fórmula de plantilla, acumulado por "tier" según la etapa — nunca incluye al jefe
+ * ('enemy-la-mascara'), reservado exclusivamente a la etapa 48 (T005).
+ */
+const IMPERIO_CAP1_ENEMY_TIERS: { minStage: number; catIds: string[] }[] = [
+  { minStage: 1, catIds: ['enemy-merodeador', 'enemy-escudero', 'enemy-triturador', 'enemy-rondador'] },
+  { minStage: 9, catIds: ['enemy-turba', 'enemy-planeador', 'enemy-saltarin-alado'] },
+  { minStage: 17, catIds: ['enemy-behemot-gris', 'enemy-carmesi', 'enemy-emperador-volador'] },
+  { minStage: 25, catIds: ['enemy-foca-blindada', 'enemy-boxeador', 'enemy-embestida'] },
+  { minStage: 33, catIds: ['enemy-instructor-feroz', 'enemy-unicornio-guerra'] },
+]
+
+function getImperioCap1EnemyRoster(stageIndex: number): string[] {
+  return IMPERIO_CAP1_ENEMY_TIERS.filter((tier) => stageIndex >= tier.minStage).flatMap((tier) => tier.catIds)
+}
+
+/** specs/027-capitulo-1-imperio-gatos (T004, research.md Decisión 3). Serpenteo de 8 columnas × 6 filas. */
+function buildImperioCap1MapPosition(stageIndex: number): { x: number; y: number } {
+  const row = Math.floor((stageIndex - 1) / 8)
+  const colInRow = (stageIndex - 1) % 8
+  const col = row % 2 === 0 ? colInRow : 7 - colInRow
+  return { x: 8 + col * 11.7, y: 90 - row * 15.5 }
+}
+
+/**
+ * specs/027-capitulo-1-imperio-gatos (T003, research.md Decisión 1). Fórmula determinista (sin
+ * Math.random) para las 35 etapas sin hito de desbloqueo — dificultad no decreciente, roster de
+ * enemigos creciente por tier. Los 13 hitos (T005) parten de esta misma función y sobrescriben
+ * solo enemyWave/battleItemRewards/firstVictoryUnlockCatId (y, en la 48, enemyBaseHp).
+ */
+function buildImperioCap1TemplateLevel(stageIndex: number): Level {
+  const roster = getImperioCap1EnemyRoster(stageIndex)
+  const pick = (offset: number) => roster[(stageIndex + offset) % roster.length]
+  return {
+    id: `imperio-cap1-etapa-${stageIndex}`,
+    name: `Imperio de los Gatos — Cap. 1, Etapa ${stageIndex}`,
+    playerBaseHp: 1000,
+    enemyBaseHp: 700 + stageIndex * 60,
+    maxEnergy: 100,
+    energyRegenPerSecond: 5,
+    currencyReward: 90 + stageIndex * 8,
+    enemyWave: [
+      { catId: pick(0), spawnAtSeconds: 5 },
+      { catId: pick(1), spawnAtSeconds: 16 },
+      { catId: pick(2), spawnAtSeconds: 30 },
+    ],
+    energyCost: 6 + Math.floor(stageIndex / 3),
+    region: 'imperio-de-los-gatos-cap1',
+    difficulty: 1 + Math.floor((stageIndex - 1) / 4),
+    mapPosition: buildImperioCap1MapPosition(stageIndex),
+    treasureId: `tesoro-imperio-cap1-etapa-${stageIndex}`,
+  }
+}
+
+/**
+ * specs/027-capitulo-1-imperio-gatos (T005, data-model.md § 13 hitos hechos a mano). Cada uno parte
+ * de buildImperioCap1TemplateLevel(N) (mismos difficulty/energyCost/currencyReward/mapPosition/treasureId
+ * que la plantilla) y sobrescribe solo su oleada curada, sus objetos de batalla y su desbloqueo.
+ */
+const IMPERIO_CAP1_MILESTONE_LEVELS: Level[] = [
+  {
+    ...buildImperioCap1TemplateLevel(1),
+    firstVictoryUnlockCatId: 'cat-yunque',
+    enemyWave: [
+      { catId: 'enemy-merodeador', spawnAtSeconds: 5 },
+      { catId: 'enemy-escudero', spawnAtSeconds: 16 },
+      { catId: 'enemy-merodeador', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'extra-energy', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(2),
+    firstVictoryUnlockCatId: 'cat-sigiloso',
+    enemyWave: [
+      { catId: 'enemy-escudero', spawnAtSeconds: 5 },
+      { catId: 'enemy-rondador', spawnAtSeconds: 16 },
+      { catId: 'enemy-triturador', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'extra-energy', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(4),
+    firstVictoryUnlockCatId: 'cat-cuchilla',
+    enemyWave: [
+      { catId: 'enemy-rondador', spawnAtSeconds: 5 },
+      { catId: 'enemy-triturador', spawnAtSeconds: 16 },
+      { catId: 'enemy-rondador', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'speed-boost', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(6),
+    firstVictoryUnlockCatId: 'cat-forzudo',
+    enemyWave: [
+      { catId: 'enemy-triturador', spawnAtSeconds: 5 },
+      { catId: 'enemy-rondador', spawnAtSeconds: 16 },
+      { catId: 'enemy-turba', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'speed-boost', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(8),
+    firstVictoryUnlockCatId: 'cat-verdoso',
+    enemyWave: [
+      { catId: 'enemy-turba', spawnAtSeconds: 5 },
+      { catId: 'enemy-planeador', spawnAtSeconds: 16 },
+      { catId: 'enemy-turba', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'treasure-radar', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(10),
+    firstVictoryUnlockCatId: 'cat-deidad',
+    enemyWave: [
+      { catId: 'enemy-planeador', spawnAtSeconds: 5 },
+      { catId: 'enemy-saltarin-alado', spawnAtSeconds: 16 },
+      { catId: 'enemy-turba', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'treasure-radar', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(12),
+    firstVictoryUnlockCatId: 'cat-cornamenta',
+    enemyWave: [
+      { catId: 'enemy-saltarin-alado', spawnAtSeconds: 5 },
+      { catId: 'enemy-planeador', spawnAtSeconds: 16 },
+      { catId: 'enemy-behemot-gris', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'extra-energy', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(16),
+    firstVictoryUnlockCatId: 'cat-migratorio',
+    enemyWave: [
+      { catId: 'enemy-behemot-gris', spawnAtSeconds: 5 },
+      { catId: 'enemy-carmesi', spawnAtSeconds: 16 },
+      { catId: 'enemy-saltarin-alado', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'speed-boost', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(20),
+    firstVictoryUnlockCatId: 'cat-centinela',
+    enemyWave: [
+      { catId: 'enemy-carmesi', spawnAtSeconds: 5 },
+      { catId: 'enemy-emperador-volador', spawnAtSeconds: 16 },
+      { catId: 'enemy-behemot-gris', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'treasure-radar', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(24),
+    firstVictoryUnlockCatId: 'cat-anfibio',
+    enemyWave: [
+      { catId: 'enemy-emperador-volador', spawnAtSeconds: 5 },
+      { catId: 'enemy-foca-blindada', spawnAtSeconds: 16 },
+      { catId: 'enemy-carmesi', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'extra-energy', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(28),
+    firstVictoryUnlockCatId: 'cat-escamado',
+    enemyWave: [
+      { catId: 'enemy-foca-blindada', spawnAtSeconds: 5 },
+      { catId: 'enemy-boxeador', spawnAtSeconds: 16 },
+      { catId: 'enemy-emperador-volador', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'speed-boost', count: 1 }],
+  },
+  {
+    ...buildImperioCap1TemplateLevel(32),
+    firstVictoryUnlockCatId: 'cat-coloso',
+    enemyWave: [
+      { catId: 'enemy-boxeador', spawnAtSeconds: 5 },
+      { catId: 'enemy-embestida', spawnAtSeconds: 16 },
+      { catId: 'enemy-foca-blindada', spawnAtSeconds: 30 },
+    ],
+    battleItemRewards: [{ itemId: 'treasure-radar', count: 1 }],
+  },
+  {
+    // specs/027 US5/specs/020: jefe de arco — enemyBaseHp propio (no la fórmula), sin firstVictoryUnlockCatId
+    // (la recompensa de esta etapa es SagaArc.completionRewards.unlockCatIds, ver sagaArcs.ts).
+    ...buildImperioCap1TemplateLevel(48),
+    enemyBaseHp: 20000,
+    enemyWave: [
+      { catId: 'enemy-instructor-feroz', spawnAtSeconds: 5 },
+      { catId: 'enemy-unicornio-guerra', spawnAtSeconds: 20 },
+      { catId: 'enemy-la-mascara', spawnAtSeconds: 45 },
+    ],
+    battleItemRewards: [{ itemId: 'extra-energy', count: 2 }],
+  },
+]
+
+const IMPERIO_CAP1_MILESTONE_STAGE_INDICES = new Set(
+  IMPERIO_CAP1_MILESTONE_LEVELS.map((level) => Number(level.id.replace('imperio-cap1-etapa-', ''))),
+)
+
+/**
+ * specs/027-capitulo-1-imperio-gatos (T006, FR-007). Los 13 hitos de T005 + las 35 etapas restantes
+ * generadas por T003, en orden de N ascendente — export nombrado para que sagaArcs.ts (T007) construya
+ * su `levelIds` sin repetir la lista de ids a mano.
+ */
+export const IMPERIO_CAP1_LEVELS: Level[] = Array.from({ length: 48 }, (_, index) => index + 1).map((stageIndex) =>
+  IMPERIO_CAP1_MILESTONE_STAGE_INDICES.has(stageIndex)
+    ? IMPERIO_CAP1_MILESTONE_LEVELS.find((level) => level.id === `imperio-cap1-etapa-${stageIndex}`)!
+    : buildImperioCap1TemplateLevel(stageIndex),
+)
+
+LEVELS.push(...IMPERIO_CAP1_LEVELS)

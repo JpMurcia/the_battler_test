@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react'
 import { BattleScreen } from './screens/BattleScreen'
-import { CatGuideScreen } from './screens/CatGuideScreen'
-import { EnemyGuideScreen } from './screens/EnemyGuideScreen'
-import { GachaScreen } from './screens/GachaScreen'
+import { HubScreen } from './screens/HubScreen'
 import { LevelSelectScreen } from './screens/LevelSelectScreen'
-import { MainMenuScreen } from './screens/MainMenuScreen'
 import { ResultScreen } from './screens/ResultScreen'
-import { SettingsScreen } from './screens/SettingsScreen'
-import { TeamScreen } from './screens/TeamScreen'
 import { TitleScreen } from './screens/TitleScreen'
-import { TreasureMenuScreen } from './screens/TreasureMenuScreen'
-import { UpgradeScreen } from './screens/UpgradeScreen'
 import { useMetaStore } from './state/useMetaStore'
 import type { Screen } from './types/screen'
 
@@ -31,27 +24,19 @@ function App() {
     case 'Title':
       return <TitleScreen onNavigate={setScreen} />
     case 'MainMenu':
-      return <MainMenuScreen onNavigate={setScreen} />
-    case 'Settings':
-      return <SettingsScreen onNavigate={setScreen} />
+      return <HubScreen onNavigate={setScreen} />
     case 'LevelSelect':
       return <LevelSelectScreen onNavigate={setScreen} />
-    case 'Gacha':
-      return <GachaScreen onNavigate={setScreen} />
-    case 'Upgrade':
-      return <UpgradeScreen onNavigate={setScreen} />
-    case 'Team':
-      return <TeamScreen onNavigate={setScreen} />
     case 'Battle':
       return <BattleScreen onNavigate={setScreen} />
     case 'Result':
       return <ResultScreen onNavigate={setScreen} />
-    case 'CatGuide':
-      return <CatGuideScreen onNavigate={setScreen} />
-    case 'EnemyGuide':
-      return <EnemyGuideScreen onNavigate={setScreen} />
-    case 'TreasureMenu':
-      return <TreasureMenuScreen onNavigate={setScreen} />
+    // specs/026-navegacion-hub-mockup (US2): Gacha/Upgrade/Team/Settings/CatGuide/EnemyGuide/TreasureMenu
+    // ahora se montan exclusivamente dentro de HubScreen como paneles superpuestos — nunca como `screen`
+    // de nivel superior. `type Screen` conserva esos valores (Regla transversal, tasks.md) para no romper
+    // la firma `onNavigate: (screen: Screen) => void` de esas siete pantallas.
+    default:
+      return null
   }
 }
 

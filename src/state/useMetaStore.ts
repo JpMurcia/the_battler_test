@@ -75,6 +75,8 @@ interface MetaState {
   npCurrency: number
   /** specs/024-sistema-gacha (FR-005). Cápsulas de gacha sin activar, pendientes en el Almacén. */
   gachaStorage: GachaStorageRow[]
+  /** specs/026-navegacion-hub-mockup (FR-009). Monótono — un id de NewsEntry leído nunca vuelve a "no leído". */
+  readNewsIds: string[]
 
   hydrate: () => Promise<void>
   addCurrency: (amount: number) => void
@@ -116,6 +118,8 @@ interface MetaState {
   exchangeCapsuleForXp: (storageRowId: number) => Promise<void>
   /** specs/024-sistema-gacha (FR-009). Solo cápsulas Megarraro/Legendario — `false` sin efecto si la rareza no califica. */
   exchangeCapsuleForNp: (storageRowId: number) => Promise<boolean>
+  /** specs/026-navegacion-hub-mockup (FR-009). Idempotente — agregar un id ya presente no lo duplica. */
+  markNewsRead: (id: string) => Promise<void>
 }
 
 const DEFAULT_SETTINGS: MetaSettings = { musicVolume: 1, sfxVolume: 1, language: 'es' }
@@ -172,6 +176,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   gachaCurrency: 0,
   npCurrency: 0,
   gachaStorage: [],
+  readNewsIds: [],
 
   hydrate: async () => {
     await ensureDefaultProfile()
@@ -190,6 +195,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       encounteredEnemiesRow,
       userRankRow,
       gachaStorage,
+      newsReadRow,
     ] = await Promise.all([
       db.playerProfile.get(1),
       db.settings.get(1),
@@ -205,6 +211,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       db.encounteredEnemies.get(1),
       db.userRank.get(1),
       db.gachaStorage.toArray(),
+      db.newsRead.get(1),
     ])
 
     const ownedCats = Object.fromEntries(
@@ -251,6 +258,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
       gachaCurrency: profile?.gachaCurrency ?? 0,
       npCurrency: profile?.npCurrency ?? 0,
       gachaStorage,
+      readNewsIds: newsReadRow?.readIds ?? [],
     })
     void db.missionEnergy.put({ id: 1, current, max, lastUpdatedAt: now })
   },
@@ -620,5 +628,13 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     void db.playerProfile.update(1, { npCurrency })
     await db.gachaStorage.delete(storageRowId)
     return true
+  },
+
+  markNewsRead: async (id) => {
+    const { readNewsIds } = get()
+    if (readNewsIds.includes(id)) return
+    const updated = [...readNewsIds, id]
+    set({ readNewsIds: updated })
+    await db.newsRead.put({ id: 1, readIds: updated })
   },
 }))

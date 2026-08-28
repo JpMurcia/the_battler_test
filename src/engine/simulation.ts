@@ -73,6 +73,7 @@ function spawnEnemyUnit(catId: string, enemyStrengthMultiplier: number, laneLeng
     state: 'Moving',
     attackType: cat.attackType,
     attackRange: cat.attackRange,
+    attackMinRange: cat.attackMinRange,
     areaRadius: cat.areaRadius,
     classification: cat.classification,
     specialClassification: cat.specialClassification,
@@ -89,19 +90,29 @@ function spawnEnemyUnit(catId: string, enemyStrengthMultiplier: number, laneLeng
 /**
  * specs/008-tipos-de-ataque: generaliza "el primer oponente que se superpone" a los 3 tipos de ataque.
  * `candidates` ya debe venir filtrado al equipo enemigo y a instancias no procesadas todavía este tick.
+ * `attackMinRange` (unidad "de salto/garrocha") descarta candidatos por debajo de esa distancia de borde
+ * antes de aplicar cualquiera de las reglas de abajo — con `attackMinRange` ausente/0 no cambia nada.
  * - 'Single' (por defecto): el candidato más cercano dentro de `attackRange`.
- * - 'LongRange': el candidato más lejano dentro de `attackRange`.
+ * - 'LongRange': el candidato más lejano dentro de `attackRange`; si además declara `areaRadius`, suma
+ *   salpicadura alrededor de ese objetivo más lejano igual que 'Area' (unidad de ataque a distancia + impacto en área).
  * - 'Area': el más cercano (objetivo primario) + todo candidato adicional dentro de `areaRadius` de ese primario.
  */
 export function findTargetsInRange(unit: BattleUnit, candidates: BattleUnit[]): BattleUnit[] {
   const attackType = unit.attackType ?? 'Single'
   const attackRange = unit.attackRange ?? 0
-  const inRange = candidates.filter((candidate) => withinRange1D(unit, candidate, attackRange))
+  const attackMinRange = unit.attackMinRange ?? 0
+  const inRange = candidates.filter(
+    (candidate) => withinRange1D(unit, candidate, attackRange) && edgeGap(unit, candidate) >= attackMinRange,
+  )
   if (inRange.length === 0) return []
 
   if (attackType === 'LongRange') {
     const farthest = inRange.reduce((best, candidate) => (edgeGap(unit, candidate) > edgeGap(unit, best) ? candidate : best))
-    return [farthest]
+    if (!unit.areaRadius) return [farthest]
+    const splash = candidates.filter(
+      (candidate) => candidate.instanceId !== farthest.instanceId && withinRange1D(farthest, candidate, unit.areaRadius!),
+    )
+    return [farthest, ...splash]
   }
 
   const primary = inRange.reduce((best, candidate) => (edgeGap(unit, candidate) < edgeGap(unit, best) ? candidate : best))
@@ -214,6 +225,49 @@ export function stepSimulation(state: SimState, deltaSeconds: number): SimState 
     freeMovers.push(unit.instanceId)
   }
 
+  // specs/028-ajustes-combate-mapa-disenos (US1/FR-001..FR-005): "refuerzo de fila" — promueve a `engagements`
+  // toda unidad de `freeMovers` cuyo avance tentativo choque con un aliado ya trabado en combate (mismo
+  // criterio `overlaps1D` que ya usa el bloqueo de movimiento más abajo), reutilizando el objetivo PRIMARIO
+  // de ESE aliado (nunca sus objetivos de salpicadura, FR-002). `attackerId` de un engagement es arbitrario
+  // (lo decide el orden de iteración de `alive` en el bucle de detección — puede ser el aliado o el enemigo
+  // que lo descubrió primero), así que `opponentOf` mapea AMBOS lados de cada engagement a su rival, para que
+  // un aliado bloqueado encuentre al bloqueador sin importar en qué lado quedó registrado. Fixed-point: repite
+  // hasta una pasada sin promociones, para resolver cadenas de cualquier longitud sin depender del orden de
+  // `alive` (research.md Decisión 2).
+  const opponentOf = new Map<string, string>()
+  for (const engagement of engagements) {
+    opponentOf.set(engagement.attackerId, engagement.targetIds[0])
+    for (const targetId of engagement.targetIds) {
+      if (!opponentOf.has(targetId)) opponentOf.set(targetId, engagement.attackerId)
+    }
+  }
+  let promotedAny = true
+  while (promotedAny) {
+    promotedAny = false
+    const promotions: { id: string; targetId: string }[] = []
+    for (const id of freeMovers) {
+      const unit = byId.get(id)!
+      const direction = unit.team === 'Player' ? 1 : -1
+      const effectiveSpeed = (unit.slowRemainingSeconds ?? 0) > 0 ? unit.speed * (1 - (unit.slowMagnitude ?? 0)) : unit.speed
+      const tentativeX = unit.x + direction * effectiveSpeed * deltaSeconds
+      const blocker = alive.find(
+        (candidate) =>
+          candidate.instanceId !== unit.instanceId &&
+          candidate.team === unit.team &&
+          opponentOf.has(candidate.instanceId) &&
+          overlaps1D({ x: tentativeX, width: unit.width }, candidate),
+      )
+      if (blocker) promotions.push({ id, targetId: opponentOf.get(blocker.instanceId)! })
+    }
+    for (const { id, targetId } of promotions) {
+      engagements.push({ attackerId: id, targetIds: [targetId] })
+      opponentOf.set(id, targetId)
+      const index = freeMovers.indexOf(id)
+      if (index !== -1) freeMovers.splice(index, 1)
+      promotedAny = true
+    }
+  }
+
   let playerBase = { ...state.playerBase }
   let enemyBase = { ...state.enemyBase }
   const previousEnemyBaseHp = state.enemyBase.hp
@@ -222,7 +276,9 @@ export function stepSimulation(state: SimState, deltaSeconds: number): SimState 
     const attacker = { ...byId.get(attackerId)!, state: 'Engaged' as const }
     const primary = { ...byId.get(targetIds[0])!, state: 'Engaged' as const }
 
-    if ((attacker.attackType ?? 'Single') === 'Area' && targetIds.length > 1) {
+    // Más de un objetivo solo ocurre por salpicadura de área ('Area', o 'LongRange' con areaRadius) —
+    // findTargetsInRange nunca devuelve >1 candidato para el resto de attackType.
+    if (targetIds.length > 1) {
       const splashTargets = targetIds.slice(1).map((id) => byId.get(id)!)
       const result = resolveAreaEngagement(attacker, primary, splashTargets, deltaSeconds)
       byId.set(attackerId, result.attacker)

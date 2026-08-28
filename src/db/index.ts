@@ -97,6 +97,13 @@ export interface MissionEnergyRow {
   lastUpdatedAt: number
 }
 
+/** specs/026-navegacion-hub-mockup (FR-009). `readIds` es monótono — una vez agregado un id, no se retira
+ * (mismo patrón que `UserRankRow.claimedThresholds`). */
+export interface NewsReadRow {
+  id: 1 // fila única (singleton)
+  readIds: string[]
+}
+
 class BattleCatsDB extends Dexie {
   playerProfile!: Table<PlayerProfileRow, number>
   ownedCats!: Table<OwnedCatRow, string>
@@ -112,6 +119,7 @@ class BattleCatsDB extends Dexie {
   encounteredEnemies!: Table<EncounteredEnemiesRow, number>
   userRank!: Table<UserRankRow, number>
   gachaStorage!: Table<GachaStorageRow, number>
+  newsRead!: Table<NewsReadRow, number>
 
   constructor() {
     super('BattleCatsDB')
@@ -149,6 +157,9 @@ class BattleCatsDB extends Dexie {
     this.version(10).stores({
       gachaStorage: '++id',
     })
+    this.version(11).stores({
+      newsRead: 'id',
+    })
   }
 }
 
@@ -166,7 +177,7 @@ const DEFAULT_SETTINGS: Omit<SettingsRow, 'id'> = {
  * Idempotente.
  */
 export async function ensureDefaultProfile(): Promise<void> {
-  await db.transaction('rw', db.playerProfile, db.settings, db.ownedCats, db.missionEnergy, async () => {
+  await db.transaction('rw', db.playerProfile, db.settings, db.ownedCats, db.missionEnergy, db.newsRead, async () => {
     const profile = await db.playerProfile.get(1)
     if (!profile) {
       await db.playerProfile.put({
@@ -183,14 +194,31 @@ export async function ensureDefaultProfile(): Promise<void> {
     }
 
     const ownedCatsCount = await db.ownedCats.count()
+    // specs/019-rango-de-usuario (FR-001): el Rango de Usuario es la suma de niveles de las unidades poseídas —
+    // el máximo de energía de misión sembrado más abajo debe reflejar cuántos gatos iniciales se otorgan aquí,
+    // no un "nivel de personaje 1" fijo (specs/027-capitulo-1-imperio-gatos expuso esta suposición al añadir un
+    // segundo gato inicial: characterLevelOf ya no es 1 desde el arranque).
+    let seededStarterCatCount = 0
     if (ownedCatsCount === 0 && CATS.length > 0) {
       await db.ownedCats.put({ catId: CATS[0].id, level: 1, experienceInvested: 0 })
+      seededStarterCatCount = 1
+      // specs/027-capitulo-1-imperio-gatos (FR-001, US2 Escenario 1): "Gato Recluta" también es un gato inicial
+      // garantizado, sin superar ninguna etapa — mismo criterio que CATS[0], aditivo (no reemplaza al gato inicial ya existente).
+      if (CATS.some((cat) => cat.id === 'cat-recluta')) {
+        await db.ownedCats.put({ catId: 'cat-recluta', level: 1, experienceInvested: 0 })
+        seededStarterCatCount = 2
+      }
     }
 
     const missionEnergy = await db.missionEnergy.get(1)
     if (!missionEnergy) {
-      const max = computeMissionEnergyMax(1)
+      const max = computeMissionEnergyMax(seededStarterCatCount || 1)
       await db.missionEnergy.put({ id: 1, current: max, max, lastUpdatedAt: Date.now() })
+    }
+
+    const newsRead = await db.newsRead.get(1)
+    if (!newsRead) {
+      await db.newsRead.put({ id: 1, readIds: [] })
     }
   })
 }

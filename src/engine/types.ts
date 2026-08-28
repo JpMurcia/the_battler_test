@@ -43,7 +43,13 @@ export interface BattleUnit {
   attackType?: AttackType
   /** Ausente = 0 (solo superposición directa, comportamiento previo a specs/008). */
   attackRange?: number
-  /** Solo relevante si `attackType === 'Area'` (FR-004). */
+  /**
+   * Ausente = 0 (sin punto ciego). Distancia mínima de borde a borde requerida para alcanzar a un
+   * objetivo — todo candidato más cerca que esto queda fuera de alcance sin importar `attackRange`
+   * (unidad "de salto/garrocha": no puede golpear lo que tiene justo delante).
+   */
+  attackMinRange?: number
+  /** Relevante si `attackType === 'Area'` (FR-004), o si `attackType === 'LongRange'` y se quiere daño en área alrededor del objetivo más lejano golpeado. */
   areaRadius?: number
   /** Ausente = 'Traitless' sin tipo especial (FR-011). */
   classification?: ClassificationType

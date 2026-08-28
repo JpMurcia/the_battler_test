@@ -41,7 +41,12 @@ export interface Cat {
   attackType: AttackType
   /** Distancia máxima de detección de objetivo más allá de la superposición directa. */
   attackRange: number
-  /** Solo relevante si `attackType === 'Area'`. */
+  /**
+   * Ausente = 0 (sin punto ciego). Distancia mínima de borde a borde requerida para alcanzar a un
+   * objetivo — todo enemigo más cerca que esto queda fuera de alcance sin importar `attackRange`.
+   */
+  attackMinRange?: number
+  /** Relevante si `attackType === 'Area'`, o si `attackType === 'LongRange'` y se quiere daño en área alrededor del objetivo más lejano golpeado. */
   areaRadius?: number
   /** specs/009-clasificacion-habilidades. */
   classification: ClassificationType
@@ -292,4 +297,113 @@ export const CATS: Cat[] = [
   ...SEED_ENEMIES_AS_CATS,
   /** specs/024-sistema-gacha (FR-013). Append — puebla Legendario/Colaboración, antes sin ninguna unidad. */
   ...GACHA_UNITS,
+  /**
+   * specs/027-capitulo-1-imperio-gatos (FR-005/FR-006). 16 enemigos del Capítulo 1 — stats de
+   * data-model.md § enemigos (manual §6.6 a magnificación 100%, nombres originales). `cost`/`cooldownSeconds`
+   * son placeholders sin efecto (nunca desplegados por el jugador), mismo patrón que SEED_ENEMIES_AS_CATS.
+   */
+  { id: 'enemy-merodeador', name: 'Merodeador', cost: 0, cooldownSeconds: 3, hp: 90, damage: 8, speed: 14, width: 16, attackIntervalSeconds: 1.6, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-escudero', name: 'Escudero', cost: 0, cooldownSeconds: 3, hp: 80, damage: 30, speed: 12, width: 18, attackIntervalSeconds: 1.4, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-triturador', name: 'Triturador', cost: 0, cooldownSeconds: 3, hp: 70, damage: 30, speed: 26, width: 14, attackIntervalSeconds: 1.1, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-rondador', name: 'Rondador', cost: 0, cooldownSeconds: 3, hp: 100, damage: 15, speed: 22, width: 16, attackIntervalSeconds: 1.3, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-turba', name: 'Turba', cost: 0, cooldownSeconds: 3, hp: 200, damage: 20, speed: 24, width: 18, attackIntervalSeconds: 1.2, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-planeador', name: 'Planeador', cost: 0, cooldownSeconds: 3, hp: 500, damage: 50, speed: 16, width: 22, attackIntervalSeconds: 1.7, attackType: 'Single', attackRange: 0, classification: 'Floating' },
+  { id: 'enemy-saltarin-alado', name: 'Saltarín Alado', cost: 0, cooldownSeconds: 3, hp: 500, damage: 50, speed: 18, width: 20, attackIntervalSeconds: 1.6, attackType: 'Single', attackRange: 0, classification: 'Floating' },
+  { id: 'enemy-behemot-gris', name: 'Behemot Gris', cost: 0, cooldownSeconds: 3, hp: 1000, damage: 100, speed: 6, width: 30, attackIntervalSeconds: 2.2, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-carmesi', name: 'Carmesí', cost: 0, cooldownSeconds: 3, hp: 1000, damage: 80, speed: 10, width: 26, attackIntervalSeconds: 1.8, attackType: 'Single', attackRange: 0, classification: 'Red' },
+  { id: 'enemy-emperador-volador', name: 'Emperador Volador', cost: 0, cooldownSeconds: 3, hp: 1300, damage: 80, speed: 14, width: 26, attackIntervalSeconds: 1.9, attackType: 'Single', attackRange: 0, classification: 'Floating' },
+  { id: 'enemy-foca-blindada', name: 'Foca Blindada', cost: 0, cooldownSeconds: 3, hp: 2500, damage: 150, speed: 9, width: 30, attackIntervalSeconds: 2.0, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-boxeador', name: 'Boxeador', cost: 0, cooldownSeconds: 3, hp: 4000, damage: 250, speed: 8, width: 32, attackIntervalSeconds: 2.3, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-embestida', name: 'Embestida', cost: 0, cooldownSeconds: 3, hp: 4000, damage: 654, speed: 10, width: 32, attackIntervalSeconds: 2.6, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-instructor-feroz', name: 'Instructor Feroz', cost: 0, cooldownSeconds: 3, hp: 3000, damage: 1000, speed: 4, width: 34, attackIntervalSeconds: 3.5, attackType: 'Area', attackRange: 140, areaRadius: 45, classification: 'Traitless' },
+  { id: 'enemy-unicornio-guerra', name: 'Unicornio de Guerra', cost: 0, cooldownSeconds: 3, hp: 15000, damage: 500, speed: 5, width: 36, attackIntervalSeconds: 2.4, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
+  { id: 'enemy-la-mascara', name: 'La Máscara', cost: 0, cooldownSeconds: 3, hp: 99999, damage: 2000, speed: 4, width: 44, attackIntervalSeconds: 2.8, attackType: 'LongRange', attackRange: 160, classification: 'Traitless' },
+  /**
+   * specs/027-capitulo-1-imperio-gatos (FR-001/FR-002/FR-004). 14 gatos jugables del Capítulo 1 — stats de
+   * data-model.md § gatos jugables. Ninguno declara spriteKey (research.md Decisión 4: fallback procedural
+   * ya satisface Constitución § III). evolutions sin requiredItemCount (sin vía de obtención de ítems, specs/010).
+   */
+  {
+    // specs/027 FR-003/Edge Cases: el gato inicial permanece en Forma Base indefinidamente, sin evolutions.
+    id: 'cat-recluta', name: 'Gato Recluta', cost: 10, cooldownSeconds: 1.5, hp: 55, damage: 6, speed: 20, width: 16,
+    attackIntervalSeconds: 1.0, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Normal',
+  },
+  {
+    id: 'cat-yunque', name: 'Gato Yunque', cost: 25, cooldownSeconds: 4, hp: 260, damage: 4, speed: 8, width: 26,
+    attackIntervalSeconds: 1.6, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.2 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.5 } },
+  },
+  {
+    id: 'cat-sigiloso', name: 'Gato Sigiloso', cost: 35, cooldownSeconds: 5, hp: 60, damage: 22, speed: 30, width: 14,
+    attackIntervalSeconds: 1.1, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Especial',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.25, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.6, damageMultiplier: 1.7 } },
+  },
+  {
+    id: 'cat-cuchilla', name: 'Gato Cuchilla', cost: 45, cooldownSeconds: 6, hp: 140, damage: 14, speed: 14, width: 20,
+    attackIntervalSeconds: 1.7, attackType: 'Area', attackRange: 0, areaRadius: 30, classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.7 } },
+  },
+  {
+    id: 'cat-forzudo', name: 'Gato Forzudo', cost: 70, cooldownSeconds: 9, hp: 420, damage: 60, speed: 6, width: 32,
+    attackIntervalSeconds: 3.0, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Especial',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.25, damageMultiplier: 1.25 }, true: { requiredLevel: 30, hpMultiplier: 1.6, damageMultiplier: 1.6 } },
+  },
+  {
+    id: 'cat-verdoso', name: 'Gato Verdoso', cost: 55, cooldownSeconds: 7, hp: 90, damage: 20, speed: 16, width: 16,
+    attackIntervalSeconds: 1.6, attackType: 'LongRange', attackRange: 130, classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.7 } },
+  },
+  {
+    id: 'cat-deidad', name: 'Gato Deidad', cost: 90, cooldownSeconds: 10, hp: 150, damage: 35, speed: 12, width: 20,
+    attackIntervalSeconds: 1.8, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Especial',
+    resistantTo: [{ effect: 'Curse', durationMultiplier: 0.3 }],
+  },
+  {
+    id: 'cat-cornamenta', name: 'Gato Cornamenta', cost: 40, cooldownSeconds: 3, hp: 75, damage: 16, speed: 34, width: 15,
+    attackIntervalSeconds: 0.9, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.7 } },
+  },
+  {
+    id: 'cat-migratorio', name: 'Gato Migratorio', cost: 60, cooldownSeconds: 7, hp: 110, damage: 18, speed: 18, width: 18,
+    attackIntervalSeconds: 1.5, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Normal',
+    abilities: [{ kind: 'TraitTargeting', targetClassifications: ['Floating'], damageMultiplier: 2.5 }],
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.8 } },
+  },
+  {
+    id: 'cat-centinela', name: 'Gato Centinela', cost: 70, cooldownSeconds: 8, hp: 150, damage: 20, speed: 10, width: 20,
+    attackIntervalSeconds: 2.0, attackType: 'LongRange', attackRange: 160, classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.7 } },
+  },
+  {
+    id: 'cat-anfibio', name: 'Gato Anfibio', cost: 65, cooldownSeconds: 7, hp: 130, damage: 24, speed: 16, width: 18,
+    attackIntervalSeconds: 1.7, attackType: 'LongRange', attackRange: 110, classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.7 } },
+  },
+  {
+    id: 'cat-escamado', name: 'Gato Escamado', cost: 85, cooldownSeconds: 8, hp: 260, damage: 22, speed: 12, width: 24,
+    attackIntervalSeconds: 1.9, attackType: 'Area', attackRange: 0, areaRadius: 35, classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.7 } },
+  },
+  {
+    id: 'cat-coloso', name: 'Gato Coloso', cost: 130, cooldownSeconds: 14, hp: 380, damage: 140, speed: 6, width: 34,
+    attackIntervalSeconds: 3.2, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.25, damageMultiplier: 1.25 }, true: { requiredLevel: 30, hpMultiplier: 1.6, damageMultiplier: 1.6 } },
+  },
+  {
+    id: 'cat-veterano', name: 'Gato Veterano', cost: 10, cooldownSeconds: 1.2, hp: 90, damage: 10, speed: 22, width: 16,
+    attackIntervalSeconds: 0.9, attackType: 'Single', attackRange: 0, classification: 'Traitless', rarity: 'Normal',
+  },
+  /**
+   * Unidad de diseño de usuario: cavernícola sin armadura que clava su lanza en el suelo estilo garrocha
+   * olímpica, salta y cae aplastando en área a distancia. `attackType: 'LongRange'` golpea al enemigo más
+   * lejano dentro de `attackRange` (motor extendido para sumar salpicadura de `areaRadius` alrededor de ese
+   * objetivo — antes solo 'Area' tenía splash); `attackMinRange` es el "punto ciego" del salto: nada más cerca
+   * de esa distancia puede ser alcanzado, sin importar `attackRange` (motor extendido, antes no existía este campo).
+   */
+  {
+    id: 'cat-garrochista', name: 'Cavernícola Garrochista', cost: 20, cooldownSeconds: 6, hp: 500, damage: 55, speed: 48, width: 18,
+    attackIntervalSeconds: 4.5, attackType: 'LongRange', attackRange: 220, attackMinRange: 50, areaRadius: 40,
+    classification: 'Traitless', rarity: 'Normal',
+    evolutions: { second: { requiredLevel: 10, hpMultiplier: 1.3, damageMultiplier: 1.3 }, true: { requiredLevel: 30, hpMultiplier: 1.7, damageMultiplier: 1.7 } },
+  },
 ]

@@ -2,6 +2,7 @@ import { extend, useApplication, useTick } from '@pixi/react'
 import { AnimatedSprite, Container, Graphics, Sprite, type Texture } from 'pixi.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CATS } from '../data/cats'
+import { IMPERIO_CAP1_DESIGNS } from '../data/imperioCap1Design'
 import { SEED_ENEMIES, SEED_UNITS } from '../data/seedData'
 import type { BattleUnit } from '../engine/types'
 import { getOrCreateUnitTexture } from './graphics/unitFactory'
@@ -71,17 +72,21 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
 
   const [textures, setTextures] = useState<LoadedTextures | null>(null)
 
-  // specs/022-datos-semilla-flujo-navegacion (US2): tercer nivel de fallback — unidades del catálogo
-  // semilla (sin spriteKey) resuelven aquí por id y aportan su ProceduralDesign.
-  const seedUnit = useMemo(
-    () => SEED_UNITS.find((unit) => unit.id === catId) ?? SEED_ENEMIES.find((unit) => unit.id === catId),
+  // specs/022-datos-semilla-flujo-navegacion (US2) / specs/028-ajustes-combate-mapa-disenos (US3, research.md
+  // Decisión 4): tercer nivel de fallback — resuelve el `ProceduralDesign` directamente (nunca necesitó el
+  // `SeedUnit` completo) por catálogo semilla o, si tampoco está ahí, por el registro del Capítulo 1.
+  const proceduralDesign = useMemo(
+    () =>
+      SEED_UNITS.find((unit) => unit.id === catId)?.proceduralDesign ??
+      SEED_ENEMIES.find((unit) => unit.id === catId)?.proceduralDesign ??
+      IMPERIO_CAP1_DESIGNS[catId],
     [catId],
   )
 
   const proceduralTexture = useMemo(() => {
-    if (textures || !seedUnit || !app?.renderer) return null
-    return getOrCreateUnitTexture(app.renderer, seedUnit.id, seedUnit.proceduralDesign, team === 'Player' ? 'ally' : 'enemy')
-  }, [textures, seedUnit, app, team])
+    if (textures || !proceduralDesign || !app?.renderer) return null
+    return getOrCreateUnitTexture(app.renderer, catId, proceduralDesign, team === 'Player' ? 'ally' : 'enemy')
+  }, [textures, proceduralDesign, app, catId, team])
 
   useEffect(() => {
     if (!animationSet) {

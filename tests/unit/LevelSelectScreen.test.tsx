@@ -36,6 +36,23 @@ const { mockEventBanners, MOCK_LEVELS } = vi.hoisted(() => ({
       difficulty: 2,
       mapPosition: { x: 45, y: 55 },
     },
+    // specs/028-ajustes-combate-mapa-disenos (US2): segunda región, para ejercitar el filtrado por pestañas
+    // sin afectar a los tests de 'imperio-de-los-gatos' de arriba (siguen viendo Nivel 1/Nivel 2 en la
+    // primera pestaña, seleccionada por defecto).
+    {
+      id: 'level-cap1-1',
+      name: 'Nivel Capítulo 1',
+      playerBaseHp: 1000,
+      enemyBaseHp: 1000,
+      maxEnergy: 100,
+      energyRegenPerSecond: 5,
+      currencyReward: 100,
+      enemyWave: [],
+      energyCost: 20,
+      region: 'imperio-de-los-gatos-cap1',
+      difficulty: 3,
+      mapPosition: { x: 20, y: 90 },
+    },
   ] as Level[],
 }))
 
@@ -216,5 +233,113 @@ describe('LevelSelectScreen — banner de evento (specs/014-banner-evento-especi
 
     expect(onNavigate).not.toHaveBeenCalled()
     expect(useGameStore.getState().levelId).toBeNull()
+  })
+})
+
+describe('LevelSelectScreen — Menú de Tesoros como panel propio (specs/026-navegacion-hub-mockup, US5/FR-010)', () => {
+  it('el botón "Tesoros X%" abre TreasureMenuScreen superpuesto sin ocultar el mapa, con el mismo progreso', () => {
+    useMetaStore.setState({ obtainedTreasureIds: ['tesoro-nivel-1'] })
+    const onNavigate = vi.fn()
+    render(<LevelSelectScreen onNavigate={onNavigate} />)
+
+    // specs/027-capitulo-1-imperio-gatos añadió 48 tesoros nuevos al total global (2 → 50): 1/50 ≈ 2%, no 50%.
+    fireEvent.click(screen.getByRole('button', { name: /Tesoros 2%/ }))
+
+    expect(screen.getByRole('heading', { name: 'Menú de Tesoros' })).toBeInTheDocument()
+    // El mapa de etapas sigue en el documento detrás del panel (FR-004, mismo criterio que HubScreen).
+    expect(screen.getByRole('heading', { name: 'Selección de Nivel' })).toBeInTheDocument()
+  })
+
+  it('cerrar el panel de Tesoros vuelve al Mapa de Etapas, no al Hub', () => {
+    useMetaStore.setState({ obtainedTreasureIds: [] })
+    const onNavigate = vi.fn()
+    render(<LevelSelectScreen onNavigate={onNavigate} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Tesoros 0%/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Cerrar Menú de Tesoros/ }))
+
+    expect(screen.queryByRole('heading', { name: 'Menú de Tesoros' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Selección de Nivel' })).toBeInTheDocument()
+    expect(onNavigate).not.toHaveBeenCalled()
+  })
+})
+
+describe('LevelSelectScreen — pestañas de región (specs/028-ajustes-combate-mapa-disenos US2)', () => {
+  it('Acceptance Scenario 1: existen al menos 2 pestañas, con la primera región (por orden de LEVELS) seleccionada por defecto', () => {
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: 'Imperio de los Gatos' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Capítulo 1' })).toBeInTheDocument()
+    // Primera región (imperio-de-los-gatos) activa por defecto: sus nodos se ven, los de Capítulo 1 no.
+    expect(screen.getByRole('button', { name: 'Nivel 1' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Nivel 2' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Nivel Capítulo 1' })).not.toBeInTheDocument()
+  })
+
+  it('Acceptance Scenario 2: tocar otra pestaña cambia qué nodos se ven', () => {
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Capítulo 1' }))
+
+    expect(screen.getByRole('button', { name: 'Nivel Capítulo 1' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Nivel 1' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Nivel 2' })).not.toBeInTheDocument()
+  })
+
+  it('Acceptance Scenario 4: cambiar de pestaña no altera el estado bloqueado/disponible/completado de ningún nivel', () => {
+    useMetaStore.setState({ highestUnlockedLevelIndex: 1, completedLevelIds: ['level-1'] })
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: 'Nivel 1' })).toHaveClass('stage-node--completed')
+    expect(screen.getByRole('button', { name: 'Nivel 2' })).toHaveClass('stage-node--unlocked')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Capítulo 1' }))
+    expect(screen.getByRole('button', { name: 'Nivel Capítulo 1' })).toHaveClass('stage-node--locked')
+    expect(screen.getByRole('button', { name: 'Nivel Capítulo 1' })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Imperio de los Gatos' }))
+    // Mismo estado que antes de cambiar de pestaña — cambiar de pestaña es puramente presentación (FR-008).
+    expect(screen.getByRole('button', { name: 'Nivel 1' })).toHaveClass('stage-node--completed')
+    expect(screen.getByRole('button', { name: 'Nivel 2' })).toHaveClass('stage-node--unlocked')
+  })
+
+  it('Acceptance Scenario 4b: un nivel bloqueado en cualquier pestaña no tiene efecto al tocarlo', () => {
+    const onNavigate = vi.fn()
+    render(<LevelSelectScreen onNavigate={onNavigate} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Capítulo 1' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Nivel Capítulo 1' }))
+
+    expect(screen.queryByText('¡Atacar!')).not.toBeInTheDocument()
+    expect(onNavigate).not.toHaveBeenCalled()
+  })
+
+  it('Acceptance Scenario 5: el nodo de un banner de evento activo sigue visible en cualquier pestaña, fuera de la cadena de pestañas', () => {
+    mockEventBanners.push({
+      id: 'test-banner',
+      name: 'Banner de Prueba',
+      energyCost: 10,
+      timeWindows: [{ startMs: Date.now() - 1000, endMs: Date.now() + 1000 * 60 * 60 }],
+      specialStage: {
+        id: 'test-banner-stage',
+        name: 'Fase Especial de Prueba',
+        playerBaseHp: 1000,
+        enemyBaseHp: 500,
+        maxEnergy: 100,
+        energyRegenPerSecond: 5,
+        currencyReward: 200,
+        enemyWave: [],
+        energyCost: 10,
+        region: 'test',
+        difficulty: 1,
+        mapPosition: { x: 90, y: 12 },
+      },
+    })
+    render(<LevelSelectScreen onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: 'Fase Especial de Prueba' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Capítulo 1' }))
+    expect(screen.getByRole('button', { name: 'Fase Especial de Prueba' })).toBeInTheDocument()
   })
 })

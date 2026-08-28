@@ -286,6 +286,49 @@ describe('stepSimulation', () => {
     expect(next.units.find((u) => u.instanceId === 'near')!.hp).toBe(50)
   })
 
+  it('attackMinRange excluye candidatos dentro del punto ciego aunque estén dentro de attackRange (unidad de salto/garrocha)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      x: 0,
+      width: 16,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackRange: 300,
+      attackMinRange: 50,
+    })
+    const tooClose = makeUnit({ instanceId: 'too-close', team: 'Enemy', x: 20, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const inRange = makeUnit({ instanceId: 'in-range', team: 'Enemy', x: 200, width: 16, hp: 50, attackCooldownRemaining: 5 })
+
+    const next = stepSimulation(makeState({ units: [attacker, tooClose, inRange] }), 0.1)
+
+    expect(next.units.find((u) => u.instanceId === 'too-close')!.hp).toBe(50)
+    expect(next.units.find((u) => u.instanceId === 'in-range')!.hp).toBe(40)
+  })
+
+  it('una unidad LongRange con areaRadius salpica alrededor del objetivo más lejano golpeado, sin afectar enemigos fuera de ese radio', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      x: 0,
+      width: 16,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'LongRange',
+      attackRange: 300,
+      areaRadius: 30,
+    })
+    const near = makeUnit({ instanceId: 'near', team: 'Enemy', x: 20, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const farSplash = makeUnit({ instanceId: 'far-splash', team: 'Enemy', x: 175, width: 16, hp: 50, attackCooldownRemaining: 5 })
+    const farPrimary = makeUnit({ instanceId: 'far-primary', team: 'Enemy', x: 200, width: 16, hp: 50, attackCooldownRemaining: 5 })
+
+    const next = stepSimulation(makeState({ units: [attacker, near, farSplash, farPrimary] }), 0.1)
+
+    expect(next.units.find((u) => u.instanceId === 'far-primary')!.hp).toBe(40)
+    expect(next.units.find((u) => u.instanceId === 'far-splash')!.hp).toBe(40)
+    expect(next.units.find((u) => u.instanceId === 'near')!.hp).toBe(50)
+  })
+
   it('curseRemainingSeconds decrece por tick y no queda negativo (specs/009 US5)', () => {
     const cursed = makeUnit({ x: 200, curseRemainingSeconds: 0.15 })
 
@@ -689,6 +732,119 @@ describe('stepSimulation', () => {
 
       expect(next.bossBarrierActive).toBe(true)
       expect(next.enemyBase.hp).toBe(100)
+    })
+
+    it('specs/027-capitulo-1-imperio-gatos US5/T016: con "La Máscara" viva en imperio-cap1-etapa-48, enemyBase.hp no cambia; derrotada, vuelve a ser un objetivo válido', () => {
+      const attacker = makeUnit({
+        instanceId: 'attacker',
+        team: 'Player',
+        x: ENEMY_BASE_EXTENT.x,
+        width: 16,
+        damage: 999,
+        attackCooldownRemaining: 0,
+      })
+      const boss = makeUnit({ instanceId: 'boss', catId: 'enemy-la-mascara', team: 'Enemy', x: 5, width: 44, hp: 99999, attackCooldownRemaining: 5 })
+
+      const withBossAlive = makeState({ levelId: 'imperio-cap1-etapa-48', units: [attacker, boss], enemyBase: { hp: 20000, maxHp: 20000 } })
+      const stillGuarded = stepSimulation(withBossAlive, 0.1)
+      expect(stillGuarded.bossBarrierActive).toBe(true)
+      expect(stillGuarded.enemyBase.hp).toBe(20000)
+
+      const withBossDefeated = makeState({ levelId: 'imperio-cap1-etapa-48', units: [attacker], enemyBase: { hp: 20000, maxHp: 20000 } })
+      const released = stepSimulation(withBossDefeated, 0.1)
+      expect(released.bossBarrierActive).toBe(false)
+      expect(released.enemyBase.hp).toBeLessThan(20000)
+    })
+  })
+
+  describe('specs/028-ajustes-combate-mapa-disenos (US1: combate por refuerzo de fila)', () => {
+    it('Acceptance Scenario 1: un aliado B bloqueado justo detrás de A (ya trabado contra X) se suma al combate contra X ese mismo tick', () => {
+      const x = makeUnit({ instanceId: 'x', team: 'Enemy', x: 5, width: 16, hp: 200, damage: 5, attackIntervalSeconds: 1, attackCooldownRemaining: 5 })
+      const a = makeUnit({ instanceId: 'a', team: 'Player', x: 0, width: 16, damage: 10, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const b = makeUnit({ instanceId: 'b', team: 'Player', x: -16, width: 16, speed: 20, damage: 8, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+
+      const next = stepSimulation(makeState({ units: [x, a, b] }), 0.1)
+
+      expect(next.units.find((u) => u.instanceId === 'x')!.hp).toBe(200 - 10 - 8)
+      expect(next.units.find((u) => u.instanceId === 'a')!.state).toBe('Engaged')
+      expect(next.units.find((u) => u.instanceId === 'b')!.state).toBe('Engaged')
+      expect(next.units.find((u) => u.instanceId === 'b')!.x).toBe(-16) // no avanza: se suma al combate en vez de moverse
+    })
+
+    it('Acceptance Scenario 2: una cadena de 3 aliados (A trabado, B bloqueado tras A, C bloqueado tras B) infligen daño a X en el mismo tick', () => {
+      const x = makeUnit({ instanceId: 'x', team: 'Enemy', x: 5, width: 16, hp: 200, damage: 5, attackIntervalSeconds: 1, attackCooldownRemaining: 5 })
+      const a = makeUnit({ instanceId: 'a', team: 'Player', x: 0, width: 16, damage: 10, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const b = makeUnit({ instanceId: 'b', team: 'Player', x: -16, width: 16, speed: 20, damage: 8, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const c = makeUnit({ instanceId: 'c', team: 'Player', x: -32, width: 16, speed: 20, damage: 6, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+
+      const next = stepSimulation(makeState({ units: [x, a, b, c] }), 0.1)
+
+      expect(next.units.find((u) => u.instanceId === 'x')!.hp).toBe(200 - 10 - 8 - 6)
+      expect(next.units.find((u) => u.instanceId === 'c')!.state).toBe('Engaged')
+      expect(next.units.find((u) => u.instanceId === 'c')!.x).toBe(-32) // en cadena, tampoco avanza
+    })
+
+    it('Acceptance Scenario 3: X recibe daño de A, B y C pero contraataca como máximo una vez ese tick', () => {
+      const x = makeUnit({ instanceId: 'x', team: 'Enemy', x: 5, width: 16, hp: 500, damage: 999, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const a = makeUnit({ instanceId: 'a', team: 'Player', x: 0, width: 16, hp: 50, damage: 10, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const b = makeUnit({ instanceId: 'b', team: 'Player', x: -16, width: 16, hp: 50, speed: 20, damage: 8, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const c = makeUnit({ instanceId: 'c', team: 'Player', x: -32, width: 16, hp: 50, speed: 20, damage: 6, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+
+      const next = stepSimulation(makeState({ units: [x, a, b, c] }), 0.1)
+
+      // stepSimulation filtra las unidades Dead de `units` (línea ~335) — un aliado muerto simplemente
+      // desaparece de la lista. X solo tiene cooldown listo en la primera llamada de resolveEngagement de
+      // este tick (research.md Decisión 1) — como máximo un aliado recibe el contraataque letal, nunca los 3.
+      const survivorIds = next.units.filter((u) => ['a', 'b', 'c'].includes(u.instanceId)).map((u) => u.instanceId)
+      expect(survivorIds).toHaveLength(2)
+    })
+
+    it('Acceptance Scenario 4: si A muere a mitad de la resolución del tick, el daño de B y C hacia X se aplica igual', () => {
+      const x = makeUnit({ instanceId: 'x', team: 'Enemy', x: 5, width: 16, hp: 500, damage: 999, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const a = makeUnit({ instanceId: 'a', team: 'Player', x: 0, width: 16, hp: 50, damage: 10, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const b = makeUnit({ instanceId: 'b', team: 'Player', x: -16, width: 16, hp: 50, speed: 20, damage: 8, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const c = makeUnit({ instanceId: 'c', team: 'Player', x: -32, width: 16, hp: 50, speed: 20, damage: 6, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+
+      const next = stepSimulation(makeState({ units: [x, a, b, c] }), 0.1)
+
+      // A es quien recibe el único contraataque de X (primero en `engagements`) y muere — stepSimulation la
+      // filtra de `units` (línea ~335) — pero B y C igual infligieron su daño a X ese mismo tick.
+      expect(next.units.find((u) => u.instanceId === 'a')).toBeUndefined()
+      expect(next.units.find((u) => u.instanceId === 'x')!.hp).toBe(500 - 10 - 8 - 6)
+    })
+
+    it('Acceptance Scenario 5: un aliado D no bloqueado por ningún trabado en combate se comporta exactamente igual que hoy', () => {
+      const x = makeUnit({ instanceId: 'x', team: 'Enemy', x: 5, width: 16, hp: 200, damage: 5, attackIntervalSeconds: 1, attackCooldownRemaining: 5 })
+      const a = makeUnit({ instanceId: 'a', team: 'Player', x: 0, width: 16, damage: 10, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+      const d = makeUnit({ instanceId: 'd', team: 'Player', x: -200, width: 16, speed: 20, attackCooldownRemaining: 0 })
+
+      const next = stepSimulation(makeState({ units: [x, a, d] }), 0.1)
+
+      expect(next.units.find((u) => u.instanceId === 'd')!.state).toBe('Moving')
+      expect(next.units.find((u) => u.instanceId === 'd')!.x).toBe(-200 + 20 * 0.1)
+    })
+
+    it('Edge Case: una unidad bloqueada por un aliado de tipo Área se suma solo al objetivo primario, nunca a los objetivos de salpicadura', () => {
+      const area = makeUnit({
+        instanceId: 'area',
+        team: 'Player',
+        x: 0,
+        width: 16,
+        damage: 10,
+        attackIntervalSeconds: 1,
+        attackCooldownRemaining: 0,
+        attackType: 'Area',
+        attackRange: 0,
+        areaRadius: 30,
+      })
+      const primary = makeUnit({ instanceId: 'primary', team: 'Enemy', x: 10, width: 16, hp: 50, attackCooldownRemaining: 5 })
+      const splash = makeUnit({ instanceId: 'splash', team: 'Enemy', x: 30, width: 16, hp: 50, attackCooldownRemaining: 5 })
+      const blocked = makeUnit({ instanceId: 'blocked', team: 'Player', x: -16, width: 16, speed: 20, damage: 10, attackIntervalSeconds: 1, attackCooldownRemaining: 0 })
+
+      const next = stepSimulation(makeState({ units: [area, primary, splash, blocked] }), 0.1)
+
+      expect(next.units.find((u) => u.instanceId === 'primary')!.hp).toBe(50 - 10 - 10) // salpicadura de `area` + refuerzo de `blocked`
+      expect(next.units.find((u) => u.instanceId === 'splash')!.hp).toBe(50 - 10) // solo la salpicadura de `area`, nunca `blocked`
     })
   })
 })

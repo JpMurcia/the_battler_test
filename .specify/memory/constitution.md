@@ -8,6 +8,8 @@
 
 El núcleo de juego es: un recurso de energía se acumula automáticamente con el tiempo, con una tasa de regeneración mejorable durante la partida; el jugador despliega gatos (unidades) predefinidos pagando ese recurso, sujetos a un costo y a un cooldown individual por unidad; una vez desplegada, la unidad avanza y combate de forma autónoma — no hay control directo del jugador sobre una unidad ya desplegada. La detección de combate es una superposición de rectángulos de colisión en el eje X (AABB en 1D): dos entidades enemigas entre sí que se superponen en X quedan bloqueadas y combaten hasta que una muere; una unidad sin nada por delante sigue avanzando. La base del jugador y la base enemiga son los objetivos de victoria/derrota.
 
+**Refuerzo de fila** (`specs/028-ajustes-combate-mapa-disenos`): una unidad bloqueada — no puede avanzar porque una aliada delante suyo ya está trabada en combate — no queda inactiva: se suma al combate de esa aliada contra el mismo objetivo enemigo, en el mismo paso de simulación, infligiendo su propio daño según su propio cooldown. Esto se encadena transitivamente (una tercera unidad bloqueada por la segunda también se suma), sin tope de unidades acumulables sobre un mismo objetivo. El objetivo enemigo sigue limitado a un único contraataque por paso de simulación, gobernado por su propio cooldown, sin importar cuántas unidades le inflijan daño ese paso — la regla de "una entidad combate hasta que una muere" describe el enfrentamiento por pareja (atacante-objetivo), no un límite de un atacante activo a la vez por objetivo.
+
 ### II. Progresión por Niveles con Desbloqueo Secuencial (Level-Based Unlock Progression)
 
 El contenido se organiza en niveles secuenciales; cada nivel se desbloquea al completar el anterior con victoria. El estado de "nivel desbloqueado/completado" es progreso persistente del jugador, nunca contenido — un nivel no decide su propio estado de desbloqueo, lo hace el guardado del jugador.
@@ -44,4 +46,8 @@ Todo trabajo no trivial sigue el mismo patrón ya establecido por `specs/001-nuc
 
 Esta constitución tiene prioridad sobre decisiones ad-hoc de diseño o código. Cualquier cambio a un Core Principle requiere justificación escrita, incrementa la versión (MAJOR si redefine o elimina un principio, MINOR si añade uno nuevo, PATCH si es aclaración de redacción) y actualiza `Last Amended`. Cualquier `plan.md` que se aparte de un principio (por ejemplo, un gato sin animación de ataque, o lógica de combate acoplada a un componente de React) debe declarar explícitamente la excepción y su motivo.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-14 | **Last Amended**: 2026-08-14
+**Version**: 2.0.0 | **Ratified**: 2026-08-14 | **Last Amended**: 2026-08-24
+
+## Amendment Log
+
+- **2.0.0** (2026-08-24, `specs/028-ajustes-combate-mapa-disenos`): redefine el Core Principle I — el combate deja de limitarse a un único atacante activo por objetivo; una unidad bloqueada por una aliada ya trabada se suma al mismo combate ("Refuerzo de fila"), en vez de esperar inactiva. MAJOR porque redefine el comportamiento de un Core Principle ya vigente, no solo lo aclara.

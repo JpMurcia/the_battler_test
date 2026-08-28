@@ -7,6 +7,10 @@ import type { Screen } from '../types/screen'
 
 interface GachaScreenProps {
   onNavigate: (screen: Screen) => void
+  /** specs/026-navegacion-hub-mockup (spec.md Assumptions). Aditivo, default 'roll' — mismo valor que el
+   * `useState` ya existente — para que el dock "Almacén" del Hub pueda abrir esta pantalla directamente en
+   * su pestaña Almacén, sin alterar el comportamiento por defecto de ningún llamador existente. */
+  initialTab?: 'roll' | 'storage'
 }
 
 /** specs/024-sistema-gacha (FR-006/FR-011). Clase `.gacha-reveal__orb--<rareza>` de src/theme.css por cada GachaRarity. */
@@ -169,12 +173,12 @@ function StorageTab() {
   )
 }
 
-export function GachaScreen({ onNavigate }: GachaScreenProps) {
+export function GachaScreen({ onNavigate, initialTab = 'roll' }: GachaScreenProps) {
   const gachaCurrency = useMetaStore((state) => state.gachaCurrency)
   const npCurrency = useMetaStore((state) => state.npCurrency)
   const gachaStorage = useMetaStore((state) => state.gachaStorage)
 
-  const [activeTab, setActiveTab] = useState<'roll' | 'storage'>('roll')
+  const [activeTab, setActiveTab] = useState<'roll' | 'storage'>(initialTab)
   const [activeBannerId, setActiveBannerId] = useState(GACHA_BANNERS[0].id)
   const [revealResults, setRevealResults] = useState<GachaRollResult[] | null>(null)
 
