@@ -273,6 +273,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       resistantTo,
       hitsPerSequence: cat.hitsPerSequence,
       criticalChance: cat.criticalChance,
+      // specs/038-catalogo-habilidades-avanzado (FR-003): inicializado desde Ability.Shield si el gato lo declara.
+      shieldRemainingHp: abilities?.find((ability) => ability.kind === 'Shield')?.shieldHp,
     }
 
     // specs/031-mejoras-de-base (US3/FR-008): "Investigación" reduce el cooldown de redespliegue, sin bajar del piso.

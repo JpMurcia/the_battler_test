@@ -1,4 +1,4 @@
-import type { BattleUnit } from './types'
+import type { Ability, BattleUnit } from './types'
 
 /**
  * specs/009-clasificacion-habilidades: multiplicador de daño del atacante contra el defensor.
@@ -12,7 +12,9 @@ export function resolveAbilityMultiplier(attacker: BattleUnit, defender: BattleU
 
   for (const ability of attacker.abilities ?? []) {
     if (ability.kind === 'Neutral') return ability.damageMultiplier
-    if (ability.kind === 'TraitResistance') continue
+    // specs/038-catalogo-habilidades-avanzado: MassiveDamage/TraitKiller/Shield/SummonOnDeath se resuelven
+    // aparte (findMassiveDamage/findMatchingTraitKiller) — no participan del multiplicador de TraitTargeting.
+    if (ability.kind !== 'TraitTargeting') continue
 
     // Un defensor CON specialClassification solo es alcanzable por inclusión explícita de ese tipo especial —
     // su clasificación estándar deja de contar para el match (FR-004): excluye a los tipos especiales de
@@ -55,6 +57,37 @@ function effectiveDamage(unit: BattleUnit): number {
 }
 
 /**
+ * specs/038-catalogo-habilidades-avanzado (FR-001/FR-007): primera `Ability.MassiveDamage` de `attacker`,
+ * o `undefined` si no declara ninguna o está `Cursed` (mismo criterio de bloqueo que `resolveAbilityMultiplier`).
+ */
+function findMassiveDamage(attacker: BattleUnit): Extract<Ability, { kind: 'MassiveDamage' }> | undefined {
+  if ((attacker.curseRemainingSeconds ?? 0) > 0) return undefined
+  return attacker.abilities?.find((ability): ability is Extract<Ability, { kind: 'MassiveDamage' }> => ability.kind === 'MassiveDamage')
+}
+
+/**
+ * specs/038-catalogo-habilidades-avanzado (FR-002/FR-007): primera `Ability.TraitKiller` de `attacker` cuyo
+ * `targetClassifications` coincida con el rasgo de `defender` (mismo algoritmo de exclusión de tipos
+ * especiales que `resolveAbilityMultiplier`), o `undefined` si ninguna coincide o `attacker` está `Cursed`.
+ */
+function findMatchingTraitKiller(attacker: BattleUnit, defender: BattleUnit): Extract<Ability, { kind: 'TraitKiller' }> | undefined {
+  if ((attacker.curseRemainingSeconds ?? 0) > 0) return undefined
+
+  for (const ability of attacker.abilities ?? []) {
+    if (ability.kind !== 'TraitKiller') continue
+
+    const matches =
+      defender.specialClassification !== undefined
+        ? ability.targetClassifications.includes(defender.specialClassification)
+        : ability.targetClassifications.includes(defender.classification ?? 'Traitless')
+
+    if (matches) return ability
+  }
+
+  return undefined
+}
+
+/**
  * Aplica `attacker.appliesEffect` a `defender` on-hit, salvo inmunidad — se refresca, no se acumula (FR-008).
  * specs/015-catalogo-habilidades-combate: generaliza de "solo Curse" a cualquier `EffectType`; aplica la
  * `resistantTo` del defensor a la duración antes de escribirla (FR-009) — duración ≤0 resultante ⇒ no se aplica.
@@ -92,6 +125,10 @@ function applyOnHitEffect(attacker: BattleUnit, defender: BattleUnit): void {
  * FR-005: al ser atómica por invocación, la siguiente secuencia siempre vuelve a empezar en el primer golpe —
  * no hay progreso que reanudar entre ticks, ver plan.md Key Design Decision 3). `Critical` duplica cada impacto
  * con probabilidad `criticalChance`, aplicado al final sobre el daño ya resuelto por Debilitar/TraitTargeting/TraitResistance.
+ *
+ * specs/038-catalogo-habilidades-avanzado (plan.md Key Design Decision 5): tras `Critical`, un roll independiente
+ * de `TraitKiller` puede anular todo el cálculo anterior y poner `hp` a 0 directamente (FR-002/FR-006); si no,
+ * el daño final se descuenta primero del `shieldRemainingHp` del defensor y solo el excedente afecta a `hp` (FR-004).
  */
 function applyDamageSequence(attacker: BattleUnit, defender: BattleUnit, random: () => number): void {
   const hits = attacker.attackType === 'MultiHit' ? Math.max(1, attacker.hitsPerSequence ?? 1) : 1
@@ -99,9 +136,30 @@ function applyDamageSequence(attacker: BattleUnit, defender: BattleUnit, random:
   for (let hit = 0; hit < hits; hit += 1) {
     if (defender.hp <= 0) break
 
-    const perHitDamage = effectiveDamage(attacker) * resolveAbilityMultiplier(attacker, defender) * resolveResistanceMultiplier(defender, attacker)
+    const baseAmount = effectiveDamage(attacker) * resolveAbilityMultiplier(attacker, defender) * resolveResistanceMultiplier(defender, attacker)
+
+    const massiveDamage = findMassiveDamage(attacker)
+    const isMassive = massiveDamage !== undefined && random() < massiveDamage.chance
+    const afterMassive = isMassive ? baseAmount * massiveDamage!.damageMultiplier : baseAmount
+
     const isCritical = attacker.attackType === 'Critical' && random() < (attacker.criticalChance ?? 0)
-    defender.hp = Math.max(0, defender.hp - perHitDamage * (isCritical ? 2 : 1))
+    const finalDamage = afterMassive * (isCritical ? 2 : 1)
+
+    const killer = findMatchingTraitKiller(attacker, defender)
+    const isKillingBlow = killer !== undefined && random() < killer.chance
+
+    if (isKillingBlow) {
+      defender.hp = 0
+    } else {
+      let remaining = finalDamage
+      if ((defender.shieldRemainingHp ?? 0) > 0) {
+        const absorbed = Math.min(defender.shieldRemainingHp!, remaining)
+        defender.shieldRemainingHp = defender.shieldRemainingHp! - absorbed
+        remaining -= absorbed
+      }
+      defender.hp = Math.max(0, defender.hp - remaining)
+    }
+
     applyOnHitEffect(attacker, defender)
   }
 }
@@ -158,9 +216,33 @@ export function resolveAreaEngagement(
 
   const nextSplashTargets = splashTargets.map((target) => {
     if (!attackerFires || target.state === 'Dead') return target
+
     const multiplier = resolveAbilityMultiplier(attacker, target) * resolveResistanceMultiplier(target, attacker)
-    const hp = Math.max(0, target.hp - effectiveDamage(attacker) * multiplier)
-    const nextTarget = { ...target, hp, state: hp <= 0 ? ('Dead' as const) : target.state }
+    const baseAmount = effectiveDamage(attacker) * multiplier
+
+    // specs/038-catalogo-habilidades-avanzado: mismo orden de resolución que applyDamageSequence.
+    const massiveDamage = findMassiveDamage(attacker)
+    const isMassive = massiveDamage !== undefined && random() < massiveDamage.chance
+    const finalDamage = isMassive ? baseAmount * massiveDamage!.damageMultiplier : baseAmount
+
+    const killer = findMatchingTraitKiller(attacker, target)
+    const isKillingBlow = killer !== undefined && random() < killer.chance
+
+    let hp: number
+    let shieldRemainingHp = target.shieldRemainingHp
+    if (isKillingBlow) {
+      hp = 0
+    } else {
+      let remaining = finalDamage
+      if ((shieldRemainingHp ?? 0) > 0) {
+        const absorbed = Math.min(shieldRemainingHp!, remaining)
+        shieldRemainingHp = shieldRemainingHp! - absorbed
+        remaining -= absorbed
+      }
+      hp = Math.max(0, target.hp - remaining)
+    }
+
+    const nextTarget = { ...target, hp, shieldRemainingHp, state: hp <= 0 ? ('Dead' as const) : target.state }
     applyOnHitEffect(attacker, nextTarget)
     return nextTarget
   })
@@ -182,8 +264,15 @@ export function resolveBaseDamage(
     const hits = nextAttacker.attackType === 'MultiHit' ? Math.max(1, nextAttacker.hitsPerSequence ?? 1) : 1
     for (let hit = 0; hit < hits; hit += 1) {
       if (hp <= 0) break
+
+      // specs/038-catalogo-habilidades-avanzado (FR-001, spec.md Historia 1 Escenario 4): mismo alcance que
+      // `Critical` — TraitKiller/Shield no aplican aquí, una base no es un BattleUnit (sin classification/escudo).
+      const massiveDamage = findMassiveDamage(nextAttacker)
+      const isMassive = massiveDamage !== undefined && random() < massiveDamage.chance
+      const afterMassive = isMassive ? effectiveDamage(nextAttacker) * massiveDamage!.damageMultiplier : effectiveDamage(nextAttacker)
+
       const isCritical = nextAttacker.attackType === 'Critical' && random() < (nextAttacker.criticalChance ?? 0)
-      hp = Math.max(0, hp - effectiveDamage(nextAttacker) * (isCritical ? 2 : 1))
+      hp = Math.max(0, hp - afterMassive * (isCritical ? 2 : 1))
     }
     nextAttacker.attackCooldownRemaining += nextAttacker.attackIntervalSeconds
   }

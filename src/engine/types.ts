@@ -15,6 +15,14 @@ export type Ability =
   | { kind: 'Neutral'; damageMultiplier: number }
   /** specs/015-catalogo-habilidades-combate (FR-007). Daño *recibido* de los rasgos listados — complementa a TraitTargeting (daño *infligido*). */
   | { kind: 'TraitResistance'; targetClassifications: (ClassificationType | SpecialClassificationType)[]; damageTakenMultiplier: number }
+  /** specs/038-catalogo-habilidades-avanzado (FR-001). Probabilidad `chance` de multiplicar el daño de un golpe por `damageMultiplier`. */
+  | { kind: 'MassiveDamage'; chance: number; damageMultiplier: number }
+  /** specs/038-catalogo-habilidades-avanzado (FR-002). Probabilidad `chance` de eliminar instantáneamente (hp → 0) a un objetivo de alguno de `targetClassifications`. */
+  | { kind: 'TraitKiller'; targetClassifications: (ClassificationType | SpecialClassificationType)[]; chance: number }
+  /** specs/038-catalogo-habilidades-avanzado (FR-003). Al desplegarse/generarse, inicializa `BattleUnit.shieldRemainingHp` en `shieldHp`. */
+  | { kind: 'Shield'; shieldHp: number }
+  /** specs/038-catalogo-habilidades-avanzado (FR-005). Al morir la unidad que lo declara, genera `count` BattleUnit de `summonCatId`. */
+  | { kind: 'SummonOnDeath'; summonCatId: string; count: number }
 
 /** specs/009-clasificacion-habilidades añadió 'Curse'; specs/015-catalogo-habilidades-combate añade Debilitar/Congelar/Ralentizar (FR-001). */
 export type EffectType = 'Curse' | 'Weaken' | 'Freeze' | 'Slow'
@@ -81,4 +89,6 @@ export interface BattleUnit {
    * para cumplir FR-004/FR-005 (una secuencia interrumpida nunca deja golpes pendientes que reanudar).
    */
   multiHitProgress?: number
+  /** specs/038-catalogo-habilidades-avanzado (FR-003/FR-004). Ausente/0 = sin escudo activo. Absorbe daño entrante antes que `hp`. */
+  shieldRemainingHp?: number
 }

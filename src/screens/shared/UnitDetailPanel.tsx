@@ -132,7 +132,12 @@ function TalentsSection({ catId }: { catId: string }) {
 function describeAbility(ability: Ability): string {
   if (ability.kind === 'Neutral') return `Neutral x${ability.damageMultiplier}`
   if (ability.kind === 'TraitTargeting') return `Fuerte contra ${ability.targetClassifications.join('/')} (x${ability.damageMultiplier})`
-  return `Resistencia a ${ability.targetClassifications.join('/')} (x${ability.damageTakenMultiplier})`
+  if (ability.kind === 'TraitResistance') return `Resistencia a ${ability.targetClassifications.join('/')} (x${ability.damageTakenMultiplier})`
+  // specs/038-catalogo-habilidades-avanzado
+  if (ability.kind === 'MassiveDamage') return `Golpe Letal (${Math.round(ability.chance * 100)}%, x${ability.damageMultiplier})`
+  if (ability.kind === 'TraitKiller') return `Killer contra ${ability.targetClassifications.join('/')} (${Math.round(ability.chance * 100)}%)`
+  if (ability.kind === 'Shield') return `Escudo (${ability.shieldHp} HP)`
+  return `Invoca ${ability.count}x ${ability.summonCatId} al morir`
 }
 
 export function UnitDetailPanel({ catId, onClose }: UnitDetailPanelProps) {

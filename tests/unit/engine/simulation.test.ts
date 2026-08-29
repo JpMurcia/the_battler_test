@@ -847,4 +847,51 @@ describe('stepSimulation', () => {
       expect(next.units.find((u) => u.instanceId === 'splash')!.hp).toBe(50 - 10) // solo la salpicadura de `area`, nunca `blocked`
     })
   })
+
+  describe('specs/038-catalogo-habilidades-avanzado (US4 — Invocar)', () => {
+    it('una unidad con SummonOnDeath que muere genera, en el mismo tick, la unidad aliada configurada en su posición', () => {
+      const summoner = makeUnit({
+        instanceId: 'dying-summoner',
+        catId: 'summoner-cat',
+        team: 'Player',
+        x: 0,
+        width: 16,
+        hp: 5,
+        maxHp: 5,
+        damage: 1,
+        attackCooldownRemaining: 5,
+        abilities: [{ kind: 'SummonOnDeath', summonCatId: 'basic-cat', count: 1 }],
+      })
+      const enemy = makeUnit({ instanceId: 'enemy1', team: 'Enemy', x: 5, width: 16, damage: 50, attackCooldownRemaining: 0 })
+
+      const next = stepSimulation(makeState({ units: [summoner, enemy] }), 0.1)
+
+      expect(next.units.find((u) => u.instanceId === 'dying-summoner')).toBeUndefined() // murió, filtrada de units
+      const spawnedAlly = next.units.find((u) => u.catId === 'basic-cat' && u.team === 'Player')
+      expect(spawnedAlly).toBeDefined()
+      expect(spawnedAlly!.x).toBe(0)
+      expect(spawnedAlly!.state).toBe('Moving') // actúa con normalidad desde este mismo tick, sin marca especial
+    })
+
+    it('FR-007: una unidad Cursed con SummonOnDeath que muere no invoca nada', () => {
+      const summoner = makeUnit({
+        instanceId: 'dying-summoner',
+        catId: 'summoner-cat',
+        team: 'Player',
+        x: 0,
+        width: 16,
+        hp: 5,
+        maxHp: 5,
+        damage: 1,
+        attackCooldownRemaining: 5,
+        curseRemainingSeconds: 2,
+        abilities: [{ kind: 'SummonOnDeath', summonCatId: 'basic-cat', count: 1 }],
+      })
+      const enemy = makeUnit({ instanceId: 'enemy1', team: 'Enemy', x: 5, width: 16, damage: 50, attackCooldownRemaining: 0 })
+
+      const next = stepSimulation(makeState({ units: [summoner, enemy] }), 0.1)
+
+      expect(next.units.some((u) => u.catId === 'basic-cat' && u.team === 'Player')).toBe(false)
+    })
+  })
 })

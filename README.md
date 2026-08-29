@@ -29,7 +29,7 @@ Otros comandos disponibles (`package.json`):
 | `npm test` | Corre la suite de Vitest (`src/engine/`, stores, componentes) |
 | `npm run lint` | Lint con `oxlint` |
 
-El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB` vía Dexie, actualmente en versión 10 de esquema) — persiste entre recargas pero es local a ese navegador/perfil; borrar los datos del sitio reinicia el progreso.
+El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB` vía Dexie, actualmente en versión 15 de esquema) — persiste entre recargas pero es local a ese navegador/perfil; borrar los datos del sitio reinicia el progreso.
 
 `scripts/copy-sprites.mjs` es un script manual de un solo uso (no corre en `dev`/`build`) que copia los frames `idle`/`attack` de los 12 héroes usados por `src/data/cats.ts` desde `assets-source/` hacia `public/sprites/`.
 
@@ -37,7 +37,7 @@ El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB
 
 ## Estado actual
 
-El proyecto completó 28 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**63 archivos, 557 tests**) al momento de escribir esto — las 28 specs están 100% completas, incluidas sus tareas de verificación manual en navegador.
+El proyecto completó 38 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**77 archivos, 776 tests**) al momento de escribir esto — las 38 specs están 100% completas, incluidas sus tareas de verificación manual en navegador. Las specs `029` a `037` cerraron un backlog propio derivado de comparar el mockup de referencia y el manual técnico contra el estado real de `src/` tras `028` (ver nota de origen en `specs/029-pulido-batalla-hud/spec.md`); `037-tienda` fue, por diseño, la última spec de ese backlog. `038-catalogo-habilidades-avanzado` abre uno nuevo, retomando el catálogo de habilidades de `specs/015` justo donde ese spec dejó explícitamente pendiente ("candidato a una iteración futura") Golpe Letal, Killers de rasgo, Escudo e Invocar.
 
 | Spec | Contenido | Tareas |
 |---|---|---|
@@ -69,10 +69,20 @@ El proyecto completó 28 specs numeradas bajo `specs/`, cada una construida sobr
 | [`026-navegacion-hub-mockup`](specs/026-navegacion-hub-mockup/) | Hub persistente con dock inferior; Equipar/Mejorar/Cápsula/Biblioteca/Ajustes/Menú de Tesoros como paneles superpuestos; Perfil de Jugador y Buzón de Noticias nuevos | ✅ 45/45 |
 | [`027-capitulo-1-imperio-gatos`](specs/027-capitulo-1-imperio-gatos/) | Contenido del Capítulo 1 de Imperio de los Gatos, basado en el manual técnico: 14 gatos jugables + 16 enemigos nuevos, 48 etapas (13 hito a mano + 35 por plantilla), arco y set de tesoros propios | ✅ 19/19 |
 | [`028-ajustes-combate-mapa-disenos`](specs/028-ajustes-combate-mapa-disenos/) | Ajustes tras jugar `027`: combate por "Refuerzo de fila" (Constitución v2.0.0), pestañas de mapa con scroll, diseños procedurales distintos para las 30 unidades nuevas | ✅ 18/18 |
+| [`029-pulido-batalla-hud`](specs/029-pulido-batalla-hud/) | Primera spec del backlog Nivel A: expone en la UI mecánica que el motor/estado ya calculaba (HUD de batalla, sin datos ni persistencia nueva) | ✅ 26/26 |
+| [`030-filtro-detalle-unidad`](specs/030-filtro-detalle-unidad/) | Nivel B: filtro por rareza/rasgo/habilidad en Equipar y Guía de Gatos + panel de detalle de unidad compartido (stats completos, tabs de forma, botón de evolución) | ✅ 19/19 |
+| [`031-mejoras-de-base`](specs/031-mejoras-de-base/) | Nivel B: mejoras de base compradas con moneda, conectadas a mecánica de combate/progreso ya existente | ✅ 23/23 |
+| [`032-festival-de-tesoros`](specs/032-festival-de-tesoros/) | Nivel B (última): festival de tesoros con ventana de tiempo, reutiliza el patrón de `014`/`015` | ✅ 12/12 |
+| [`033-misiones-catnip-challenges`](specs/033-misiones-catnip-challenges/) | Nivel C (primer subsistema nuevo): misiones diarias con progreso y recompensa reclamable, reinician por cambio de día del dispositivo | ✅ 25/25 |
+| [`034-gamatoto`](specs/034-gamatoto/) | Nivel C: expediciones asíncronas por timestamp persistido (avanzan con la app cerrada), otorgan materiales de Gamatoto | ✅ 19/19 |
+| [`035-ototo-corps`](specs/035-ototo-corps/) | Nivel C: consume materiales de Gamatoto para variantes de Gatorreta con bonos pasivos de equipo | ✅ 20/20 |
+| [`036-talentos-orbes`](specs/036-talentos-orbes/) | Nivel C: mejora post-Forma Verdadera vía Orbes/NP, primer sumidero de `npCurrency` (`024`) | ✅ 31/31 |
+| [`037-tienda`](specs/037-tienda/) | Quinta y última spec del backlog: sumidero de moneda vía objetos de batalla e ítems de evolución (sin pagos reales, fuera de alcance por Constitución § V) | ✅ 19/19 |
+| [`038-catalogo-habilidades-avanzado`](specs/038-catalogo-habilidades-avanzado/) | Retoma `specs/015` donde quedó pendiente: 4 `Ability` nuevas — Golpe Letal (`MassiveDamage`), Killers de rasgo (`TraitKiller`), Escudo (`Shield`/`shieldRemainingHp`) e Invocar (`SummonOnDeath`) | ✅ 23/23 |
 
 ### Contenido de juego
 
-- **34 gatos jugables** en [`src/data/cats.ts`](src/data/cats.ts): 12 de producción (cada uno con `spriteKey` propio `hero_1`…`hero_12` y sprites reales de idle/ataque en `public/sprites/`), 4 gatos semilla con diseño procedimental (`specs/022`), 4 exclusivos de gacha (`Legendario`/`Colaboración`, [`src/data/gachaUnits.ts`](src/data/gachaUnits.ts), sin sprite propio — usan el fallback `Graphics`) y 14 del Capítulo 1 (`specs/027`: 10 Normal + 3 Especial + `cat-veterano`, sin sprite propio pero con diseño procedural propio desde `specs/028` — [`src/data/imperioCap1Design.ts`](src/data/imperioCap1Design.ts)). Los 13 gatos sin recompensa asignada (núcleo original, habilidades de combate, multigolpe/crítico y los 4 semilla) se otorgan al completar los arcos de saga (`specs/023`); los 4 de gacha solo se obtienen tirando en la Cápsula (`specs/024`); los 14 del Capítulo 1 se obtienen jugando sus etapas (`specs/027`).
+- **56 gatos jugables** en [`src/data/cats.ts`](src/data/cats.ts) (`CATS.length` es 59: incluye además 3 fichas de enemigo reutilizadas con el mismo tipo `Cat` para `EnemyGuideScreen`, nunca desplegables por el jugador): 12 de producción (cada uno con `spriteKey` propio `hero_1`…`hero_12` y sprites reales de idle/ataque en `public/sprites/`), 4 gatos semilla con diseño procedimental (`specs/022`), 4 exclusivos de gacha (`Legendario`/`Colaboración`, [`src/data/gachaUnits.ts`](src/data/gachaUnits.ts), sin sprite propio — usan el fallback `Graphics`, mezclados en `CATS` vía spread) y 14 del Capítulo 1 (`specs/027`: 10 Normal + 3 Especial + `cat-veterano`, sin sprite propio pero con diseño procedural propio desde `specs/028` — [`src/data/imperioCap1Design.ts`](src/data/imperioCap1Design.ts)); el resto son gatos del núcleo original/habilidades de combate/multigolpe-crítico previos a `specs/022`. Los gatos sin recompensa asignada de esas specs tempranas (y los 4 semilla) se otorgan al completar los arcos de saga (`specs/023`); los 4 de gacha solo se obtienen tirando en la Cápsula (`specs/024`); los 14 del Capítulo 1 se obtienen jugando sus etapas (`specs/027`); cada gato con Forma Verdadera puede además invertir Orbes/NP en Talentos (`specs/036`, panel en `UnitDetailPanel`).
 - **51 niveles** en [`src/data/levels.ts`](src/data/levels.ts) (3 fixture + 48 del Capítulo 1, `specs/027`), agrupados en **3 arcos de saga** ([`src/data/sagaArcs.ts`](src/data/sagaArcs.ts)), presentados como **mapa visual de nodos** conectados (`LevelSelectScreen`, `specs/023`), agrupados en pestañas por región con scroll vertical de altura dinámica desde `specs/028` (en vez de los 51 nodos amontonados en un único lienzo).
 - **Sets de tesoros** con bonificación pasiva ([`src/data/treasureSets.ts`](src/data/treasureSets.ts)) y **eventos especiales** con banner propio ([`src/data/events.ts`](src/data/events.ts)), representado como nodo de borde dorado en el mapa.
 - **3 objetos de batalla** seleccionables antes del combate ([`src/data/battleItems.ts`](src/data/battleItems.ts)): aceleración de velocidad, energía extra, radar de tesoro.
@@ -82,6 +92,15 @@ El proyecto completó 28 specs numeradas bajo `specs/`, cada una construida sobr
 - **Cat Combos** ([`src/data/catCombos.ts`](src/data/catCombos.ts)): 2 combinaciones fijas de catIds (`combo-nucleo-original`, `combo-especialistas-control`) que otorgan una bonificación pasiva (energía o recompensa de moneda) al llevarlas completas a la formación activa — visibles y con estado en vivo (completo/incompleto, no-poseído vs. no-en-formación) en `TeamScreen` (`specs/025`).
 - **Buzón de Noticias** ([`src/data/news.ts`](src/data/news.ts)): catálogo estático de novedades del juego (título/fecha/descripción), con estado de lectura persistido (`newsRead`) e indicador en el Hub mientras haya alguna sin leer (`specs/026`).
 - **Capítulo 1 de Imperio de los Gatos** (`specs/027`): 14 gatos jugables nuevos (10 Normal + 3 Especial + `cat-veterano` de recompensa de arco) y 16 enemigos nuevos (incl. el jefe `enemy-la-mascara`) en [`src/data/cats.ts`](src/data/cats.ts); 48 etapas nuevas (`imperio-cap1-etapa-1`…`-48`, 13 hito a mano + 35 generadas por plantilla) en [`src/data/levels.ts`](src/data/levels.ts), agrupadas en el arco `arco-imperio-de-los-gatos-cap1` ([`src/data/sagaArcs.ts`](src/data/sagaArcs.ts), 33% más barato/100% de fuerza) con su propio `TreasureSet` de 48 tesoros ([`src/data/treasureSets.ts`](src/data/treasureSets.ts), +15% de moneda). `cat-recluta` es un segundo gato inicial garantizado junto al de siempre (`ensureDefaultProfile`, `src/db/index.ts`).
+- **Filtro y detalle de unidad** (`specs/030`, [`src/data/catFilter.ts`](src/data/catFilter.ts)): filtro por rareza/rasgo objetivo/habilidad (combinable Y/O, orden por nivel) en Equipar y Guía de Gatos, más un panel de detalle compartido ([`UnitDetailPanel`](src/screens/shared/UnitDetailPanel.tsx)) con stats completos, tabs por forma de evolución, botón de evolución conectado a `evolveCat()` (`specs/010`) y la sección de Talentos (`specs/036`).
+- **Mejoras de Base** (`specs/031`, [`src/data/baseUpgrades.ts`](src/data/baseUpgrades.ts)): mejoras compradas con moneda que refuerzan mecánica de combate/progreso ya existente (vida de base, energía, etc.), persistidas en la tabla `baseUpgrades`.
+- **Festival de Tesoros** (`specs/032`, [`src/data/treasureFestival.ts`](src/data/treasureFestival.ts)): ventana de tiempo con bonificación extra de tesoros, mismo patrón de evento programado que `specs/014`/`015`.
+- **Misiones (Catnip Challenges)** (`specs/033`, [`src/data/missions.ts`](src/data/missions.ts), `MissionsPanel`): objetivos diarios fijos (completar etapas, desplegar unidades, derrotar enemigos) con progreso visible y recompensa de moneda reclamable; se reinician al cambiar el día calendario del dispositivo (tabla `missions`).
+- **Gamatoto** (`specs/034`, [`src/data/gamatoto.ts`](src/data/gamatoto.ts), `GamatotoPanel`): expedición asíncrona con duración elegida cuyo progreso se calcula por timestamp persistido (tabla `gamatoto`) — avanza aunque la app esté cerrada; al reclamarse otorga materiales de Gamatoto, consumidos por `specs/035`.
+- **Ototo Corps** (`specs/035`, [`src/data/ototoCorps.ts`](src/data/ototoCorps.ts), `OtotoCorpsPanel`): variantes de Gatorreta construidas con materiales de Gamatoto (tabla `ototoCorps`) que dan bonos pasivos de equipo (reducción de daño por rasgo, resistencia a debuff, reutilizando `TraitResistance`/`resistantTo` de `specs/015`).
+- **Talentos y Orbes** (`specs/036`, [`src/data/talents.ts`](src/data/talents.ts)): mejora post-Forma Verdadera pagada con Orbes/NP — primer sumidero de `npCurrency` (introducido sin uso por `specs/024`); visible en la pestaña de Talentos de `UnitDetailPanel`.
+- **Tienda** (`specs/037`, [`src/data/shop.ts`](src/data/shop.ts), `ShopPanel`): sumidero de moneda para objetos de batalla e ítems de evolución (comprar hasta completar la cantidad requerida para evolucionar a Forma Verdadera); no incluye el "Cat Food Shop" de pagos reales del manual técnico, fuera de alcance por Constitución § V.
+- **Catálogo de habilidades avanzado** (`specs/038`, `src/engine/types.ts`/`combat.ts`/`simulation.ts`): 4 `Ability` nuevas que retoman lo que `specs/015` dejó explícitamente pendiente — **Golpe Letal** (`MassiveDamage`, probabilidad de multiplicar el daño de un golpe, incluido contra bases), **Killers de rasgo** (`TraitKiller`, probabilidad de eliminar instantáneamente a un enemigo del rasgo declarado — sembrado con Zombie/Metálico), **Escudo** (`Shield`/`BattleUnit.shieldRemainingHp`, absorbe daño antes que la vida) e **Invocar** (`SummonOnDeath`, genera unidades aliadas al morir). 5 gatos de demostración nuevos en [`src/data/cats.ts`](src/data/cats.ts) (`massive-strike-cat`, `zombie-hunter-cat`, `metal-hunter-cat`, `shield-cat`, `summoner-cat`), visibles en `UnitDetailPanel` (`describeAbility`).
 
 ---
 
@@ -95,7 +114,7 @@ React (pantallas, UI reactiva a eventos)
   ▼
 src/engine/*            ← simulación pura, sin React ni Pixi, testeada con Vitest
 src/game/*               ← puente Pixi.js: lee el store por tick, dibuja/anima sprites reales
-src/db/*                 ← Dexie sobre IndexedDB (persistencia, 9 versiones de esquema)
+src/db/*                 ← Dexie sobre IndexedDB (persistencia, 15 versiones de esquema)
 src/data/*               ← contenido (gatos, niveles, saga, tesoros, eventos, objetos, rangos)
 ```
 
@@ -109,9 +128,10 @@ src/
 ├── App.tsx                # Router manual por useState<Screen> — sin librería de routing. Solo 5 vistas base
 │                           # (Title/MainMenu/LevelSelect/Battle/Result); el resto vive dentro de HubScreen
 │                           # como paneles superpuestos (specs/026)
-├── types/screen.ts        # type Screen (sin cambios, 12 valores) + type PanelId (nuevo, specs/026):
+├── types/screen.ts        # type Screen (sin cambios, 12 valores) + type PanelId (specs/026, ampliado por 033-037):
 │                           # 'Equip' | 'Upgrade' | 'Gacha' | 'Library' | 'Settings' | 'TreasureMenu'
-│                           # | 'PlayerProfile' | 'News' — stack de paneles del Hub, independiente de Screen
+│                           # | 'PlayerProfile' | 'News' | 'Missions' | 'Gamatoto' | 'OtotoCorps' | 'Shop'
+│                           # — stack de paneles del Hub, independiente de Screen
 ├── screens/                # Una pantalla por archivo, navegación vía prop onNavigate
 │   ├── HubScreen.tsx      # Hub persistente (specs/026): HUD + dock + accesos destacados + panel stack
 │   ├── PlayerProfilePanel.tsx / NewsPanel.tsx  # Paneles nuevos del Hub (specs/026)
@@ -147,15 +167,24 @@ src/
 │   ├── gacha.ts             # Banners, tasas por rareza y rollOne/rollMany (specs/024)
 │   ├── gachaUnits.ts       # 4 gatos exclusivos de gacha (Legendario/Colaboración, specs/024)
 │   ├── catCombos.ts        # Cat Combos, su bonificación pasiva y getCompletedCombos (specs/025)
-│   └── news.ts              # Catálogo estático del Buzón de Noticias (specs/026)
-└── db/index.ts             # Esquema Dexie (11 versiones) + ensureDefaultProfile()
+│   ├── news.ts              # Catálogo estático del Buzón de Noticias (specs/026)
+│   ├── imperioCap1Design.ts # Diseño procedural de las 30 unidades del Capítulo 1 (specs/027-028)
+│   ├── catFilter.ts        # Filtro por rareza/rasgo/habilidad para Equipar y Guía de Gatos (specs/030)
+│   ├── baseUpgrades.ts     # Catálogo de mejoras de base compradas con moneda (specs/031)
+│   ├── treasureFestival.ts # Ventana de tiempo con bonificación extra de tesoros (specs/032)
+│   ├── missions.ts         # Misiones diarias (Catnip Challenges) y su progreso/recompensa (specs/033)
+│   ├── gamatoto.ts         # Expediciones asíncronas por timestamp persistido (specs/034)
+│   ├── ototoCorps.ts       # Variantes de Gatorreta y bonos pasivos de equipo (specs/035)
+│   ├── talents.ts          # Talentos/Orbes post-Forma Verdadera (specs/036)
+│   └── shop.ts              # Objetos de batalla e ítems de evolución comprables (specs/037)
+└── db/index.ts             # Esquema Dexie (15 versiones) + ensureDefaultProfile()
 ```
 
 ### Flujo de pantallas
 
 `App.tsx` mantiene un `useState<Screen>` simple (sin router) y renderiza la vista base activa por `switch` — solo 5 casos (`Title`/`MainMenu`/`LevelSelect`/`Battle`/`Result`). Al montar, hidrata `useMetaStore` desde IndexedDB antes de mostrar nada.
 
-Desde `specs/026-navegacion-hub-mockup`, `MainMenu` es `HubScreen`: un Hub persistente (rango/energía/moneda + dock inferior) sobre el que Equipar/Mejorar/Cápsula/Biblioteca/Ajustes/Menú de Tesoros/Perfil de Jugador/Buzón de Noticias se abren como **paneles superpuestos** (`PanelOverlay`, con foco atrapado y fondo del Hub siempre visible detrás) en vez de pantallas de página completa — un stack local (`PanelId[]`) permite apilar un panel sobre otro (p. ej. Ajustes abierto desde Mejorar vuelve a Mejorar al cerrarse, no al Hub):
+Desde `specs/026-navegacion-hub-mockup`, `MainMenu` es `HubScreen`: un Hub persistente (rango/energía/moneda + dock inferior) sobre el que Equipar/Mejorar/Cápsula/Biblioteca/Ajustes/Menú de Tesoros/Perfil de Jugador/Buzón de Noticias/Misiones/Gamatoto/Ototo Corps/Tienda se abren como **paneles superpuestos** (`PanelOverlay`, con foco atrapado y fondo del Hub siempre visible detrás) en vez de pantallas de página completa — un stack local (`PanelId[]`) permite apilar un panel sobre otro (p. ej. Ajustes abierto desde Mejorar vuelve a Mejorar al cerrarse, no al Hub):
 
 ```
 Title ──▶ Hub (HubScreen) ──┬──▶ LevelSelect ──▶ Battle ──▶ Result ──(Volver)──▶ LevelSelect
@@ -170,7 +199,11 @@ Title ──▶ Hub (HubScreen) ──┬──▶ LevelSelect ──▶ Battle 
                              ├──▶ [panel] Gacha (Tirar / Almacén — el dock "Almacén" abre esta pestaña directo)
                              ├──▶ [panel] Settings
                              ├──▶ [panel] PlayerProfile ──▶ [panel] Settings (vuelve a PlayerProfile al cerrarse)
-                             └──▶ [panel] News (marca todo como leído al abrir)
+                             ├──▶ [panel] News (marca todo como leído al abrir)
+                             ├──▶ [panel] Missions (specs/033, objetivos diarios reclamables)
+                             ├──▶ [panel] Gamatoto (specs/034, expedición asíncrona por timestamp)
+                             ├──▶ [panel] OtotoCorps (specs/035, consume materiales de Gamatoto)
+                             └──▶ [panel] Shop (specs/037, objetos de batalla + ítems de evolución)
 ```
 
 `LevelSelectScreen` renderiza el progreso como un **mapa visual de nodos** (círculos conectados por líneas punteadas, posicionados por `Level.mapPosition`; el evento especial activo aparece como nodo aparte de borde dorado, fuera de la cadena de pestañas) en vez de la lista vertical original, agrupado en **pestañas por `Level.region`** con lienzo de altura dinámica y scroll vertical cuando no caben todos los nodos (`specs/028`, sin alterar qué nivel está bloqueado/disponible/completado) — tocar un nodo disponible o completado abre un panel de detalle con dificultad en estrellas, costo de energía y el botón "¡Atacar!", que llama a `useGameStore.startLevel(levelId)` y navega a `Battle` (`specs/023`); un botón "Tesoros X%" propio abre el Menú de Tesoros superpuesto sobre el mapa (`specs/026`). `Upgrade` (panel "Mejorar") funciona como hub hacia `Equip` (formación activa, tope `MAX_ACTIVE_TEAM_SIZE`, con una sección "Cat Combos" que muestra en vivo qué combinaciones de gatos están completas o incompletas según la selección aún sin guardar, `specs/025`), `Library` (bibliotecas de consulta, specs/018, agrupadas bajo tabs "Cat Guide"/"Enemy Guide" desde `specs/026`) y `TreasureMenu`. `Gacha` ofrece selector de banner con desglose de tasas, tirada simple/x11 con pantalla de revelado, y el Almacén de cápsulas para activar (nueva unidad jugable) o intercambiar duplicados por XP/NP (`specs/024`).
@@ -202,7 +235,7 @@ Determinista y puro — `stepSimulation(state, deltaSeconds) → nextState`, sin
 
 ### Persistencia (`src/db/index.ts`)
 
-Dexie sobre IndexedDB, base `BattleCatsDB`, con 11 versiones de esquema acumuladas spec sobre spec. Tablas actuales: `playerProfile`, `ownedCats`, `levelProgress`, `settings`, `teamFormation`, `missionEnergy`, `evolutionItems`, `treasures`, `arcProgress`, `treasureSetBonuses`, `battleItems`, `encounteredEnemies`, `userRank`, `gachaStorage`, `newsRead`. `ensureDefaultProfile()` es idempotente y siembra el perfil por defecto y el primer gato garantizado en la primera sesión.
+Dexie sobre IndexedDB, base `BattleCatsDB`, con 15 versiones de esquema acumuladas spec sobre spec. Tablas actuales: `playerProfile`, `ownedCats`, `levelProgress`, `settings`, `teamFormation`, `missionEnergy`, `evolutionItems`, `treasures`, `arcProgress`, `treasureSetBonuses`, `battleItems`, `encounteredEnemies`, `userRank`, `gachaStorage`, `newsRead`, `baseUpgrades` (`specs/031`), `missions` (`specs/033`), `gamatoto` (`specs/034`), `ototoCorps` (`specs/035`) — 19 en total; Talentos (`specs/036`) y Tienda (`specs/037`) reutilizan tablas existentes sin añadir una propia. `ensureDefaultProfile()` es idempotente y siembra el perfil por defecto y el primer gato garantizado en la primera sesión.
 
 ### Testing
 
@@ -213,5 +246,5 @@ Vitest + Testing Library + `fake-indexeddb` (jsdom). La suite cubre `src/engine/
 ## Documentación adicional
 
 - [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — principios de diseño no negociables del proyecto.
-- [`specs/`](specs/) — spec/plan/tasks de cada una de las 26 features, en orden cronológico.
+- [`specs/`](specs/) — spec/plan/tasks de cada una de las 38 features, en orden cronológico.
 - [`docs/`](docs/) — material de diseño y rediseño visual adicional (guías de estilo, roadmap de fases, referencia de manual técnico).

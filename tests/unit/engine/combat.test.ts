@@ -594,3 +594,203 @@ describe('Crítico — probabilidad configurable de doble daño (specs/016-multi
     expect(criticalHits).toBeLessThanOrEqual(65)
   })
 })
+
+describe('Golpe Letal — probabilidad configurable de daño masivo (specs/038-catalogo-habilidades-avanzado US1)', () => {
+  it('SC-001: chance: 1 siempre aplica el multiplicador de daño', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [{ kind: 'MassiveDamage', chance: 1, damageMultiplier: 3 }],
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(970) // 1000 - 10*3
+  })
+
+  it('chance: 0 nunca aplica el multiplicador — daño normal', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [{ kind: 'MassiveDamage', chance: 0, damageMultiplier: 3 }],
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0.999)
+
+    expect(result.b.hp).toBe(990) // 1000 - 10, sin multiplicar
+  })
+
+  it('FR-006: en una secuencia MultiHit, cada golpe hace su propio roll independiente', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'MultiHit',
+      hitsPerSequence: 3,
+      abilities: [{ kind: 'MassiveDamage', chance: 0.5, damageMultiplier: 3 }],
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+
+    let call = 0
+    const random = () => (call++ === 1 ? 0.99 : 0) // golpe 1: acierta, golpe 2: falla, golpe 3: acierta
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.hp).toBe(930) // 1000 - (10*3 + 10 + 10*3)
+  })
+
+  it('FR-007: un atacante Cursed con MassiveDamage nunca lo aplica', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      curseRemainingSeconds: 2,
+      abilities: [{ kind: 'MassiveDamage', chance: 1, damageMultiplier: 5 }],
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(990) // solo daño normal, la habilidad no se aplica bajo Curse
+  })
+
+  it('replica en salpicadura (resolveAreaEngagement)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'Area',
+      areaRadius: 50,
+      abilities: [{ kind: 'MassiveDamage', chance: 1, damageMultiplier: 3 }],
+    })
+    const primary = makeUnit({ instanceId: 'primary', hp: 1000, attackCooldownRemaining: 5 })
+    const splash = makeUnit({ instanceId: 'splash', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveAreaEngagement(attacker, primary, [splash], 0.1, () => 0)
+
+    expect(result.splashTargets[0].hp).toBe(970) // 1000 - 10*3
+  })
+
+  it('spec.md Historia 1 Escenario 4: el mismo roll aplica atacando la base (resolveBaseDamage)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [{ kind: 'MassiveDamage', chance: 1, damageMultiplier: 3 }],
+    })
+
+    const result = resolveBaseDamage(attacker, { hp: 1000, maxHp: 1000 }, 0.1, () => 0)
+
+    expect(result.base.hp).toBe(970) // 1000 - 10*3
+  })
+})
+
+describe('Killers de rasgo — eliminación instantánea probabilística (specs/038-catalogo-habilidades-avanzado US2)', () => {
+  it('SC-002: contra el rasgo declarado, con chance: 1, elimina instantáneamente pese a vida muy alta', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [{ kind: 'TraitKiller', targetClassifications: ['Zombie'], chance: 1 }],
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1_000_000, classification: 'Zombie', attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(0)
+    expect(result.b.state).toBe('Dead')
+  })
+
+  it('contra un rasgo distinto al declarado, nunca se activa aunque el roll favorezca', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [{ kind: 'TraitKiller', targetClassifications: ['Zombie'], chance: 1 }],
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1_000_000, classification: 'Red', attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(999_990) // solo daño normal, el Killer no coincide con el rasgo
+  })
+
+  it('FR-007: un atacante Cursed con TraitKiller nunca lo aplica', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      curseRemainingSeconds: 2,
+      abilities: [{ kind: 'TraitKiller', targetClassifications: ['Zombie'], chance: 1 }],
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1_000_000, classification: 'Zombie', attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(999_990) // solo daño normal, la habilidad no se aplica bajo Curse
+  })
+
+  it('replica en salpicadura (resolveAreaEngagement)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'Area',
+      areaRadius: 50,
+      abilities: [{ kind: 'TraitKiller', targetClassifications: ['Zombie'], chance: 1 }],
+    })
+    const primary = makeUnit({ instanceId: 'primary', hp: 1_000_000, attackCooldownRemaining: 5 })
+    const splash = makeUnit({ instanceId: 'splash', hp: 1_000_000, classification: 'Zombie', attackCooldownRemaining: 5 })
+
+    const result = resolveAreaEngagement(attacker, primary, [splash], 0.1, () => 0)
+
+    expect(result.splashTargets[0].hp).toBe(0)
+    expect(result.splashTargets[0].state).toBe('Dead')
+  })
+})
+
+describe('Escudo — absorción de daño previa a hp (specs/038-catalogo-habilidades-avanzado US3)', () => {
+  it('un golpe menor al escudo no reduce hp, solo consume el escudo', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 100, shieldRemainingHp: 50, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.hp).toBe(100)
+    expect(result.b.shieldRemainingHp).toBe(40)
+  })
+
+  it('un golpe mayor al escudo restante lo agota a 0 y aplica el excedente a hp en el mismo golpe', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 100, shieldRemainingHp: 5, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.shieldRemainingHp).toBe(0)
+    expect(result.b.hp).toBe(95) // 100 - (10 - 5) de excedente
+  })
+
+  it('con el escudo ya agotado (0), se comporta exactamente como sin Shield', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 100, shieldRemainingHp: 0, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.hp).toBe(90)
+  })
+
+  it('replica en salpicadura (resolveAreaEngagement)', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0, attackType: 'Area', areaRadius: 50 })
+    const primary = makeUnit({ instanceId: 'primary', hp: 100, attackCooldownRemaining: 5 })
+    const splash = makeUnit({ instanceId: 'splash', hp: 100, shieldRemainingHp: 5, attackCooldownRemaining: 5 })
+
+    const result = resolveAreaEngagement(attacker, primary, [splash], 0.1)
+
+    expect(result.splashTargets[0].shieldRemainingHp).toBe(0)
+    expect(result.splashTargets[0].hp).toBe(95) // 100 - (10 - 5) de excedente
+  })
+})

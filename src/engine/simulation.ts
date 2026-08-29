@@ -51,17 +51,30 @@ export interface SimState {
   bossBarrierActive: boolean
 }
 
-function spawnEnemyUnit(catId: string, enemyStrengthMultiplier: number, laneLength: number, unitSpeedMultiplier: number): BattleUnit | null {
+/**
+ * specs/038-catalogo-habilidades-avanzado (research.md Decisión 3): generalización de la antigua
+ * `spawnEnemyUnit`, reutilizada por el spawn de oleada (`team: 'Enemy'`, `x: laneLength - cat.width`,
+ * mismo resultado que antes) y por la resolución de `SummonOnDeath` (equipo/posición de la unidad que murió).
+ * `enemyStrengthMultiplier` solo escala `hp`/`damage` para `team === 'Enemy'` — nunca escaló al jugador.
+ */
+function spawnUnitFromCat(
+  catId: string,
+  team: 'Player' | 'Enemy',
+  x: number,
+  enemyStrengthMultiplier: number,
+  unitSpeedMultiplier: number,
+): BattleUnit | null {
   const cat = CATS.find((candidate) => candidate.id === catId)
   if (!cat) return null
   // specs/012-saga-imperio-de-los-gatos (FR-003): multiplicador del arco activo, redondeado, sin modificar CATS.
-  const hp = Math.round(cat.hp * enemyStrengthMultiplier)
-  const damage = Math.round(cat.damage * enemyStrengthMultiplier)
+  const strengthMultiplier = team === 'Enemy' ? enemyStrengthMultiplier : 1
+  const hp = Math.round(cat.hp * strengthMultiplier)
+  const damage = Math.round(cat.damage * strengthMultiplier)
   return {
-    instanceId: `enemy-${cat.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    instanceId: `${team === 'Enemy' ? 'enemy-' : ''}${cat.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     catId: cat.id,
-    team: 'Enemy',
-    x: laneLength - cat.width,
+    team,
+    x,
     width: cat.width,
     hp,
     maxHp: hp,
@@ -84,7 +97,19 @@ function spawnEnemyUnit(catId: string, enemyStrengthMultiplier: number, laneLeng
     resistantTo: cat.resistantTo,
     hitsPerSequence: cat.hitsPerSequence,
     criticalChance: cat.criticalChance,
+    // specs/038-catalogo-habilidades-avanzado (FR-003): inicializado desde Ability.Shield si el gato lo declara.
+    shieldRemainingHp: cat.abilities?.find((ability) => ability.kind === 'Shield')?.shieldHp,
   }
+}
+
+/**
+ * Spawn de oleada enemiga en el borde del carril — envoltorio delgado sobre `spawnUnitFromCat` que resuelve
+ * `x` a partir del `width` del gato (no disponible para el llamador sin su propio `CATS.find`, specs/038).
+ */
+function spawnEnemyUnit(catId: string, enemyStrengthMultiplier: number, laneLength: number, unitSpeedMultiplier: number): BattleUnit | null {
+  const cat = CATS.find((candidate) => candidate.id === catId)
+  if (!cat) return null
+  return spawnUnitFromCat(catId, 'Enemy', laneLength - cat.width, enemyStrengthMultiplier, unitSpeedMultiplier)
 }
 
 /**
@@ -332,7 +357,22 @@ export function stepSimulation(state: SimState, deltaSeconds: number): SimState 
     if (next !== unit) byId.set(id, next)
   }
 
-  const units = Array.from(byId.values()).filter((unit) => unit.state !== 'Dead')
+  // specs/038-catalogo-habilidades-avanzado (FR-005/FR-007): toda unidad que murió este mismo tick con
+  // `SummonOnDeath` genera sus invocaciones — nunca una que ya estuviera Dead al empezar el tick, porque
+  // `units` filtra a las muertas al final de cada tick (invariante ya existente, nunca persisten a `state.units`).
+  const summoned: BattleUnit[] = []
+  for (const unit of byId.values()) {
+    if (unit.state !== 'Dead' || (unit.curseRemainingSeconds ?? 0) > 0) continue
+    for (const ability of unit.abilities ?? []) {
+      if (ability.kind !== 'SummonOnDeath') continue
+      for (let i = 0; i < ability.count; i += 1) {
+        const newUnit = spawnUnitFromCat(ability.summonCatId, unit.team, unit.x, enemyStrengthMultiplier, state.unitSpeedMultiplier)
+        if (newUnit) summoned.push(newUnit)
+      }
+    }
+  }
+
+  const units = [...Array.from(byId.values()).filter((unit) => unit.state !== 'Dead'), ...summoned]
 
   // specs/012-saga-imperio-de-los-gatos (US2/FR-005): dispara cada umbral no disparado todavía exactamente una vez al cruzarlo hacia abajo.
   let triggeredBaseHpThresholdPercents = state.triggeredBaseHpThresholdPercents ?? []
