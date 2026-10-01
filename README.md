@@ -102,6 +102,20 @@ El proyecto completó 38 specs numeradas bajo `specs/`, cada una construida sobr
 - **Tienda** (`specs/037`, [`src/data/shop.ts`](src/data/shop.ts), `ShopPanel`): sumidero de moneda para objetos de batalla e ítems de evolución (comprar hasta completar la cantidad requerida para evolucionar a Forma Verdadera); no incluye el "Cat Food Shop" de pagos reales del manual técnico, fuera de alcance por Constitución § V.
 - **Catálogo de habilidades avanzado** (`specs/038`, `src/engine/types.ts`/`combat.ts`/`simulation.ts`): 4 `Ability` nuevas que retoman lo que `specs/015` dejó explícitamente pendiente — **Golpe Letal** (`MassiveDamage`, probabilidad de multiplicar el daño de un golpe, incluido contra bases), **Killers de rasgo** (`TraitKiller`, probabilidad de eliminar instantáneamente a un enemigo del rasgo declarado — sembrado con Zombie/Metálico), **Escudo** (`Shield`/`BattleUnit.shieldRemainingHp`, absorbe daño antes que la vida) e **Invocar** (`SummonOnDeath`, genera unidades aliadas al morir). 5 gatos de demostración nuevos en [`src/data/cats.ts`](src/data/cats.ts) (`massive-strike-cat`, `zombie-hunter-cat`, `metal-hunter-cat`, `shield-cat`, `summoner-cat`), visibles en `UnitDetailPanel` (`describeAbility`).
 
+### Qué falta (próximas fases)
+
+No queda ninguna spec abierta: `001`–`038` están completas y no hay tareas pendientes en ningún `tasks.md`. Lo que sigue **no tiene spec todavía**; candidatos, ordenados por cercanía a lo ya construido:
+
+1. **Cola de `specs/038` (habilidades)** — de las `Ability` con comportamiento real hoy (`TraitTargeting`, `Neutral`, `TraitResistance`, `MassiveDamage`, `TraitKiller`, `Shield`, `SummonOnDeath`, más los efectos `Curse`/`Weaken`/`Freeze`/`Slow` y los ataques `MultiHit`/`Critical`) quedan fuera ~30 variantes del catálogo de referencia: Retroceso extra, Warp, Tóxico, Sobrevivir, Esquivar, Fortalecer, Dinero Extra, y las Killers de los demás rasgos. Además, inmunidad de jefes a Golpe Letal/Killer (explícitamente diferida por `038`).
+2. **Cabezas de Cañón (Ototo Corps)** — variantes del Cat Cannon con efecto secundario (retroceso/aturdimiento); diferidas por `specs/035` hasta que exista un efecto secundario base del cañón.
+3. **Calendario de eventos general (Fase 25 del plan técnico)** — eventos recurrentes (Meow Meow Day, eventos mensuales) más allá del banner único (`014`) y el Festival de Tesoros (`032`).
+4. **Contenido** — solo existe el Capítulo 1 de Imperio de los Gatos (`027`) y el nivel "Hacia el Futuro" (`011`); faltan los capítulos siguientes.
+5. **Respec de Talentos** — reiniciar y reelegir debuff/rasgo (diferido por `036`).
+6. **Migraciones de datos opcionales** — mover `Metal` de clasificación especial a estándar y separar `EnemyStrengthMultiplier` en HP%/Daño% (Grupo B de `docs/plan-tecnico-manual-completo.md`); requieren plan de migración propio.
+7. **Rebranding/Theming (Fase 14 de `docs/roadmap-fases.md`)** — por diseño la última; capa de marca (nombre, logo, textos) sin tocar la lógica.
+
+Fuera de alcance por diseño: el "Cat Food Shop" de pagos reales (Constitución § V).
+
 ---
 
 ## Arquitectura
