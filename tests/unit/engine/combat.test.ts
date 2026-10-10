@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
-import { resolveAbilityMultiplier, resolveAreaEngagement, resolveBaseDamage, resolveEngagement } from '../../../src/engine/combat'
-import type { BattleUnit, ClassificationType } from '../../../src/engine/types'
+import { describe, expect, it, vi } from 'vitest'
+import { applyCannonHead, resolveAbilityMultiplier, resolveAreaEngagement, resolveBaseDamage, resolveEngagement } from '../../../src/engine/combat'
+import type { AppliesEffect, BattleUnit, ClassificationType } from '../../../src/engine/types'
 
 function makeUnit(overrides: Partial<BattleUnit> = {}): BattleUnit {
   return {
@@ -792,5 +792,896 @@ describe('Escudo — absorción de daño previa a hp (specs/038-catalogo-habilid
 
     expect(result.splashTargets[0].shieldRemainingHp).toBe(0)
     expect(result.splashTargets[0].hp).toBe(95) // 100 - (10 - 5) de excedente
+  })
+})
+
+describe('Fortalecer — daño multiplicado bajo el umbral de vida (specs/039-habilidades-control-defensa US1)', () => {
+  const strengthen = { kind: 'Strengthen' as const, hpThresholdFraction: 0.5, damageMultiplier: 2 }
+
+  it('por encima del umbral inflige su daño normal', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', hp: 60, maxHp: 100, damage: 10, attackCooldownRemaining: 0, abilities: [strengthen] })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.hp).toBe(990) // 1000 - 10, sin multiplicar
+    expect(random).not.toHaveBeenCalled() // Fortalecer es determinista — nunca consume un roll (FR-009)
+  })
+
+  it('justo en el umbral (inclusivo) multiplica el daño', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', hp: 50, maxHp: 100, damage: 10, attackCooldownRemaining: 0, abilities: [strengthen] })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.hp).toBe(980) // 1000 - 10*2
+  })
+
+  it('bajo el umbral multiplica el daño', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', hp: 10, maxHp: 100, damage: 10, attackCooldownRemaining: 0, abilities: [strengthen] })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.hp).toBe(980)
+  })
+
+  it('el multiplicador aplica también contra la base (resolveBaseDamage)', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', hp: 40, maxHp: 100, damage: 10, attackCooldownRemaining: 0, abilities: [strengthen] })
+
+    const result = resolveBaseDamage(attacker, { hp: 1000, maxHp: 1000 }, 0.1)
+
+    expect(result.base.hp).toBe(980) // 1000 - 10*2
+  })
+
+  it('el multiplicador aplica también en la salpicadura (resolveAreaEngagement)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      hp: 40,
+      maxHp: 100,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'Area',
+      areaRadius: 50,
+      abilities: [strengthen],
+    })
+    const primary = makeUnit({ instanceId: 'primary', hp: 1000, attackCooldownRemaining: 5 })
+    const splash = makeUnit({ instanceId: 'splash', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveAreaEngagement(attacker, primary, [splash], 0.1)
+
+    expect(result.primaryTarget.hp).toBe(980)
+    expect(result.splashTargets[0].hp).toBe(980)
+  })
+
+  it('combinado con Debilitar ambos modificadores se aplican de forma multiplicativa', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      hp: 40,
+      maxHp: 100,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      weakenRemainingSeconds: 2,
+      weakenMagnitude: 0.5, // 10 * (1 - 0.5) = 5
+      abilities: [strengthen], // * 2
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.hp).toBe(990) // 1000 - 5*2
+  })
+
+  it('FR-008: un atacante bajo Curse no aplica Fortalecer aunque esté bajo el umbral', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      hp: 10,
+      maxHp: 100,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      curseRemainingSeconds: 2,
+      abilities: [strengthen],
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.hp).toBe(990) // daño normal bajo Curse
+  })
+
+  it('Edge Case: una unidad que cruza el umbral por un golpe recibido en el mismo paso ya ataca fortalecida en ese paso', () => {
+    // `a` ataca primero y deja a `b` en 40/100 (≤ 50%); `b` ataca después con el multiplicador ya vigente.
+    const a = makeUnit({ instanceId: 'a', hp: 100, maxHp: 100, damage: 20, attackCooldownRemaining: 0 })
+    const b = makeUnit({ instanceId: 'b', hp: 60, maxHp: 100, damage: 10, attackCooldownRemaining: 0, abilities: [strengthen] })
+
+    const result = resolveEngagement(a, b, 0.1)
+
+    expect(result.b.hp).toBe(40) // 60 - 20
+    expect(result.a.hp).toBe(80) // 100 - 10*2
+  })
+})
+
+describe('Esquivar — anula un golpe recibido (specs/039-habilidades-control-defensa US2)', () => {
+  const dodge = (chance: number) => ({ kind: 'Dodge' as const, chance })
+
+  it('chance: 1 anula el golpe por completo: sin daño, sin escudo consumido, sin efecto on-hit y sin Killer', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      appliesEffect: { type: 'Weaken', durationSeconds: 3, magnitude: 0.5 },
+      abilities: [{ kind: 'TraitKiller', targetClassifications: ['Zombie'], chance: 1 }],
+    })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      hp: 1000,
+      shieldRemainingHp: 50,
+      classification: 'Zombie',
+      attackCooldownRemaining: 5,
+      abilities: [dodge(1)],
+    })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.hp).toBe(1000)
+    expect(result.b.shieldRemainingHp).toBe(50)
+    expect(result.b.weakenRemainingSeconds).toBeUndefined()
+    expect(random).toHaveBeenCalledTimes(1) // solo el roll de Esquivar — ningún roll posterior (FR-006)
+  })
+
+  it('chance: 0 nunca esquiva — el daño se resuelve de forma normal', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5, abilities: [dodge(0)] })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(990)
+  })
+
+  it('FR-007: en una secuencia MultiHit cada golpe hace su propio roll independiente', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'MultiHit',
+      hitsPerSequence: 3,
+    })
+    const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5, abilities: [dodge(0.5)] })
+
+    const rolls = [0, 0.9, 0] // golpe 1: esquiva, golpe 2: conecta, golpe 3: esquiva
+    let call = 0
+    const result = resolveEngagement(attacker, defender, 0.1, () => rolls[call++])
+
+    expect(result.b.hp).toBe(990) // solo conectó el segundo golpe
+  })
+
+  it('FR-007: en salpicadura cada objetivo hace su propio roll — esquivar el golpe primario no protege a la salpicadura ni viceversa', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0, attackType: 'Area', areaRadius: 50 })
+
+    const dodgingSplash = resolveAreaEngagement(
+      attacker,
+      makeUnit({ instanceId: 'primary', hp: 1000, attackCooldownRemaining: 5 }),
+      [makeUnit({ instanceId: 'splash', hp: 1000, attackCooldownRemaining: 5, abilities: [dodge(1)] })],
+      0.1,
+      () => 0,
+    )
+    expect(dodgingSplash.primaryTarget.hp).toBe(990)
+    expect(dodgingSplash.splashTargets[0].hp).toBe(1000)
+
+    const dodgingPrimary = resolveAreaEngagement(
+      attacker,
+      makeUnit({ instanceId: 'primary', hp: 1000, attackCooldownRemaining: 5, abilities: [dodge(1)] }),
+      [makeUnit({ instanceId: 'splash', hp: 1000, attackCooldownRemaining: 5 })],
+      0.1,
+      () => 0,
+    )
+    expect(dodgingPrimary.primaryTarget.hp).toBe(1000)
+    expect(dodgingPrimary.splashTargets[0].hp).toBe(990)
+  })
+
+  it('FR-008: un defensor bajo Curse nunca esquiva', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      hp: 1000,
+      attackCooldownRemaining: 5,
+      curseRemainingSeconds: 2,
+      abilities: [dodge(1)],
+    })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.hp).toBe(990)
+    expect(random).not.toHaveBeenCalled() // el roll ni siquiera se hace bajo Curse
+  })
+
+  it('SC-002: con chance: 0.25 y RNG sembrado sobre 400 golpes independientes, los golpes esquivados están entre 75 y 125', () => {
+    const random = mulberry32(2026)
+    let dodged = 0
+
+    for (let i = 0; i < 400; i += 1) {
+      const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+      const defender = makeUnit({ instanceId: 'defender', hp: 1000, attackCooldownRemaining: 5, abilities: [dodge(0.25)] })
+      const result = resolveEngagement(attacker, defender, 0.1, random)
+      if (result.b.hp === 1000) dodged += 1
+    }
+
+    expect(dodged).toBeGreaterThanOrEqual(75)
+    expect(dodged).toBeLessThanOrEqual(125)
+  })
+})
+
+describe('Sobrevivir — resistir un golpe letal con 1 de vida (specs/039-habilidades-control-defensa US3)', () => {
+  const survive = (chance: number) => ({ kind: 'Survive' as const, chance })
+
+  it('un golpe letal con el roll acertado deja al defensor con exactamente 1 de vida, sin pasar a Dead', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 5, attackCooldownRemaining: 5, abilities: [survive(1)] })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(1)
+    expect(result.b.state).not.toBe('Dead')
+  })
+
+  it('un golpe letal con el roll fallado mata al defensor como a cualquier otra unidad', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 5, attackCooldownRemaining: 5, abilities: [survive(0)] })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0.5)
+
+    expect(result.b.hp).toBe(0)
+    expect(result.b.state).toBe('Dead')
+  })
+
+  it('un golpe no letal es idéntico al de una unidad sin la habilidad y no consume ningún roll', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 50, attackCooldownRemaining: 5, abilities: [survive(1)] })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.hp).toBe(40)
+    expect(random).not.toHaveBeenCalled()
+  })
+
+  it('con Escudo, un golpe absorbido por completo no es letal; solo el excedente sobre el escudo puede serlo', () => {
+    const absorbed = resolveEngagement(
+      makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 }),
+      makeUnit({ instanceId: 'defender', hp: 5, shieldRemainingHp: 20, attackCooldownRemaining: 5, abilities: [survive(1)] }),
+      0.1,
+      vi.fn(() => 0),
+    )
+    expect(absorbed.b.hp).toBe(5)
+    expect(absorbed.b.shieldRemainingHp).toBe(10)
+
+    const random = vi.fn(() => 0)
+    const overflow = resolveEngagement(
+      makeUnit({ instanceId: 'attacker', damage: 30, attackCooldownRemaining: 0 }),
+      makeUnit({ instanceId: 'defender', hp: 5, shieldRemainingHp: 20, attackCooldownRemaining: 5, abilities: [survive(1)] }),
+      0.1,
+      random,
+    )
+    expect(overflow.b.shieldRemainingHp).toBe(0)
+    expect(overflow.b.hp).toBe(1) // excedente de 10 ≥ hp 5 → letal → Sobrevivir
+    expect(random).toHaveBeenCalledTimes(1)
+  })
+
+  it('FR-003: una eliminación instantánea de Killer cuenta como golpe letal y Sobrevivir puede evitarla', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [{ kind: 'TraitKiller', targetClassifications: ['Zombie'], chance: 1 }],
+    })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      hp: 1000,
+      classification: 'Zombie',
+      attackCooldownRemaining: 5,
+      abilities: [survive(1)],
+    })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.hp).toBe(1)
+    expect(random).toHaveBeenCalledTimes(2) // roll del Killer + roll de Sobrevivir
+  })
+
+  it('la habilidad no se agota: una unidad que sobrevivió con 1 de vida hace un roll nuevo e independiente ante el siguiente golpe letal', () => {
+    const defender = makeUnit({ instanceId: 'defender', hp: 5, attackCooldownRemaining: 5, abilities: [survive(0.5)] })
+
+    const first = resolveEngagement(makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 }), defender, 0.1, () => 0)
+    expect(first.b.hp).toBe(1)
+
+    const second = resolveEngagement(makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 }), first.b, 0.1, () => 0.99)
+    expect(second.b.hp).toBe(0)
+    expect(second.b.state).toBe('Dead')
+  })
+
+  it('FR-007: en una secuencia MultiHit cada golpe letal hace su propio roll de Sobrevivir', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0, attackType: 'MultiHit', hitsPerSequence: 2 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 5, attackCooldownRemaining: 5, abilities: [survive(0.5)] })
+
+    const rolls = [0, 0.99] // golpe 1: sobrevive con 1 de vida; golpe 2: falla y muere
+    let call = 0
+    const result = resolveEngagement(attacker, defender, 0.1, () => rolls[call++])
+
+    expect(result.b.hp).toBe(0)
+    expect(result.b.state).toBe('Dead')
+  })
+
+  it('FR-008: un defensor bajo Curse no sobrevive aunque el roll acertaría', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', hp: 5, attackCooldownRemaining: 5, curseRemainingSeconds: 2, abilities: [survive(1)] })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.state).toBe('Dead')
+    expect(random).not.toHaveBeenCalled()
+  })
+
+  it('en salpicadura (resolveAreaEngagement) el objetivo con Sobrevivir queda con 1 de vida y sin pasar a Dead', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0, attackType: 'Area', areaRadius: 50 })
+    const primary = makeUnit({ instanceId: 'primary', hp: 1000, attackCooldownRemaining: 5 })
+    const splash = makeUnit({ instanceId: 'splash', hp: 5, attackCooldownRemaining: 5, abilities: [survive(1)] })
+
+    const result = resolveAreaEngagement(attacker, primary, [splash], 0.1, () => 0)
+
+    expect(result.splashTargets[0].hp).toBe(1)
+    expect(result.splashTargets[0].state).not.toBe('Dead')
+  })
+
+  it('SC-003: con chance: 0.3 y RNG sembrado sobre 400 golpes letales, los sobrevivientes están entre 90 y 150', () => {
+    const random = mulberry32(2026)
+    let survivors = 0
+
+    for (let i = 0; i < 400; i += 1) {
+      const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0 })
+      const defender = makeUnit({ instanceId: 'defender', hp: 5, attackCooldownRemaining: 5, abilities: [survive(0.3)] })
+      const result = resolveEngagement(attacker, defender, 0.1, random)
+      if (result.b.hp === 1) survivors += 1
+    }
+
+    expect(survivors).toBeGreaterThanOrEqual(90)
+    expect(survivors).toBeLessThanOrEqual(150)
+  })
+})
+
+describe('Retroceso — empujar al objetivo golpeado hacia su base (specs/039-habilidades-control-defensa US4)', () => {
+  const knockback = (chance: number, distance: number) => ({ kind: 'Knockback' as const, chance, distance })
+
+  it('un atacante enemigo desplaza a un objetivo del jugador hacia menor x', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Enemy', damage: 10, attackCooldownRemaining: 0, abilities: [knockback(1, 30)] })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Player', x: 100, hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.x).toBe(70)
+    expect(result.b.hp).toBe(990) // el golpe también hace su daño normal
+  })
+
+  it('un atacante del jugador desplaza a un objetivo enemigo hacia mayor x', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [knockback(1, 30)] })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', x: 200, hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.x).toBe(230)
+  })
+
+  it('FR-005: el jugador nunca queda por debajo de x = 0, y una unidad ya en el origen no se desplaza', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Enemy', damage: 10, attackCooldownRemaining: 0, abilities: [knockback(1, 30)] })
+
+    const nearOrigin = resolveEngagement(attacker, makeUnit({ instanceId: 'd1', team: 'Player', x: 10, hp: 1000, attackCooldownRemaining: 5 }), 0.1, () => 0)
+    expect(nearOrigin.b.x).toBe(0)
+
+    const atOrigin = resolveEngagement(attacker, makeUnit({ instanceId: 'd2', team: 'Player', x: 0, hp: 1000, attackCooldownRemaining: 5 }), 0.1, () => 0)
+    expect(atOrigin.b.x).toBe(0)
+  })
+
+  it('FR-005: el enemigo nunca supera laneLength - width; una unidad ya en o más allá de ese borde no se desplaza', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [knockback(1, 30)] })
+    const enemyAt = (x: number) => makeUnit({ instanceId: 'enemy', team: 'Enemy', x, width: 16, hp: 1000, attackCooldownRemaining: 5 })
+
+    expect(resolveEngagement(attacker, enemyAt(370), 0.1, () => 0, 400).b.x).toBe(384) // 400 - 16
+    expect(resolveEngagement(attacker, enemyAt(384), 0.1, () => 0, 400).b.x).toBe(384)
+    expect(resolveEngagement(attacker, enemyAt(390), 0.1, () => 0, 400).b.x).toBe(390) // ya más allá del borde: no se "devuelve" hacia adentro
+  })
+
+  it('un golpe que mata al objetivo no lo desplaza ni consume el roll de Retroceso', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [knockback(1, 30)] })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', x: 200, hp: 5, attackCooldownRemaining: 5 })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.state).toBe('Dead')
+    expect(result.b.x).toBe(200)
+    expect(random).not.toHaveBeenCalled()
+  })
+
+  it('un objetivo que sobrevive con 1 de vida gracias a Sobrevivir sí es empujado', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [knockback(1, 30)] })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      team: 'Enemy',
+      x: 200,
+      hp: 5,
+      attackCooldownRemaining: 5,
+      abilities: [{ kind: 'Survive', chance: 1 }],
+    })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.hp).toBe(1)
+    expect(result.b.x).toBe(230)
+    expect(random).toHaveBeenCalledTimes(2) // Sobrevivir, luego Retroceso
+  })
+
+  it('un golpe esquivado no desplaza al objetivo', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [knockback(1, 30)] })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      team: 'Enemy',
+      x: 200,
+      hp: 1000,
+      attackCooldownRemaining: 5,
+      abilities: [{ kind: 'Dodge', chance: 1 }],
+    })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.x).toBe(200)
+    expect(result.b.hp).toBe(1000)
+  })
+
+  it('FR-007: en salpicadura cada objetivo hace su propio roll de Retroceso', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'Area',
+      areaRadius: 50,
+      abilities: [knockback(0.5, 30)],
+    })
+    const primary = makeUnit({ instanceId: 'primary', team: 'Enemy', x: 100, hp: 1000, attackCooldownRemaining: 5 })
+    const splash = makeUnit({ instanceId: 'splash', team: 'Enemy', x: 110, hp: 1000, attackCooldownRemaining: 5 })
+
+    const rolls = [0, 0.99] // primario: acierta; salpicadura: falla
+    let call = 0
+    const result = resolveAreaEngagement(attacker, primary, [splash], 0.1, () => rolls[call++])
+
+    expect(result.primaryTarget.x).toBe(130)
+    expect(result.splashTargets[0].x).toBe(110)
+  })
+
+  it('FR-008: un atacante bajo Curse no desplaza a nadie y no consume el roll', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      curseRemainingSeconds: 2,
+      abilities: [knockback(1, 30)],
+    })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', x: 200, hp: 1000, attackCooldownRemaining: 5 })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.x).toBe(200)
+    expect(random).not.toHaveBeenCalled()
+  })
+
+  it('FR-007: en una secuencia MultiHit los desplazamientos se acumulan, respetando siempre el borde del carril', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'MultiHit',
+      hitsPerSequence: 3,
+      abilities: [knockback(1, 10)],
+    })
+    const enemyAt = (x: number) => makeUnit({ instanceId: 'enemy', team: 'Enemy', x, width: 16, hp: 1000, attackCooldownRemaining: 5 })
+
+    expect(resolveEngagement(attacker, enemyAt(200), 0.1, () => 0, 400).b.x).toBe(230) // 3 × 10
+    expect(resolveEngagement(attacker, enemyAt(200), 0.1, () => 0, 240).b.x).toBe(224) // tope: 240 - 16
+  })
+
+  it('SC-004: con chance: 0.3 y RNG sembrado sobre 400 golpes, los desplazamientos están entre 90 y 150', () => {
+    const random = mulberry32(2026)
+    let displaced = 0
+
+    for (let i = 0; i < 400; i += 1) {
+      const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [knockback(0.3, 30)] })
+      const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', x: 200, hp: 1000, attackCooldownRemaining: 5 })
+      const result = resolveEngagement(attacker, defender, 0.1, random, 400)
+      if (result.b.x !== 200) displaced += 1
+    }
+
+    expect(displaced).toBeGreaterThanOrEqual(90)
+    expect(displaced).toBeLessThanOrEqual(150)
+  })
+})
+
+describe('Dinero Extra — crédito de la derrota (specs/040-dinero-extra-inmunidades US1)', () => {
+  const extraMoney = { kind: 'ExtraMoney' as const, energyBonus: 5 }
+
+  it('un atacante del jugador con la habilidad que deja a un enemigo en 0 de vida le fija defeatBounty', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [extraMoney] })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', hp: 10, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.state).toBe('Dead')
+    expect(result.b.defeatBounty).toBe(5)
+  })
+
+  it('un golpe que no derrota al enemigo no deja defeatBounty', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [extraMoney] })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', hp: 11, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.hp).toBe(1)
+    expect(result.b.defeatBounty).toBeUndefined()
+  })
+
+  it('sin la habilidad, derrotar a un enemigo no deja defeatBounty', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0 })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', hp: 10, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.state).toBe('Dead')
+    expect(result.b.defeatBounty).toBeUndefined()
+  })
+
+  it('un enemigo que sobrevive con 1 de vida gracias a Sobrevivir no cuenta como derrotado', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [extraMoney] })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      team: 'Enemy',
+      hp: 5,
+      attackCooldownRemaining: 5,
+      abilities: [{ kind: 'Survive', chance: 1 }],
+    })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(1)
+    expect(result.b.defeatBounty).toBeUndefined()
+  })
+
+  it('FR-002: una eliminación instantánea de Killer cuenta como derrota y concede el bono', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [extraMoney, { kind: 'TraitKiller', targetClassifications: ['Zombie'], chance: 1 }],
+    })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', hp: 1000, classification: 'Zombie', attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.state).toBe('Dead')
+    expect(result.b.defeatBounty).toBe(5)
+  })
+
+  it('FR-003: un atacante bajo Curse no concede el bono', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      curseRemainingSeconds: 2,
+      abilities: [extraMoney],
+    })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', hp: 10, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.state).toBe('Dead')
+    expect(result.b.defeatBounty).toBeUndefined()
+  })
+
+  it('FR-003: la Maldición que aplica el enemigo derrotado en el mismo paso (contraataque simultáneo) no le quita el bono ya ganado', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [extraMoney] })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      team: 'Enemy',
+      hp: 10,
+      damage: 1,
+      attackCooldownRemaining: 0,
+      appliesEffect: { type: 'Curse', durationSeconds: 3 },
+    })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.a.curseRemainingSeconds).toBe(3) // el atacante terminó maldecido por el contraataque simultáneo…
+    expect(result.b.defeatBounty).toBe(5) // …pero lo maldijeron DESPUÉS de su golpe letal: el bono ya estaba ganado
+  })
+
+  it('FR-004: una unidad enemiga con Dinero Extra no deja defeatBounty al derrotar a una del jugador', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Enemy', damage: 10, attackCooldownRemaining: 0, abilities: [extraMoney] })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Player', hp: 10, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.state).toBe('Dead')
+    expect(result.b.defeatBounty).toBeUndefined()
+  })
+
+  it('FR-002: en salpicadura (resolveAreaEngagement) cada objetivo derrotado lleva su propio defeatBounty', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'Area',
+      areaRadius: 50,
+      abilities: [extraMoney],
+    })
+    const primary = makeUnit({ instanceId: 'primary', team: 'Enemy', hp: 10, attackCooldownRemaining: 5 })
+    const splashDead = makeUnit({ instanceId: 'splash-dead', team: 'Enemy', hp: 10, attackCooldownRemaining: 5 })
+    const splashAlive = makeUnit({ instanceId: 'splash-alive', team: 'Enemy', hp: 100, attackCooldownRemaining: 5 })
+
+    const result = resolveAreaEngagement(attacker, primary, [splashDead, splashAlive], 0.1)
+
+    expect(result.primaryTarget.defeatBounty).toBe(5)
+    expect(result.splashTargets[0].defeatBounty).toBe(5)
+    expect(result.splashTargets[1].defeatBounty).toBeUndefined()
+  })
+
+  it('una secuencia MultiHit que derrota al objetivo concede el bono una sola vez (los golpes restantes se descartan)', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'MultiHit',
+      hitsPerSequence: 3,
+      abilities: [extraMoney],
+    })
+    const defender = makeUnit({ instanceId: 'defender', team: 'Enemy', hp: 15, attackCooldownRemaining: 5 })
+
+    const result = resolveEngagement(attacker, defender, 0.1)
+
+    expect(result.b.state).toBe('Dead')
+    expect(result.b.defeatBounty).toBe(5)
+  })
+
+  it('el daño a una base nunca deja defeatBounty (la base no es una unidad)', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [extraMoney] })
+
+    const result = resolveBaseDamage(attacker, { hp: 5, maxHp: 1000 }, 0.1)
+
+    expect(result.base.hp).toBe(0)
+    expect(result.base).not.toHaveProperty('defeatBounty')
+  })
+})
+
+describe('Inmunidad a habilidades — Golpe Letal, Killer y Retroceso ignorados (specs/040-dinero-extra-inmunidades US2)', () => {
+  const massive = { kind: 'MassiveDamage' as const, chance: 1, damageMultiplier: 3 }
+  const zombieKiller = { kind: 'TraitKiller' as const, targetClassifications: ['Zombie' as const], chance: 1 }
+  const knockback = { kind: 'Knockback' as const, chance: 1, distance: 30 }
+
+  it('Golpe Letal: un defensor inmune recibe el daño normal y uno no inmune el multiplicado', () => {
+    const attacker = () => makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0, abilities: [massive] })
+    const immune = makeUnit({ instanceId: 'immune', hp: 1000, attackCooldownRemaining: 5, immuneAbilities: ['MassiveDamage'] })
+    const plain = makeUnit({ instanceId: 'plain', hp: 1000, attackCooldownRemaining: 5 })
+
+    expect(resolveEngagement(attacker(), immune, 0.1, () => 0).b.hp).toBe(990) // 1000 - 10, sin multiplicar
+    expect(resolveEngagement(attacker(), plain, 0.1, () => 0).b.hp).toBe(970) // 1000 - 10*3
+  })
+
+  it('Killer: un defensor Zombie inmune a Killer no es eliminado (recibe el daño normal) y uno no inmune sí', () => {
+    const attacker = () => makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0, abilities: [zombieKiller] })
+    const immune = makeUnit({
+      instanceId: 'immune',
+      hp: 1000,
+      classification: 'Zombie',
+      attackCooldownRemaining: 5,
+      immuneAbilities: ['TraitKiller'],
+    })
+    const plain = makeUnit({ instanceId: 'plain', hp: 1000, classification: 'Zombie', attackCooldownRemaining: 5 })
+
+    expect(resolveEngagement(attacker(), immune, 0.1, () => 0).b.hp).toBe(990)
+    expect(resolveEngagement(attacker(), plain, 0.1, () => 0).b.hp).toBe(0)
+  })
+
+  it('Retroceso: un defensor inmune no se desplaza y uno no inmune sí', () => {
+    const attacker = () =>
+      makeUnit({ instanceId: 'attacker', team: 'Player', damage: 10, attackCooldownRemaining: 0, abilities: [knockback] })
+    const immune = makeUnit({
+      instanceId: 'immune',
+      team: 'Enemy',
+      x: 200,
+      hp: 1000,
+      attackCooldownRemaining: 5,
+      immuneAbilities: ['Knockback'],
+    })
+    const plain = makeUnit({ instanceId: 'plain', team: 'Enemy', x: 200, hp: 1000, attackCooldownRemaining: 5 })
+
+    expect(resolveEngagement(attacker(), immune, 0.1, () => 0).b.x).toBe(200)
+    expect(resolveEngagement(attacker(), plain, 0.1, () => 0).b.x).toBe(230)
+  })
+
+  it('SC-003: cada inmunidad es independiente — un defensor inmune solo a Retroceso sufre el Golpe Letal del mismo atacante', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [massive, knockback],
+    })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      team: 'Enemy',
+      x: 200,
+      hp: 1000,
+      attackCooldownRemaining: 5,
+      immuneAbilities: ['Knockback'],
+    })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(970) // el Golpe Letal sí se aplicó
+    expect(result.b.x).toBe(200) // el Retroceso no
+  })
+
+  it('FR-006: la habilidad ignorada no consume su tirada de probabilidad', () => {
+    const defender = makeUnit({
+      instanceId: 'defender',
+      team: 'Enemy',
+      x: 200,
+      hp: 1000,
+      classification: 'Zombie',
+      attackCooldownRemaining: 5,
+      immuneAbilities: ['MassiveDamage', 'TraitKiller', 'Knockback'],
+    })
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [massive, zombieKiller, knockback],
+    })
+    const random = vi.fn(() => 0)
+
+    const result = resolveEngagement(attacker, defender, 0.1, random)
+
+    expect(result.b.hp).toBe(990)
+    expect(result.b.x).toBe(200)
+    expect(random).not.toHaveBeenCalled()
+  })
+
+  it('FR-006: en salpicadura la inmunidad se evalúa por objetivo — primario inmune, salpicadura no inmune sufre el efecto', () => {
+    const attacker = makeUnit({
+      instanceId: 'attacker',
+      team: 'Player',
+      damage: 10,
+      attackCooldownRemaining: 0,
+      attackType: 'Area',
+      areaRadius: 50,
+      abilities: [massive],
+    })
+    const primary = makeUnit({
+      instanceId: 'primary',
+      team: 'Enemy',
+      hp: 1000,
+      attackCooldownRemaining: 5,
+      immuneAbilities: ['MassiveDamage'],
+    })
+    const splash = makeUnit({ instanceId: 'splash', team: 'Enemy', hp: 1000, attackCooldownRemaining: 5 })
+
+    const result = resolveAreaEngagement(attacker, primary, [splash], 0.1, () => 0)
+
+    expect(result.primaryTarget.hp).toBe(990)
+    expect(result.splashTargets[0].hp).toBe(970)
+  })
+
+  it('FR-007: un defensor inmune bajo Curse sigue siendo inmune', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0, abilities: [massive] })
+    const defender = makeUnit({
+      instanceId: 'defender',
+      hp: 1000,
+      attackCooldownRemaining: 5,
+      curseRemainingSeconds: 2,
+      immuneAbilities: ['MassiveDamage'],
+    })
+
+    const result = resolveEngagement(attacker, defender, 0.1, () => 0)
+
+    expect(result.b.hp).toBe(990)
+  })
+
+  it('el daño a una base sigue pudiendo aplicar Golpe Letal — las bases no tienen inmunidades', () => {
+    const attacker = makeUnit({ instanceId: 'attacker', damage: 10, attackCooldownRemaining: 0, abilities: [massive] })
+
+    const result = resolveBaseDamage(attacker, { hp: 1000, maxHp: 1000 }, 0.1, () => 0)
+
+    expect(result.base.hp).toBe(970)
+  })
+})
+
+describe('Cabeza de Cañón — efecto secundario del cañón especial (specs/041-cabezas-de-canon US2)', () => {
+  const enemy = (overrides: Partial<BattleUnit> = {}) =>
+    makeUnit({ instanceId: 'enemy', team: 'Enemy', x: 200, width: 16, hp: 100, ...overrides })
+  const knockback = { kind: 'Knockback' as const, distance: 40 }
+  const effect = (spec: AppliesEffect) => ({ kind: 'Effect' as const, effect: spec })
+
+  it('Retroceso desplaza al enemigo hacia mayor x la distancia del catálogo', () => {
+    expect(applyCannonHead(enemy(), knockback, 400).x).toBe(240)
+  })
+
+  it('Retroceso respeta el borde del carril (laneLength - width); un enemigo ya en el borde no se desplaza', () => {
+    expect(applyCannonHead(enemy({ x: 370 }), knockback, 400).x).toBe(384) // 400 - 16
+    expect(applyCannonHead(enemy({ x: 384 }), knockback, 400).x).toBe(384)
+  })
+
+  it('Retroceso no desplaza a un enemigo inmune a Retroceso (specs/040)', () => {
+    expect(applyCannonHead(enemy({ immuneAbilities: ['Knockback'] }), knockback, 400).x).toBe(200)
+  })
+
+  it.each([
+    ['Weaken', { type: 'Weaken' as const, durationSeconds: 5, magnitude: 0.5 }, { weakenRemainingSeconds: 5, weakenMagnitude: 0.5 }],
+    ['Freeze', { type: 'Freeze' as const, durationSeconds: 3 }, { freezeRemainingSeconds: 3 }],
+    ['Slow', { type: 'Slow' as const, durationSeconds: 5, magnitude: 0.5 }, { slowRemainingSeconds: 5, slowMagnitude: 0.5 }],
+    ['Curse', { type: 'Curse' as const, durationSeconds: 5 }, { curseRemainingSeconds: 5 }],
+  ])('%s deja en el enemigo los campos del efecto con la duración (y magnitud) del catálogo', (_name, spec, expected) => {
+    expect(applyCannonHead(enemy(), effect(spec), 400)).toMatchObject(expected)
+  })
+
+  it('un efecto de estado respeta immuneEffects (sin efecto)', () => {
+    const result = applyCannonHead(enemy({ immuneEffects: ['Freeze'] }), effect({ type: 'Freeze', durationSeconds: 3 }), 400)
+
+    expect(result.freezeRemainingSeconds).toBeUndefined()
+  })
+
+  it('un efecto de estado reduce su duración con resistantTo, y una resistencia que la deja en ≤0 equivale a no aplicarlo', () => {
+    const resisted = applyCannonHead(
+      enemy({ resistantTo: [{ effect: 'Slow', durationMultiplier: 0.5 }] }),
+      effect({ type: 'Slow', durationSeconds: 5, magnitude: 0.5 }),
+      400,
+    )
+    expect(resisted.slowRemainingSeconds).toBe(2.5)
+
+    const nullified = applyCannonHead(
+      enemy({ resistantTo: [{ effect: 'Slow', durationMultiplier: 0 }] }),
+      effect({ type: 'Slow', durationSeconds: 5, magnitude: 0.5 }),
+      400,
+    )
+    expect(nullified.slowRemainingSeconds).toBeUndefined()
+  })
+
+  it('un efecto de estado se refresca, no se acumula, al aplicarse dos veces', () => {
+    const spec = effect({ type: 'Freeze', durationSeconds: 3 })
+    const once = applyCannonHead(enemy(), spec, 400)
+    const twice = applyCannonHead({ ...once, freezeRemainingSeconds: 1 }, spec, 400)
+
+    expect(twice.freezeRemainingSeconds).toBe(3)
+  })
+
+  it('es pura: devuelve una copia y no muta la unidad de entrada', () => {
+    const input = enemy()
+
+    const knocked = applyCannonHead(input, knockback, 400)
+    const frozen = applyCannonHead(input, effect({ type: 'Freeze', durationSeconds: 3 }), 400)
+
+    expect(knocked).not.toBe(input)
+    expect(frozen).not.toBe(input)
+    expect(input.x).toBe(200)
+    expect(input.freezeRemainingSeconds).toBeUndefined()
   })
 })

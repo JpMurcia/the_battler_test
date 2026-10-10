@@ -18,11 +18,11 @@ export function NewsPanel() {
   }, [])
 
   return (
-    <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
       <h1>Buzón de Noticias</h1>
       <ul className="list-card">
         {sorted.map((entry) => (
-          <li key={entry.id} className="list-card__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 4 }}>
+          <li key={entry.id} className="list-card__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 'var(--bc-space-2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
               <span className="list-card__title">{entry.title}</span>
               <span className="list-card__meta">{entry.date}</span>

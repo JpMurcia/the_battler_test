@@ -1755,3 +1755,98 @@ describe('useMetaStore — Tienda (specs/037-tienda)', () => {
     })
   })
 })
+
+describe('useMetaStore — Cabeza de Cañón (specs/041-cabezas-de-canon US1)', () => {
+  it('startOtotoConstruction("cannonHead") con materiales suficientes descuenta el costo exacto, registra la construcción y persiste', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ gamatotoMaterials: 100 })
+
+    const ok = useMetaStore.getState().startOtotoConstruction('cannonHead', 'Knockback')
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().gamatotoMaterials).toBe(60) // 100 - 40
+    expect(useMetaStore.getState().ototoConstruction).toEqual(
+      expect.objectContaining({ building: 'cannonHead', choice: 'Knockback' }),
+    )
+
+    await useMetaStore.getState().hydrate()
+    expect(useMetaStore.getState().ototoConstruction?.choice).toBe('Knockback')
+  })
+
+  it('sin materiales suficientes devuelve false sin mutar', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ gamatotoMaterials: 39 })
+
+    const ok = useMetaStore.getState().startOtotoConstruction('cannonHead', 'Knockback')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().ototoConstruction).toBeNull()
+    expect(useMetaStore.getState().gamatotoMaterials).toBe(39)
+  })
+
+  it('una elección fuera de CANNON_HEAD_OPTIONS devuelve false sin mutar ni descontar', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ gamatotoMaterials: 100 })
+
+    const ok = useMetaStore.getState().startOtotoConstruction('cannonHead', 'Floating')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().ototoConstruction).toBeNull()
+    expect(useMetaStore.getState().gamatotoMaterials).toBe(100)
+  })
+
+  it('con otra construcción en curso (Base) no se puede iniciar la Cabeza de Cañón', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ gamatotoMaterials: 1000 })
+    useMetaStore.getState().startOtotoConstruction('foundation', 'Floating')
+    const materialsAfterFirst = useMetaStore.getState().gamatotoMaterials
+
+    const ok = useMetaStore.getState().startOtotoConstruction('cannonHead', 'Knockback')
+
+    expect(ok).toBe(false)
+    expect(useMetaStore.getState().gamatotoMaterials).toBe(materialsAfterFirst)
+  })
+
+  it('claimOtotoConstruction lista escribe cannonHead en ototoBuildings, limpia el slot y la elección sobrevive a hydrate()', async () => {
+    await useMetaStore.getState().hydrate()
+    const now = Date.now()
+    useMetaStore.setState({ ototoConstruction: { building: 'cannonHead', choice: 'Slow', startedAtMs: now - 16 * 60_000 } })
+
+    const ok = useMetaStore.getState().claimOtotoConstruction()
+
+    expect(ok).toBe(true)
+    expect(useMetaStore.getState().ototoBuildings.cannonHead).toBe('Slow')
+    expect(useMetaStore.getState().ototoConstruction).toBeNull()
+
+    await useMetaStore.getState().hydrate() // nueva sesión
+    expect(useMetaStore.getState().ototoBuildings.cannonHead).toBe('Slow')
+  })
+
+  it('reclamar la Cabeza de Cañón conserva las elecciones de Base y Estilo ya construidas (FR-009)', async () => {
+    await useMetaStore.getState().hydrate()
+    const now = Date.now()
+    useMetaStore.setState({
+      ototoBuildings: { foundation: 'Floating', style: 'Freeze' },
+      ototoConstruction: { building: 'cannonHead', choice: 'Knockback', startedAtMs: now - 16 * 60_000 },
+    })
+
+    useMetaStore.getState().claimOtotoConstruction()
+
+    expect(useMetaStore.getState().ototoBuildings).toEqual({ foundation: 'Floating', style: 'Freeze', cannonHead: 'Knockback' })
+  })
+
+  it('reconstruir con otra elección reemplaza la anterior solo al reclamar (la anterior sigue activa mientras tanto)', async () => {
+    await useMetaStore.getState().hydrate()
+    useMetaStore.setState({ ototoBuildings: { cannonHead: 'Knockback' }, gamatotoMaterials: 100 })
+
+    useMetaStore.getState().startOtotoConstruction('cannonHead', 'Freeze')
+    expect(useMetaStore.getState().ototoBuildings.cannonHead).toBe('Knockback') // todavía la anterior
+
+    useMetaStore.setState({
+      ototoConstruction: { building: 'cannonHead', choice: 'Freeze', startedAtMs: Date.now() - 16 * 60_000 },
+    })
+    useMetaStore.getState().claimOtotoConstruction()
+
+    expect(useMetaStore.getState().ototoBuildings.cannonHead).toBe('Freeze')
+  })
+})

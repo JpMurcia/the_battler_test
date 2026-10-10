@@ -5,12 +5,16 @@ import type { Cat } from './cats'
  * (0 unidades antes de esta spec). Sin `spriteKey` a propósito — caen en el fallback `Graphics` genérico que
  * `UnitSprite.tsx` ya provee desde specs/003 (idle + ataque por transform), sin pipeline procedural nuevo
  * (research.md Decisión 2). Valores de diseño provisionales, no balanceados, mismo criterio que `CATS`.
+ *
+ * Escala de `cost`: el despliegue exige `energy.current >= cost` y `energy.max` es `Level.maxEnergy` (100–120 en
+ * todos los niveles), así que `cost` debe ser ≤ 100 para ser desplegable. Los costes originales (1600–3500, escala
+ * de dinero del juego original) se reescalaron ÷35 tras `/balance-check cats` — antes ninguna de las 4 se podía usar.
  */
 export const GACHA_UNITS: Cat[] = [
   {
     id: 'legend-cat-eclipse',
     name: 'Gato Eclipse',
-    cost: 3500,
+    cost: 100,
     cooldownSeconds: 45,
     hp: 500,
     damage: 150,
@@ -26,7 +30,7 @@ export const GACHA_UNITS: Cat[] = [
   {
     id: 'legend-cat-supreme',
     name: 'Gato Supremo',
-    cost: 3000,
+    cost: 86,
     cooldownSeconds: 42,
     hp: 700,
     damage: 60,
@@ -43,7 +47,7 @@ export const GACHA_UNITS: Cat[] = [
   {
     id: 'collab-cat-voidwalker',
     name: 'Gato Errante del Vacío',
-    cost: 1800,
+    cost: 51,
     cooldownSeconds: 30,
     hp: 220,
     damage: 45,
@@ -58,7 +62,7 @@ export const GACHA_UNITS: Cat[] = [
   {
     id: 'collab-cat-star-idol',
     name: 'Gato Ídolo Estelar',
-    cost: 1600,
+    cost: 46,
     cooldownSeconds: 28,
     hp: 160,
     damage: 20,

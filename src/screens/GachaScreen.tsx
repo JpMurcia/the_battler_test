@@ -53,7 +53,7 @@ function RollTab({ activeBannerId, setActiveBannerId, onRevealed }: {
   }
 
   return (
-    <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
       <div className="hud-bar">
         {GACHA_BANNERS.map((banner) => (
           <button
@@ -67,14 +67,14 @@ function RollTab({ activeBannerId, setActiveBannerId, onRevealed }: {
       </div>
       <section className="glass-panel">
         <p className="screen-subtitle">{activeBanner.tagline}</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-4)', marginTop: 'var(--bc-space-4)' }}>
           {activeBanner.odds.map((odds) => (
-            <div key={odds.rarity} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div key={odds.rarity} style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-4)' }}>
               <span className={`tag ${RARITY_TAG_CLASS[odds.rarity]}`} style={{ width: 90, flexShrink: 0 }}>
                 {odds.rarity}
               </span>
               <div className="progress-bar" style={{ flex: 1 }}>
-                <div className="progress-bar__fill--gold" style={{ width: `${odds.percent}%`, height: '100%', borderRadius: 5 }} />
+                <div className="progress-bar__fill--gold" style={{ width: `${odds.percent}%`, height: '100%', borderRadius: 'var(--bc-radius-pill)' }} />
               </div>
               <span className="list-card__meta" style={{ width: 44, textAlign: 'right' }}>
                 {odds.percent}%
@@ -103,7 +103,7 @@ function RevealScreen({ results, onContinue }: { results: GachaRollResult[]; onC
       {isMulti ? (
         <div className="gacha-reveal__grid">
           {results.map((result, index) => (
-            <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--bc-space-2)' }}>
               <div className={`gacha-reveal__orb ${ORB_CLASS[result.rarity]}`}>{catNameOf(result.catId).charAt(0)}</div>
               <span className="list-card__meta" style={{ textAlign: 'center' }}>
                 {catNameOf(result.catId)}
@@ -113,12 +113,12 @@ function RevealScreen({ results, onContinue }: { results: GachaRollResult[]; onC
         </div>
       ) : (
         <>
-          <div className={`gacha-reveal__orb ${ORB_CLASS[results[0].rarity]}`} style={{ width: 130, height: 130, fontSize: 30 }}>
+          <div className={`gacha-reveal__orb ${ORB_CLASS[results[0].rarity]}`} style={{ width: 130, height: 130, fontSize: 'var(--bc-text-xl)' }}>
             {catNameOf(results[0].catId).charAt(0)}
           </div>
           <div style={{ textAlign: 'center' }}>
             <div className={`tag ${RARITY_TAG_CLASS[results[0].rarity]}`}>{results[0].rarity}</div>
-            <h2 style={{ marginTop: 4 }}>{catNameOf(results[0].catId)}</h2>
+            <h2 style={{ marginTop: 'var(--bc-space-2)' }}>{catNameOf(results[0].catId)}</h2>
           </div>
         </>
       )}

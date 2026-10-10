@@ -1,10 +1,30 @@
 import { useEffect, useState } from 'react'
 import type { ClassificationType, EffectType } from '../engine/types'
-import { OTOTO_BUILDINGS, getConstructionRemainingMs, isConstructionReady, type OtotoBuildingId } from '../data/ototoCorps'
+import {
+  CANNON_HEAD_LABELS,
+  CANNON_HEAD_OPTIONS,
+  OTOTO_BUILDINGS,
+  getConstructionRemainingMs,
+  isConstructionReady,
+  type CannonHeadEffect,
+  type OtotoBuildingId,
+} from '../data/ototoCorps'
 import { useMetaStore } from '../state/useMetaStore'
 
 const TRAIT_OPTIONS: ClassificationType[] = ['Red', 'Floating', 'Black', 'Angel', 'Alien', 'Zombie', 'Relic', 'Traitless']
 const DEBUFF_OPTIONS: EffectType[] = ['Weaken', 'Freeze', 'Slow', 'Curse']
+
+/** Opciones elegibles por construcción (specs/041 añade la Cabeza de Cañón). */
+const OPTIONS_BY_BUILDING: Record<OtotoBuildingId, string[]> = {
+  foundation: TRAIT_OPTIONS,
+  style: DEBUFF_OPTIONS,
+  cannonHead: CANNON_HEAD_OPTIONS,
+}
+
+/** Texto de una elección: la Cabeza de Cañón se muestra en español; Base y Estilo, como hasta ahora. */
+function describeChoice(building: OtotoBuildingId, choice: string): string {
+  return building === 'cannonHead' ? CANNON_HEAD_LABELS[choice as CannonHeadEffect] ?? choice : choice
+}
 
 function formatCountdown(totalMs: number): string {
   const totalSeconds = Math.max(0, Math.ceil(totalMs / 1000))
@@ -23,6 +43,7 @@ export function OtotoCorpsPanel() {
   const [choices, setChoices] = useState<Record<OtotoBuildingId, string>>({
     foundation: TRAIT_OPTIONS[0],
     style: DEBUFF_OPTIONS[0],
+    cannonHead: CANNON_HEAD_OPTIONS[0],
   })
   const [, setTick] = useState(0)
 
@@ -35,14 +56,14 @@ export function OtotoCorpsPanel() {
   const ready = ototoConstruction && activeDefinition ? isConstructionReady(ototoConstruction, activeDefinition, Date.now()) : false
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
       <h1>Cuerpo Ototo</h1>
       <span className="hud-chip">Materiales: {gamatotoMaterials}</span>
 
       {ototoConstruction && activeDefinition ? (
         <div className="glass-panel">
           <p>
-            {activeDefinition.name} — {ototoConstruction.choice}
+            {activeDefinition.name} — {describeChoice(activeDefinition.id, ototoConstruction.choice)}
           </p>
           {ready ? (
             <button className="btn btn-primary" onClick={() => claimOtotoConstruction()}>
@@ -55,15 +76,15 @@ export function OtotoCorpsPanel() {
       ) : (
         <ul className="list-card">
           {OTOTO_BUILDINGS.map((definition) => {
-            const options = definition.id === 'foundation' ? TRAIT_OPTIONS : DEBUFF_OPTIONS
-            const currentBuilt = ototoBuildings[definition.id as 'foundation' | 'style']
+            const options = OPTIONS_BY_BUILDING[definition.id]
+            const currentBuilt = ototoBuildings[definition.id]
             const disabled = gamatotoMaterials < definition.materialsCost
             return (
               <li key={definition.id} className="list-card__row">
                 <div className="list-card__main">
                   <span className="list-card__title">{definition.name}</span>
                   <span className="list-card__meta">
-                    {definition.materialsCost} materiales{currentBuilt ? ` — actual: ${currentBuilt}` : ''}
+                    {definition.materialsCost} materiales{currentBuilt ? ` — actual: ${describeChoice(definition.id, currentBuilt)}` : ''}
                   </span>
                 </div>
                 <select
@@ -73,7 +94,7 @@ export function OtotoCorpsPanel() {
                 >
                   {options.map((option) => (
                     <option key={option} value={option}>
-                      {option}
+                      {describeChoice(definition.id, option)}
                     </option>
                   ))}
                 </select>

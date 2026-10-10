@@ -9,6 +9,7 @@ import {
   isTalentEligible,
 } from '../../data/talents'
 import { useMetaStore } from '../../state/useMetaStore'
+import { describeImmunities } from './abilityLabels'
 import { PanelOverlay } from './PanelOverlay'
 
 /**
@@ -47,7 +48,7 @@ function TalentsSection({ catId }: { catId: string }) {
   const orbMaxed = orbPoints >= MAX_TALENT_POINTS
 
   return (
-    <div style={{ marginTop: 8 }}>
+    <div style={{ marginTop: 'var(--bc-space-4)' }}>
       <h3>Talentos</h3>
       <span className="hud-chip">NP: {npCurrency}</span>
 
@@ -129,15 +130,37 @@ function TalentsSection({ catId }: { catId: string }) {
   )
 }
 
+/** `switch` exhaustivo: ampliar `Ability` sin añadir su texto aquí es un error de compilación (specs/039). */
 function describeAbility(ability: Ability): string {
-  if (ability.kind === 'Neutral') return `Neutral x${ability.damageMultiplier}`
-  if (ability.kind === 'TraitTargeting') return `Fuerte contra ${ability.targetClassifications.join('/')} (x${ability.damageMultiplier})`
-  if (ability.kind === 'TraitResistance') return `Resistencia a ${ability.targetClassifications.join('/')} (x${ability.damageTakenMultiplier})`
-  // specs/038-catalogo-habilidades-avanzado
-  if (ability.kind === 'MassiveDamage') return `Golpe Letal (${Math.round(ability.chance * 100)}%, x${ability.damageMultiplier})`
-  if (ability.kind === 'TraitKiller') return `Killer contra ${ability.targetClassifications.join('/')} (${Math.round(ability.chance * 100)}%)`
-  if (ability.kind === 'Shield') return `Escudo (${ability.shieldHp} HP)`
-  return `Invoca ${ability.count}x ${ability.summonCatId} al morir`
+  switch (ability.kind) {
+    case 'Neutral':
+      return `Neutral x${ability.damageMultiplier}`
+    case 'TraitTargeting':
+      return `Fuerte contra ${ability.targetClassifications.join('/')} (x${ability.damageMultiplier})`
+    case 'TraitResistance':
+      return `Resistencia a ${ability.targetClassifications.join('/')} (x${ability.damageTakenMultiplier})`
+    // specs/038-catalogo-habilidades-avanzado
+    case 'MassiveDamage':
+      return `Golpe Letal (${Math.round(ability.chance * 100)}%, x${ability.damageMultiplier})`
+    case 'TraitKiller':
+      return `Killer contra ${ability.targetClassifications.join('/')} (${Math.round(ability.chance * 100)}%)`
+    case 'Shield':
+      return `Escudo (${ability.shieldHp} HP)`
+    case 'SummonOnDeath':
+      return `Invoca ${ability.count}x ${ability.summonCatId} al morir`
+    // specs/039-habilidades-control-defensa (FR-010)
+    case 'Strengthen':
+      return `Fortalecer (≤${Math.round(ability.hpThresholdFraction * 100)}% HP, x${ability.damageMultiplier})`
+    case 'Dodge':
+      return `Esquivar (${Math.round(ability.chance * 100)}%)`
+    case 'Survive':
+      return `Sobrevivir (${Math.round(ability.chance * 100)}%)`
+    case 'Knockback':
+      return `Retroceso (${Math.round(ability.chance * 100)}%, ${ability.distance})`
+    // specs/040-dinero-extra-inmunidades (FR-010)
+    case 'ExtraMoney':
+      return `Dinero Extra (+${ability.energyBonus} energía por enemigo derrotado)`
+  }
 }
 
 export function UnitDetailPanel({ catId, onClose }: UnitDetailPanelProps) {
@@ -156,6 +179,7 @@ export function UnitDetailPanel({ catId, onClose }: UnitDetailPanelProps) {
 
   const stats = getEffectiveCatStats(cat, selectedForm)
   const dps = stats.damage / cat.attackIntervalSeconds
+  const immunities = describeImmunities(cat.immuneAbilities)
 
   // FR-008/FR-009: solo hay forma siguiente si la forma correspondiente de `evolutions` existe.
   const nextForm = owned.evolutionStage === 'Base' ? cat.evolutions?.second : owned.evolutionStage === 'Second' ? cat.evolutions?.true : undefined
@@ -169,7 +193,7 @@ export function UnitDetailPanel({ catId, onClose }: UnitDetailPanelProps) {
       {cat.rarity && <span className={`tag ${RARITY_TAG_CLASS[cat.rarity]}`}>{cat.rarity}</span>}
 
       {availableForms.length > 1 && (
-        <div role="tablist" style={{ display: 'flex', gap: 6, margin: '8px 0' }}>
+        <div role="tablist" style={{ display: 'flex', gap: 'var(--bc-space-3)', margin: 'var(--bc-space-4) 0' }}>
           {availableForms.map((form) => (
             <button
               key={form}
@@ -205,10 +229,12 @@ export function UnitDetailPanel({ catId, onClose }: UnitDetailPanelProps) {
         {cat.abilities && cat.abilities.length > 0 && (
           <li className="list-card__row">Habilidades: {cat.abilities.map(describeAbility).join(', ')}</li>
         )}
+        {/* specs/040-dinero-extra-inmunidades (FR-010): solo si la unidad declara inmunidades. */}
+        {immunities !== '' && <li className="list-card__row">Inmune a: {immunities}</li>}
       </ul>
 
       {nextStageName && (
-        <div style={{ marginTop: 8 }}>
+        <div style={{ marginTop: 'var(--bc-space-4)' }}>
           <button className="btn btn-primary" disabled={!canEvolve} onClick={() => evolveCat(catId)}>
             Evolucionar a {FORM_LABELS[nextStageName]}
           </button>

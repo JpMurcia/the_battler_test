@@ -29,7 +29,7 @@ export function GamatotoPanel() {
   const ready = gamatotoExpedition && activeOption ? isExpeditionReady(gamatotoExpedition, activeOption, Date.now()) : false
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
       <h1>Gamatoto</h1>
       <span className="hud-chip">Materiales: {gamatotoMaterials}</span>
 

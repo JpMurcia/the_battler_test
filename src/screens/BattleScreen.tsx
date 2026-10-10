@@ -2,6 +2,7 @@ import { Heart, Pause, Play, Rows2, Target, X, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { CATS } from '../data/cats'
 import { isEventStageId, resolveLevel } from '../data/events'
+import { CANNON_HEAD_LABELS } from '../data/ototoCorps'
 import { findArcByLevelId } from '../data/sagaArcs'
 import { TREASURE_FESTIVALS, getActiveTreasureFestival } from '../data/treasureFestival'
 import { BattleStage } from '../game/BattleStage'
@@ -72,6 +73,8 @@ function EnemyBaseReadout() {
 function CannonControl() {
   const specialCannon = useGameStore((state) => state.specialCannon)
   const activateSpecialCannon = useGameStore((state) => state.activateSpecialCannon)
+  // specs/041-cabezas-de-canon (FR-008): efecto secundario de la Cabeza de Cañón activa, si la hay — solo lectura.
+  const cannonHead = useMetaStore((state) => state.ototoBuildings.cannonHead)
   const ready = specialCannon.rechargeRemaining <= 0
   const pct =
     specialCannon.rechargeDurationSeconds > 0
@@ -84,7 +87,7 @@ function CannonControl() {
       onClick={() => activateSpecialCannon()}
     >
       <Target size={14} aria-hidden="true" color={ready ? undefined : 'var(--bc-cyan)'} />
-      <span>Cañón</span>
+      <span>{cannonHead ? `Cañón · ${CANNON_HEAD_LABELS[cannonHead]}` : 'Cañón'}</span>
       <div className="progress-bar" style={{ width: 60 }}>
         <div className="progress-bar__fill progress-bar__fill--gold" style={{ width: `${pct}%` }} />
       </div>
@@ -100,7 +103,7 @@ function SpeedControls() {
   const setSpeedMultiplier = useGameStore((state) => state.setSpeedMultiplier)
   const setPaused = useGameStore((state) => state.setPaused)
   return (
-    <div className="hud-chip" style={{ gap: 6 }}>
+    <div className="hud-chip" style={{ gap: 'var(--bc-space-3)' }}>
       <button className={`btn${speedMultiplier === 1 ? ' btn-primary' : ''}`} onClick={() => setSpeedMultiplier(1)}>
         x1
       </button>
@@ -139,7 +142,7 @@ function DeployBar() {
   ).slice(0, MAX_ACTIVE_TEAM_SIZE) // specs/023-mapa-de-etapas-visual (FR-016): equipos heredados de más de 6 no rompen la grilla.
 
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'var(--bc-space-3)' }}>
       <div className={`deploy-bar${rowLayout === 2 ? ' deploy-bar--two-rows' : ''}`}>
         {ownedCats.map((cat) => {
           const onCooldown = (deployCooldowns[cat.id] ?? 0) > 0

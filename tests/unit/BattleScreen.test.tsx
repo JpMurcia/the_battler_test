@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../../src/game/BattleStage', () => ({ BattleStage: () => null }))
 
@@ -281,5 +281,38 @@ describe('BattleScreen — Festival de Tesoros (specs/032-festival-de-tesoros US
     })
 
     expect(useMetaStore.getState().currency).toBeGreaterThan(0)
+  })
+})
+
+describe('BattleScreen — efecto de la Cabeza de Cañón en el HUD (specs/041-cabezas-de-canon US3)', () => {
+  afterEach(() => {
+    useMetaStore.setState({ ototoBuildings: {} })
+  })
+
+  it('con una cabeza construida, el control de cañón muestra el nombre del efecto', () => {
+    useMetaStore.setState({ ototoBuildings: { cannonHead: 'Knockback' } })
+
+    render(<BattleScreen onNavigate={noop} />)
+
+    expect(screen.getByRole('button', { name: /cañón/i })).toHaveTextContent('Cañón · Retroceso')
+  })
+
+  it('sin ninguna cabeza, el control de cañón se muestra exactamente como antes (solo "Cañón")', () => {
+    useMetaStore.setState({ ototoBuildings: {} })
+
+    render(<BattleScreen onNavigate={noop} />)
+
+    const button = screen.getByRole('button', { name: /cañón/i })
+    expect(button).toHaveTextContent(/^Cañón$/)
+    expect(button).not.toHaveTextContent('·')
+  })
+
+  it('el efecto mostrado no cambia el estado habilitado/deshabilitado del control', () => {
+    useMetaStore.setState({ ototoBuildings: { cannonHead: 'Freeze' } })
+    useGameStore.setState({ specialCannon: { rechargeRemaining: 12, rechargeDurationSeconds: 20, areaRadius: 40, damage: 50 } })
+
+    render(<BattleScreen onNavigate={noop} />)
+
+    expect(screen.getByRole('button', { name: /cañón/i })).toBeDisabled()
   })
 })

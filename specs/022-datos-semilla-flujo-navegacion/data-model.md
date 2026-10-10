@@ -50,11 +50,13 @@ export interface SeedUnit {
 |---|---|---|---|---|---|---|---|---|---|---|
 | `seed-cat-basic` | Normal | Básico equilibrado | 50 | 5 | 0 | 20 | 1.0 | 10 | 2 | [] |
 | `seed-cat-wall` | Rare | Muro/Tanque (HP muy alto, rango corto, lento) | 400 | 3 | 0 | 8 | 1.5 | 60 | 5 | [] |
-| `seed-cat-ranged` | SuperRare | A distancia (rango alto, HP bajo, costo medio) | 35 | 12 | 250 | 14 | 1.8 | 200 | 8 | [] |
-| `seed-cat-titan` | UberRare | Titán/Boss (daño masivo, HP alto, cooldown/costo muy altos) | 600 | 90 | 0 | 10 | 4.0 | 2700 | 40 | [] |
+| `seed-cat-ranged` | SuperRare | A distancia (rango alto, HP bajo, costo medio) | 35 | 12 | 250 | 14 | 1.8 | 6 | 8 | [] |
+| `seed-cat-titan` | UberRare | Titán/Boss (daño masivo, HP alto, cooldown/costo muy altos) | 600 | 90 | 0 | 10 | 4.0 | 77 | 40 | [] |
 | `seed-enemy-dog` | — | Perro Básico (sin rasgo) | 60 | 6 | 0 | 12 | 1.2 | 0 | 3 | [] |
 | `seed-enemy-red-snake` | — | Serpiente Roja (Red, alta velocidad) | 45 | 8 | 0 | 35 | 0.9 | 0 | 3 | [Red] |
 | `seed-enemy-floating-hippo` | — | Hipopótamo Flotante (Floating, HP alto) | 350 | 10 | 0 | 9 | 1.6 | 0 | 6 | [Floating] |
+
+**Nota de escala de `cost` (balance-check, 2026-10-09)**: `cost` original de `seed-cat-ranged` (200) y `seed-cat-titan` (2700) estaba en la escala de dinero del juego original, pero el despliegue exige `energy.current >= cost` con `energy.max` = `Level.maxEnergy` (100–120), así que eran imposibles de desplegar. Reescalados ÷35 a 6 y 77. Las columnas `hp` de `seed-cat-wall` (400) y `seed-cat-titan` (600) ya no coinciden con `src/data/seedData.ts` (500 y 350) — divergencia previa, sin tocar aquí.
 
 Los enemigos no llevan `rarity` de jugador con sentido de gacha — se les asigna `'Normal'` por consistencia de tipo (`rarity` es obligatorio en `SeedUnit`), sin efecto funcional (no se gastan en invocación de jugador).
 

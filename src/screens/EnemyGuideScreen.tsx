@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import { CATS } from '../data/cats'
 import { useMetaStore } from '../state/useMetaStore'
 import type { Screen } from '../types/screen'
+import { describeImmunities } from './shared/abilityLabels'
 
 interface EnemyGuideScreenProps {
   onNavigate: (screen: Screen) => void
@@ -18,13 +19,18 @@ export function EnemyGuideScreen({ onNavigate }: EnemyGuideScreenProps) {
     <main className="screen">
       <h1>Guía de Enemigos</h1>
       <ul className="list-card screen-scroll">
-        {CATS.filter((cat) => encounteredEnemyCatIds.includes(cat.id)).map((cat) => (
-          <li key={cat.id} className="list-card__row">
-            <span className="list-card__title">
-              {cat.name}: HP {cat.hp}, Daño {cat.damage}
-            </span>
-          </li>
-        ))}
+        {CATS.filter((cat) => encounteredEnemyCatIds.includes(cat.id)).map((cat) => {
+          // specs/040-dinero-extra-inmunidades (FR-010): solo los enemigos que declaran inmunidades muestran la línea extra.
+          const immunities = describeImmunities(cat.immuneAbilities)
+          return (
+            <li key={cat.id} className="list-card__row">
+              <span className="list-card__title">
+                {cat.name}: HP {cat.hp}, Daño {cat.damage}
+              </span>
+              {immunities !== '' && <span className="list-card__meta">Inmune a: {immunities}</span>}
+            </li>
+          )
+        })}
       </ul>
       <button className="btn btn-ghost" onClick={() => onNavigate('Upgrade')}>
         <ArrowLeft size={16} aria-hidden="true" />

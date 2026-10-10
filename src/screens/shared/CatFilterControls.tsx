@@ -25,17 +25,17 @@ export function CatFilterControls({ filter, onChange, sortByLevel, onToggleSort 
   }
 
   return (
-    <div className="glass-panel cat-filter" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+    <div className="glass-panel cat-filter" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-4)' }}>
+      <div style={{ display: 'flex', gap: 'var(--bc-space-3)', flexWrap: 'wrap' }}>
         {ALL_RARITIES.map((rarity) => (
-          <label key={rarity} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+          <label key={rarity} style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-2)', cursor: 'pointer' }}>
             <input type="checkbox" checked={filter.rarities.includes(rarity)} onChange={() => toggleRarity(rarity)} />
             {rarity}
           </label>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 'var(--bc-space-5)', flexWrap: 'wrap', alignItems: 'center' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-2)' }}>
           Rasgo objetivo
           <select
             aria-label="Rasgo objetivo"
@@ -50,7 +50,7 @@ export function CatFilterControls({ filter, onChange, sortByLevel, onToggleSort 
             ))}
           </select>
         </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-2)' }}>
           Habilidad
           <select
             aria-label="Habilidad"
@@ -72,7 +72,7 @@ export function CatFilterControls({ filter, onChange, sortByLevel, onToggleSort 
         >
           Modo: {filter.mode === 'AND' ? 'Y (ambos)' : 'O (cualquiera)'}
         </button>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-2)', cursor: 'pointer' }}>
           <input type="checkbox" checked={sortByLevel} onChange={onToggleSort} />
           Ordenar por nivel
         </label>

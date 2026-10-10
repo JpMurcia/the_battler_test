@@ -8,12 +8,13 @@ import {
   getCannonRangeBonus,
   getResearchCooldownReduction,
 } from '../data/baseUpgrades'
-import { OTOTO_DAMAGE_REDUCTION, OTOTO_DEBUFF_RESISTANCE } from '../data/ototoCorps'
+import { OTOTO_DAMAGE_REDUCTION, OTOTO_DEBUFF_RESISTANCE, getCannonHeadSpec } from '../data/ototoCorps'
 import { getDebuffResistanceMultiplier, getOrbDamageMultiplier, getStatBoostMultiplier } from '../data/talents'
 import { CATS, getEffectiveCatStats } from '../data/cats'
 import { resolveLevel } from '../data/events'
 import { findArcByLevelId } from '../data/sagaArcs'
 import { withinRange1D } from '../engine/collision'
+import { applyCannonHead } from '../engine/combat'
 import { getPlayerBaseExtent, LANE_LENGTH, stepSimulation } from '../engine/simulation'
 import { useMetaStore } from './useMetaStore'
 import type { EnemyWaveEntry } from '../data/levels'
@@ -268,6 +269,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       specialClassification: cat.specialClassification,
       abilities,
       immuneEffects: cat.immuneEffects,
+      // specs/040-dinero-extra-inmunidades (FR-005).
+      immuneAbilities: cat.immuneAbilities,
       appliesEffect: cat.appliesEffect,
       curseRemainingSeconds: 0,
       resistantTo,
@@ -295,12 +298,19 @@ export const useGameStore = create<GameState>((set, get) => ({
     const { specialCannon, units, laneLength } = get()
     if (specialCannon.rechargeRemaining > 0) return false
 
+    // specs/041-cabezas-de-canon (FR-003/FR-006/FR-007, research.md Decisión 6): la cabeza activa se lee al disparar, igual que
+    // `deployUnit` lee Base/Estilo al desplegar — nunca se copia al estado efímero. El efecto es adicional al daño, que no cambia.
+    const cannonHead = useMetaStore.getState().ototoBuildings.cannonHead
+    const headSpec = cannonHead ? getCannonHeadSpec(cannonHead) : undefined
+
     const playerBaseExtent = getPlayerBaseExtent(laneLength)
     const nextUnits = units
       .map((unit) => {
         if (unit.team !== 'Enemy' || !withinRange1D(playerBaseExtent, unit, specialCannon.areaRadius)) return unit
         const hp = Math.max(0, unit.hp - specialCannon.damage)
-        return { ...unit, hp, state: hp <= 0 ? ('Dead' as const) : unit.state }
+        const damaged = { ...unit, hp, state: hp <= 0 ? ('Dead' as const) : unit.state }
+        // Solo los enemigos alcanzados que sobreviven reciben el efecto secundario (los derrotados se descartan abajo).
+        return hp > 0 && headSpec ? applyCannonHead(damaged, headSpec, laneLength) : damaged
       })
       .filter((unit) => unit.state !== 'Dead')
 

@@ -178,7 +178,7 @@ export function HubScreen({ onNavigate }: HubScreenProps) {
         </span>
       </div>
 
-      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
         <button className="btn btn-primary anim-pulse" onClick={() => onNavigate('LevelSelect')}>
           <Swords size={16} aria-hidden="true" />
           ¡Batalla!

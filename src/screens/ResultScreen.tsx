@@ -21,8 +21,8 @@ export function ResultScreen({ onNavigate }: ResultScreenProps) {
   }
 
   return (
-    <main className="screen" style={{ alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-      <div className="glass-panel" style={{ alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 14, minWidth: 260 }}>
+    <main className="screen" style={{ alignItems: 'center', justifyContent: 'center', gap: 'var(--bc-space-10)' }}>
+      <div className="glass-panel" style={{ alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-6)', minWidth: 260 }}>
         {isVictory ? (
           <Trophy size={36} aria-hidden="true" color="var(--bc-gold)" />
         ) : (
@@ -30,7 +30,7 @@ export function ResultScreen({ onNavigate }: ResultScreenProps) {
         )}
         <h1 style={{ color: isVictory ? 'var(--bc-gold)' : 'var(--bc-red)' }}>{isVictory ? 'Victoria' : 'Derrota'}</h1>
         {isVictory && level && (
-          <p style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+          <p style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-3)', margin: 0 }}>
             <Coins size={15} aria-hidden="true" color="var(--bc-gold)" />
             Moneda ganada: {level.currencyReward}
           </p>

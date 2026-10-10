@@ -1,7 +1,7 @@
 /*
  * Catálogo de tema "Cyber-Modern" — specs/021-reskin-cyber-modern.
- * Fuente única de verdad para color/tipografía/radio (data-model.md § ThemeTokens).
- * Ninguna pantalla debe fijar un color/radio/tipografía por valor literal fuera de este archivo.
+ * Fuente única de verdad para color/tipografía/radio/espaciado (data-model.md § ThemeTokens).
+ * Ninguna pantalla debe fijar un color/radio/tipografía/espaciado por valor literal fuera de este archivo.
  */
 
 :root {
@@ -11,7 +11,7 @@
 
   --bc-text: #f4f6fb;
   --bc-text-dim: #94a3b8;
-  --bc-text-faint: #5b6577;
+  --bc-text-faint: #78859a; /* ≥4.5:1 sobre --bc-bg (5.51) y --bc-surface (4.83); antes #5b6577 = 3.51/3.13 */
 
   --bc-cyan: #22d3ee;
   --bc-orange: #fb923c;
@@ -28,9 +28,95 @@
   --bc-radius-sm: 10px;
   --bc-radius-md: 14px;
   --bc-radius-lg: 18px;
+  --bc-radius-pill: 999px; /* extremos totalmente redondeados (barras, badges); el círculo usa 50% */
 
   --bc-font-heading: 'Orbitron', sans-serif;
   --bc-font-body: 'Inter', sans-serif;
+
+  /* Escala tipográfica (px). Sustituye 12 tamaños sueltos previos (9, 10, 11, 12, 13, 14, 16, 17, 18, 26, 40,
+     42) por 7 pasos: 9→10, 11→12, 13→14, 17→16, 40→42. */
+  --bc-text-2xs: 10px; /* etiquetas mínimas: .tag, badge */
+  --bc-text-xs: 12px; /* chips, metadatos, pestañas, kicker */
+  --bc-text-sm: 14px; /* botones, campos, texto de lista */
+  --bc-text-md: 16px; /* títulos de panel, botón de cierre */
+  --bc-text-lg: 18px; /* destacados (orbe de gacha) */
+  --bc-text-xl: 26px; /* h1 de pantalla */
+  --bc-text-2xl: 42px; /* título hero */
+
+  --bc-weight-medium: 500;
+  --bc-weight-semibold: 600;
+  --bc-weight-bold: 700;
+  --bc-weight-black: 800;
+
+  /* Escala de espaciado: el número del paso es la mitad del valor en px (space-5 = 10px). No hay pasos de
+     14, 18 ni 28px a propósito: los valores previos se acercaron al paso inferior (12/16/24); 3px→4px,
+     7px→6px y 9px→8px. */
+  --bc-space-1: 2px;
+  --bc-space-2: 4px;
+  --bc-space-3: 6px;
+  --bc-space-4: 8px;
+  --bc-space-5: 10px;
+  --bc-space-6: 12px;
+  --bc-space-8: 16px;
+  --bc-space-10: 20px;
+  --bc-space-12: 24px;
+
+  /* Sombras de elevación (bajo la superficie) y resplandores de neón (centrados, color de paleta al 60%).
+     Los resplandores se componen en el sitio de uso: `0 0 var(--bc-glow-size-sm) var(--bc-glow-cyan)`. */
+  --bc-shadow-raised: 0 8px 24px rgba(0, 0, 0, 0.5); /* .hub-dock, .stage-detail-panel */
+  --bc-shadow-overlay: 0 10px 30px rgba(0, 0, 0, 0.5); /* .panel-overlay__sheet */
+  --bc-shadow-cta: 0 8px 20px color-mix(in srgb, var(--bc-red) 30%, transparent); /* .btn-primary en reposo */
+  --bc-shadow-cta-lifted: 0 12px 34px color-mix(in srgb, var(--bc-red) 35%, transparent); /* base del pulso */
+
+  --bc-glow-size-sm: 10px; /* nodos de etapa, pestaña activa */
+  --bc-glow-size-lg: 24px; /* orbes de gacha */
+  --bc-glow-size-xl: 30px; /* orbe legendario */
+  --bc-glow-cyan: color-mix(in srgb, var(--bc-cyan) 60%, transparent);
+  --bc-glow-green: color-mix(in srgb, var(--bc-green) 60%, transparent);
+  --bc-glow-gold: color-mix(in srgb, var(--bc-gold) 60%, transparent);
+  --bc-glow-purple: color-mix(in srgb, var(--bc-purple) 60%, transparent);
+  --bc-glow-orange: color-mix(in srgb, var(--bc-orange) 60%, transparent);
+
+  --bc-blur-sm: 4px; /* velo tras un panel superpuesto */
+  --bc-blur-md: 10px; /* vidrios: .glass-panel, detalle de etapa, hoja de panel */
+  --bc-blur-lg: 12px; /* dock del hub */
+
+  /* Movimiento: duraciones y curvas. Los bucles (`--bc-duration-loop*`) no se acortan con "reducir
+     movimiento" — un bucle de duración ~0 parpadearía — sino que cada uno se apaga con `animation: none`. */
+  --bc-duration-fast: 150ms; /* hover, barras de progreso */
+  --bc-duration-slow: 600ms; /* revelado de cápsula */
+  --bc-duration-loop: 2.4s; /* pulso del botón principal */
+  --bc-duration-loop-fast: 1.6s; /* aviso de rotación */
+  --bc-ease-standard: ease;
+  --bc-ease-out: ease-out;
+  --bc-ease-loop: ease-in-out;
+
+  /* Capas (z-index): valores exactos de los usos previos; el hueco entre 3 y 40 deja sitio a capas nuevas. */
+  --bc-z-raised: 2; /* nodos del mapa de etapas, sobre sus líneas */
+  --bc-z-popover: 3; /* detalle de etapa, sobre los nodos */
+  --bc-z-overlay: 40; /* PanelOverlay */
+  --bc-z-system: 9999; /* aviso de rotación: por encima de todo */
+
+  /* Colores derivados de la paleta y superficies. Las pantallas no deben escribir hex ni rgba() propios. */
+  --bc-text-on-accent: #050505; /* texto sobre fondos de acento: 5.15–13.3:1 sobre cualquiera de ellos */
+  --bc-cyan-deep: #0891b2; /* final del degradado de .progress-bar__fill */
+  --bc-gold-deep: #f59e0b; /* final del degradado de .progress-bar__fill--gold */
+  --bc-bg-1: #05070d; /* un paso sobre --bc-bg: escena de batalla */
+  --bc-bg-2: #0a0c14; /* dos pasos sobre --bc-bg: mapa de etapas y base de los vidrios */
+  --bc-scrim: color-mix(in srgb, var(--bc-bg) 86%, transparent); /* velo tras un panel superpuesto */
+  --bc-glass: color-mix(in srgb, var(--bc-bg-2) 60%, transparent); /* nodos de etapa y dock */
+  --bc-tint: rgba(255, 255, 255, 0.06); /* relleno de controles en reposo */
+  --bc-tint-strong: rgba(255, 255, 255, 0.1); /* relleno en hover y pistas de barra */
+  --bc-border-strong: rgba(255, 255, 255, 0.28); /* borde de un control en hover */
+  --bc-wash-soft: 10%; /* lavados de color de paleta en fondos: color-mix(… var(--bc-wash-soft), transparent) */
+  --bc-wash-strong: 20%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --bc-duration-fast: 0ms;
+    --bc-duration-slow: 0ms;
+  }
 }
 
 /*
@@ -50,13 +136,13 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 10px;
-  padding: 14px 18px;
+  gap: var(--bc-space-5);
+  padding: var(--bc-space-6) var(--bc-space-8);
   overflow: hidden;
   background:
-    radial-gradient(circle at 20% 10%, rgba(34, 211, 238, 0.12), transparent 45%),
-    radial-gradient(circle at 85% 20%, rgba(251, 146, 60, 0.12), transparent 45%),
-    radial-gradient(circle at 60% 90%, rgba(168, 85, 247, 0.12), transparent 45%),
+    radial-gradient(circle at 20% 10%, color-mix(in srgb, var(--bc-cyan) var(--bc-wash-soft), transparent), transparent 45%),
+    radial-gradient(circle at 85% 20%, color-mix(in srgb, var(--bc-orange) var(--bc-wash-soft), transparent), transparent 45%),
+    radial-gradient(circle at 60% 90%, color-mix(in srgb, var(--bc-purple) var(--bc-wash-soft), transparent), transparent 45%),
     var(--bc-bg);
   color: var(--bc-text);
   font-family: var(--bc-font-body);
@@ -74,36 +160,36 @@
 .screen h2,
 .screen h3 {
   font-family: var(--bc-font-heading);
-  font-weight: 800;
+  font-weight: var(--bc-weight-black);
   color: var(--bc-text);
   margin: 0;
   letter-spacing: 0.01em;
 }
 
 .screen h1 {
-  font-size: 26px;
+  font-size: var(--bc-text-xl);
 }
 
 .screen h1.heading-hero {
-  font-size: 42px;
+  font-size: var(--bc-text-2xl);
 }
 
 .screen h2 {
-  font-size: 17px;
+  font-size: var(--bc-text-md);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--bc-text-dim);
 }
 
 .screen-kicker {
-  font: 700 11px/1 var(--bc-font-heading);
+  font: var(--bc-weight-bold) var(--bc-text-xs)/1 var(--bc-font-heading);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bc-orange);
 }
 
 .screen-subtitle {
-  font-size: 14px;
+  font-size: var(--bc-text-sm);
   color: var(--bc-text-dim);
   margin: 0;
 }
@@ -113,10 +199,10 @@
   background: var(--bc-surface);
   border: 1px solid var(--bc-border);
   border-radius: var(--bc-radius-md);
-  padding: 18px;
+  padding: var(--bc-space-8);
   /* fallback si el navegador no soporta backdrop-filter: el fondo semitransparente ya es legible por sí solo */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(var(--bc-blur-md));
+  -webkit-backdrop-filter: blur(var(--bc-blur-md));
 }
 
 /* — botones — */
@@ -124,23 +210,26 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--bc-space-4);
   cursor: pointer;
   font-family: var(--bc-font-heading);
-  font-weight: 800;
-  font-size: 13px;
+  font-weight: var(--bc-weight-black);
+  font-size: var(--bc-text-sm);
   letter-spacing: 0.02em;
   color: var(--bc-text);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bc-tint);
   border: 1px solid var(--bc-border);
   border-radius: var(--bc-radius-sm);
-  padding: 10px 16px;
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  padding: var(--bc-space-5) var(--bc-space-8);
+  transition:
+    transform var(--bc-duration-fast) var(--bc-ease-standard),
+    background var(--bc-duration-fast) var(--bc-ease-standard),
+    border-color var(--bc-duration-fast) var(--bc-ease-standard);
 }
 
 .btn:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--bc-border-strong);
+  background: var(--bc-tint-strong);
 }
 
 .btn:active:not(:disabled) {
@@ -157,11 +246,19 @@
   outline-offset: 2px;
 }
 
+/* Red de seguridad de foco: especificidad 0 (:where), así que cualquier regla propia de un componente
+   (.btn, .field, .panel-overlay__close…) la sobrescribe. Cubre .region-tab, .stage-node y todo control
+   nuevo que olvide declarar su propio :focus-visible. */
+:where(button, a[href], [role='button']):focus-visible {
+  outline: 2px solid var(--bc-cyan);
+  outline-offset: 2px;
+}
+
 .btn-primary {
   background: var(--bc-gradient-primary);
   border-color: transparent;
-  color: #050505;
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+  color: var(--bc-text-on-accent);
+  box-shadow: var(--bc-shadow-cta);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -170,7 +267,7 @@
 }
 
 .btn-outline {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bc-tint);
   border-color: var(--bc-cyan);
   color: var(--bc-cyan);
 }
@@ -200,12 +297,12 @@
   background: transparent;
   border-color: transparent;
   color: var(--bc-text-dim);
-  padding: 8px 10px;
+  padding: var(--bc-space-4) var(--bc-space-5);
 }
 
 .btn-ghost:hover:not(:disabled) {
   color: var(--bc-text);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bc-tint);
 }
 
 .btn-icon {
@@ -224,40 +321,40 @@
 .hud-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--bc-space-5);
   flex-wrap: wrap;
 }
 
 .hud-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.07);
+  gap: var(--bc-space-3);
+  background: var(--bc-tint);
   border: 1px solid var(--bc-border);
   border-radius: var(--bc-radius-sm);
-  padding: 6px 10px;
-  font: 700 12px var(--bc-font-heading);
+  padding: var(--bc-space-3) var(--bc-space-5);
+  font: var(--bc-weight-bold) var(--bc-text-xs) var(--bc-font-heading);
   color: var(--bc-text);
 }
 
 /* — barras de progreso — */
 .progress-bar {
   height: 9px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--bc-radius-pill);
+  background: var(--bc-tint-strong);
   overflow: hidden;
   position: relative;
 }
 
 .progress-bar__fill {
   height: 100%;
-  border-radius: 5px;
-  background: linear-gradient(90deg, var(--bc-cyan), #0891b2);
-  transition: width 0.2s ease;
+  border-radius: var(--bc-radius-pill);
+  background: linear-gradient(90deg, var(--bc-cyan), var(--bc-cyan-deep));
+  transition: width var(--bc-duration-fast) var(--bc-ease-standard);
 }
 
 .progress-bar__fill--gold {
-  background: linear-gradient(90deg, var(--bc-gold), #f59e0b);
+  background: linear-gradient(90deg, var(--bc-gold), var(--bc-gold-deep));
 }
 
 .progress-bar__fill--danger {
@@ -271,19 +368,19 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--bc-space-4);
 }
 
 .list-card__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--bc-space-6);
   background: var(--bc-surface);
   border: 1px solid var(--bc-border);
   border-radius: var(--bc-radius-sm);
-  padding: 10px 14px;
-  font-size: 14px;
+  padding: var(--bc-space-5) var(--bc-space-6);
+  font-size: var(--bc-text-sm);
 }
 
 .list-card__row--locked {
@@ -293,17 +390,17 @@
 .list-card__main {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--bc-space-1);
   min-width: 0;
 }
 
 .list-card__title {
-  font-weight: 600;
+  font-weight: var(--bc-weight-semibold);
   color: var(--bc-text);
 }
 
 .list-card__meta {
-  font-size: 12px;
+  font-size: var(--bc-text-xs);
   color: var(--bc-text-dim);
 }
 
@@ -311,14 +408,14 @@
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font: 700 10px var(--bc-font-heading);
+  gap: var(--bc-space-2);
+  font: var(--bc-weight-bold) var(--bc-text-2xs) var(--bc-font-heading);
   letter-spacing: 0.04em;
-  padding: 3px 9px;
-  border-radius: 999px;
+  padding: var(--bc-space-2) var(--bc-space-4);
+  border-radius: var(--bc-radius-pill);
   border: 1px solid currentColor;
   color: var(--bc-text-dim);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bc-tint);
 }
 
 /* — color por rareza (data-model.md § RarityColorMap) — */
@@ -354,11 +451,11 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--bc-space-3);
 }
 
 .field label {
-  font: 600 12px var(--bc-font-body);
+  font: var(--bc-weight-semibold) var(--bc-text-xs) var(--bc-font-body);
   color: var(--bc-text-dim);
 }
 
@@ -367,12 +464,12 @@
 }
 
 .field select {
-  font: 500 13px var(--bc-font-body);
+  font: var(--bc-weight-medium) var(--bc-text-sm) var(--bc-font-body);
   color: var(--bc-text);
   background: var(--bc-surface);
   border: 1px solid var(--bc-border);
   border-radius: var(--bc-radius-sm);
-  padding: 8px 10px;
+  padding: var(--bc-space-4) var(--bc-space-5);
 }
 
 .field select:focus-visible,
@@ -389,8 +486,8 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: var(--bc-space-4);
+  padding: var(--bc-space-5) var(--bc-space-6);
   overflow: hidden;
   background: var(--bc-bg);
   color: var(--bc-text);
@@ -399,7 +496,7 @@
 
 .battle-overlay {
   justify-content: space-between;
-  padding: 6px 4px;
+  padding: var(--bc-space-3) var(--bc-space-2);
 }
 
 .battle-stage {
@@ -409,10 +506,10 @@
   border-radius: var(--bc-radius-md);
   overflow: hidden;
   background:
-    radial-gradient(circle at 15% 15%, rgba(34, 211, 238, 0.2), transparent 42%),
-    radial-gradient(circle at 88% 10%, rgba(251, 146, 60, 0.2), transparent 45%),
-    radial-gradient(circle at 55% 100%, rgba(168, 85, 247, 0.18), transparent 45%),
-    #05070d;
+    radial-gradient(circle at 15% 15%, color-mix(in srgb, var(--bc-cyan) var(--bc-wash-strong), transparent), transparent 42%),
+    radial-gradient(circle at 88% 10%, color-mix(in srgb, var(--bc-orange) var(--bc-wash-strong), transparent), transparent 45%),
+    radial-gradient(circle at 55% 100%, color-mix(in srgb, var(--bc-purple) var(--bc-wash-strong), transparent), transparent 45%),
+    var(--bc-bg-1);
 }
 
 .battle-stage canvas {
@@ -426,7 +523,7 @@
 .deploy-bar {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
+  gap: var(--bc-space-3);
   flex: 1;
 }
 
@@ -440,16 +537,16 @@
 /* specs/028-ajustes-combate-mapa-disenos (US2/FR-006): pestañas de región, arriba de .stage-map. */
 .region-tabs {
   display: flex;
-  gap: 6px;
+  gap: var(--bc-space-3);
   flex-wrap: wrap;
 }
 
 .region-tab {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bc-tint);
   border: 1px solid var(--bc-border);
   border-radius: var(--bc-radius-sm);
-  padding: 6px 12px;
-  font: 700 12px var(--bc-font-heading);
+  padding: var(--bc-space-3) var(--bc-space-6);
+  font: var(--bc-weight-bold) var(--bc-text-xs) var(--bc-font-heading);
   color: var(--bc-text-faint);
   cursor: pointer;
 }
@@ -457,7 +554,7 @@
 .region-tab--active {
   border-color: var(--bc-cyan);
   color: var(--bc-cyan);
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+  box-shadow: 0 0 var(--bc-glow-size-sm) var(--bc-glow-cyan);
 }
 
 /* — mapa de etapas (screens/LevelSelectScreen.tsx, specs/023-mapa-de-etapas-visual) — */
@@ -469,9 +566,9 @@
   border: 1px solid var(--bc-border);
   overflow: hidden;
   background:
-    radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.1), transparent 55%),
-    radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.1), transparent 50%),
-    #0a0c14;
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--bc-cyan) var(--bc-wash-soft), transparent), transparent 55%),
+    radial-gradient(circle at 75% 75%, color-mix(in srgb, var(--bc-purple) var(--bc-wash-soft), transparent), transparent 50%),
+    var(--bc-bg-2);
 }
 
 /* specs/028-ajustes-combate-mapa-disenos (US2/FR-007): permite scroll vertical cuando `.stage-map__canvas`
@@ -495,6 +592,11 @@
   height: 100%;
 }
 
+/* Trazo punteado entre nodos consecutivos (antes un `stroke="rgba(255,255,255,.22)"` en el atributo SVG). */
+.stage-map__link {
+  stroke: var(--bc-border-strong);
+}
+
 .stage-node {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -502,12 +604,12 @@
   height: 40px;
   border-radius: 50%;
   border: 2px solid var(--bc-text-faint);
-  background: rgba(10, 11, 16, 0.7);
+  background: var(--bc-glass);
   color: var(--bc-text-faint);
-  font: 800 12px var(--bc-font-heading);
+  font: var(--bc-weight-black) var(--bc-text-xs) var(--bc-font-heading);
   cursor: pointer;
-  z-index: 2;
-  transition: transform 0.15s ease;
+  z-index: var(--bc-z-raised);
+  transition: transform var(--bc-duration-fast) var(--bc-ease-standard);
 }
 
 .stage-node:hover:not(:disabled) {
@@ -521,13 +623,13 @@
 .stage-node--unlocked {
   border-color: var(--bc-cyan);
   color: var(--bc-cyan);
-  box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+  box-shadow: 0 0 var(--bc-glow-size-sm) var(--bc-glow-cyan);
 }
 
 .stage-node--completed {
   border-color: var(--bc-green);
   color: var(--bc-green);
-  box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
+  box-shadow: 0 0 var(--bc-glow-size-sm) var(--bc-glow-green);
 }
 
 .stage-node--locked {
@@ -537,7 +639,7 @@
 .stage-node--event {
   border-color: var(--bc-gold);
   color: var(--bc-gold);
-  box-shadow: 0 0 12px rgba(250, 204, 21, 0.6);
+  box-shadow: 0 0 var(--bc-glow-size-sm) var(--bc-glow-gold);
 }
 
 .stage-detail-panel {
@@ -546,42 +648,42 @@
   top: 8px;
   width: 190px;
   border-radius: var(--bc-radius-md);
-  background: rgba(20, 22, 30, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--bc-surface);
+  backdrop-filter: blur(var(--bc-blur-md));
+  -webkit-backdrop-filter: blur(var(--bc-blur-md));
   border: 1px solid var(--bc-border);
-  padding: 12px;
-  z-index: 3;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  padding: var(--bc-space-6);
+  z-index: var(--bc-z-popover);
+  box-shadow: var(--bc-shadow-raised);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--bc-space-4);
 }
 
 .stage-detail-panel__title {
-  font: 800 16px var(--bc-font-heading);
+  font: var(--bc-weight-black) var(--bc-text-md) var(--bc-font-heading);
   color: var(--bc-text);
 }
 
 .stage-detail-panel__meta {
   display: flex;
-  gap: 10px;
-  font: 700 11px var(--bc-font-body);
+  gap: var(--bc-space-5);
+  font: var(--bc-weight-bold) var(--bc-text-xs) var(--bc-font-body);
 }
 
 /* — animaciones cosméticas — */
 @keyframes bc-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.55), 0 12px 34px rgba(239, 68, 68, 0.35);
+    box-shadow: 0 0 0 0 var(--bc-glow-orange), var(--bc-shadow-cta-lifted);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(251, 146, 60, 0), 0 12px 34px rgba(239, 68, 68, 0.35);
+    box-shadow: 0 0 0 10px transparent, var(--bc-shadow-cta-lifted);
   }
 }
 
 .anim-pulse {
-  animation: bc-pulse 2.4s ease-in-out infinite;
+  animation: bc-pulse var(--bc-duration-loop) var(--bc-ease-loop) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -596,14 +698,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: var(--bc-space-8);
   flex: 1;
 }
 
 .gacha-reveal__grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: var(--bc-space-5);
   max-width: 520px;
 }
 
@@ -614,9 +716,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font: 800 18px var(--bc-font-heading);
-  color: #050505;
-  animation: bc-capsule 0.6s ease-out;
+  font: var(--bc-weight-black) var(--bc-text-lg) var(--bc-font-heading);
+  color: var(--bc-text-on-accent);
+  animation: bc-capsule var(--bc-duration-slow) var(--bc-ease-out);
 }
 
 @keyframes bc-capsule {
@@ -638,22 +740,22 @@
 
 .gacha-reveal__orb--raro {
   background: var(--bc-cyan);
-  box-shadow: 0 0 24px rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 var(--bc-glow-size-lg) var(--bc-glow-cyan);
 }
 
 .gacha-reveal__orb--superraro {
   background: var(--bc-purple);
-  box-shadow: 0 0 24px rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 var(--bc-glow-size-lg) var(--bc-glow-purple);
 }
 
 .gacha-reveal__orb--megarraro {
   background: var(--bc-gold);
-  box-shadow: 0 0 24px rgba(250, 204, 21, 0.55);
+  box-shadow: 0 0 var(--bc-glow-size-lg) var(--bc-glow-gold);
 }
 
 .gacha-reveal__orb--legendario {
   background: var(--bc-orange);
-  box-shadow: 0 0 30px rgba(251, 146, 60, 0.7);
+  box-shadow: 0 0 var(--bc-glow-size-xl) var(--bc-glow-orange);
 }
 
 /* — panel superpuesto (specs/026-navegacion-hub-mockup): contenedor reutilizable de PanelOverlay,
@@ -661,14 +763,14 @@
 .panel-overlay {
   position: absolute;
   inset: 0;
-  z-index: 40;
+  z-index: var(--bc-z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  background: rgba(2, 3, 8, 0.86);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  padding: var(--bc-space-8);
+  background: var(--bc-scrim);
+  backdrop-filter: blur(var(--bc-blur-sm));
+  -webkit-backdrop-filter: blur(var(--bc-blur-sm));
 }
 
 .panel-overlay__sheet {
@@ -678,13 +780,13 @@
   border-radius: var(--bc-radius-lg);
   background: var(--bc-surface);
   border: 1px solid var(--bc-border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 16px 18px;
+  box-shadow: var(--bc-shadow-overlay);
+  backdrop-filter: blur(var(--bc-blur-md));
+  -webkit-backdrop-filter: blur(var(--bc-blur-md));
+  padding: var(--bc-space-8);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--bc-space-4);
   overflow: hidden;
   outline: none;
 }
@@ -693,16 +795,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--bc-space-4);
 }
 
 .panel-overlay__close {
   border: none;
   background: none;
   color: var(--bc-text-dim);
-  font: 700 16px var(--bc-font-body);
+  font: var(--bc-weight-bold) var(--bc-text-md) var(--bc-font-body);
   cursor: pointer;
-  padding: 4px;
+  padding: var(--bc-space-2);
   line-height: 1;
 }
 
@@ -734,14 +836,14 @@
 /* — dock inferior del Hub (specs/026-navegacion-hub-mockup, FR-002) — */
 .hub-dock {
   display: flex;
-  gap: 6px;
-  background: rgba(10, 11, 16, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  gap: var(--bc-space-3);
+  background: var(--bc-glass);
+  backdrop-filter: blur(var(--bc-blur-lg));
+  -webkit-backdrop-filter: blur(var(--bc-blur-lg));
   border: 1px solid var(--bc-border);
   border-radius: var(--bc-radius-lg);
-  padding: 7px 9px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  padding: var(--bc-space-3) var(--bc-space-4);
+  box-shadow: var(--bc-shadow-raised);
 }
 
 .hub-dock__button {
@@ -749,7 +851,7 @@
   width: 46px;
   height: 46px;
   border-radius: var(--bc-radius-sm);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bc-tint);
   border: 1px solid var(--bc-border);
   color: var(--bc-text);
   cursor: pointer;
@@ -759,7 +861,7 @@
 }
 
 .hub-dock__button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bc-tint-strong);
 }
 
 .hub-dock__button:focus-visible {
@@ -773,12 +875,12 @@
   right: -5px;
   min-width: 16px;
   height: 16px;
-  border-radius: 8px;
+  border-radius: var(--bc-radius-pill);
   background: var(--bc-red);
-  color: #fff;
-  font: 800 9px var(--bc-font-heading);
+  color: var(--bc-text-on-accent); /* 5.42:1 sobre --bc-red; el texto blanco daba 3.76:1 a 9px */
+  font: var(--bc-weight-black) var(--bc-text-2xs) var(--bc-font-heading);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 3px;
+  padding: 0 var(--bc-space-2);
 }

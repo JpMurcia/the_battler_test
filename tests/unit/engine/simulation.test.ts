@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CATS } from '../../../src/data/cats'
 import type { BattleUnit } from '../../../src/engine/types'
 import { getEnemyBaseExtent, LANE_LENGTH, type SimState, stepSimulation } from '../../../src/engine/simulation'
@@ -893,5 +893,159 @@ describe('stepSimulation', () => {
 
       expect(next.units.some((u) => u.catId === 'basic-cat' && u.team === 'Player')).toBe(false)
     })
+  })
+})
+
+describe('specs/039-habilidades-control-defensa (US4 — Retroceso en stepSimulation)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  const knockbackAttacker = (overrides: Partial<BattleUnit> = {}) =>
+    makeUnit({
+      instanceId: 'pusher',
+      team: 'Player',
+      x: 0,
+      width: 16,
+      hp: 50,
+      damage: 10,
+      attackIntervalSeconds: 1,
+      attackCooldownRemaining: 0,
+      abilities: [{ kind: 'Knockback', chance: 1, distance: 30 }],
+      ...overrides,
+    })
+
+  const trappedEnemy = (overrides: Partial<BattleUnit> = {}) =>
+    makeUnit({
+      instanceId: 'victim',
+      team: 'Enemy',
+      x: 5,
+      width: 16,
+      hp: 1000,
+      maxHp: 1000,
+      damage: 8,
+      attackCooldownRemaining: 5,
+      ...overrides,
+    })
+
+  it('un atacante del jugador con Retroceso deja desplazado al enemigo trabado en el units resultante del mismo tick', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+
+    const next = stepSimulation(makeState({ units: [knockbackAttacker(), trappedEnemy()] }), 0.1)
+
+    const victim = next.units.find((u) => u.instanceId === 'victim')!
+    expect(victim.x).toBe(35) // 5 + 30
+    expect(victim.hp).toBe(990) // el golpe también hace su daño normal
+  })
+
+  it('FR-005: state.laneLength acota el desplazamiento del enemigo — no queda fijo en el valor por defecto', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+    const units = () => [knockbackAttacker({ x: 60 }), trappedEnemy({ x: 70 })]
+
+    const shortLane = stepSimulation(makeState({ laneLength: 100, units: units() }), 0.1)
+    const defaultLane = stepSimulation(makeState({ units: units() }), 0.1)
+
+    expect(shortLane.units.find((u) => u.instanceId === 'victim')!.x).toBe(84) // tope: 100 - 16
+    expect(defaultLane.units.find((u) => u.instanceId === 'victim')!.x).toBe(100) // 70 + 30, sin tope con el carril por defecto
+  })
+
+  it('tras el retroceso, ambas unidades se vuelven a acercar y a trabar por las reglas normales, sin salir del carril', () => {
+    // Solo el primer roll acierta (chance 0.5): el segundo golpe, si llegara, falla — el retroceso ocurre una sola vez.
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValue(0.99)
+    const unit = knockbackAttacker({ abilities: [{ kind: 'Knockback', chance: 0.5, distance: 30 }] })
+
+    let state = stepSimulation(makeState({ units: [unit, trappedEnemy()] }), 0.1)
+    const afterKnockback = state.units.find((u) => u.instanceId === 'victim')!
+    expect(afterKnockback.x).toBe(35)
+
+    for (let tick = 0; tick < 7; tick += 1) state = stepSimulation(state, 0.1)
+
+    const pusher = state.units.find((u) => u.instanceId === 'pusher')!
+    const victim = state.units.find((u) => u.instanceId === 'victim')!
+    expect(pusher.state).toBe('Engaged')
+    expect(victim.state).toBe('Engaged') // volvieron a trabarse por detección normal — sin estado especial de "retrocedido"
+    expect(victim.x).toBeGreaterThanOrEqual(0)
+    expect(victim.x).toBeLessThanOrEqual(LANE_LENGTH - victim.width)
+  })
+})
+
+describe('specs/040-dinero-extra-inmunidades (US1 — Dinero Extra en stepSimulation)', () => {
+  const extraMoney = { kind: 'ExtraMoney' as const, energyBonus: 5 }
+  const stateWithEnergy = (current: number, units: BattleUnit[]) =>
+    makeState({ energy: { current, max: 100, regenPerSecond: 0 }, units })
+
+  const hunter = (overrides: Partial<BattleUnit> = {}) =>
+    makeUnit({
+      instanceId: 'hunter',
+      team: 'Player',
+      x: 0,
+      width: 16,
+      hp: 50,
+      damage: 10,
+      attackCooldownRemaining: 0,
+      abilities: [extraMoney],
+      ...overrides,
+    })
+  const weakEnemy = (id: string, overrides: Partial<BattleUnit> = {}) =>
+    makeUnit({ instanceId: id, team: 'Enemy', x: 5, width: 16, hp: 10, damage: 1, attackCooldownRemaining: 5, ...overrides })
+
+  it('una unidad con Dinero Extra que derrota a un enemigo sube la energía exactamente su bono en el mismo paso', () => {
+    const next = stepSimulation(stateWithEnergy(10, [hunter(), weakEnemy('e1')]), 0.1)
+
+    expect(next.units.some((u) => u.instanceId === 'e1')).toBe(false) // derrotado y filtrado
+    expect(next.energy.current).toBe(15)
+  })
+
+  it('sin la habilidad, la misma derrota no altera la energía', () => {
+    const next = stepSimulation(stateWithEnergy(10, [hunter({ abilities: undefined }), weakEnemy('e1')]), 0.1)
+
+    expect(next.units.some((u) => u.instanceId === 'e1')).toBe(false)
+    expect(next.energy.current).toBe(10)
+  })
+
+  it('el bono nunca supera el máximo de energía', () => {
+    const next = stepSimulation(stateWithEnergy(98, [hunter(), weakEnemy('e1')]), 0.1)
+
+    expect(next.energy.current).toBe(100)
+  })
+
+  it('un golpe que no derrota al enemigo no concede nada', () => {
+    const next = stepSimulation(stateWithEnergy(10, [hunter(), weakEnemy('e1', { hp: 100 })]), 0.1)
+
+    expect(next.units.find((u) => u.instanceId === 'e1')!.hp).toBe(90)
+    expect(next.energy.current).toBe(10)
+  })
+
+  it('tres enemigos derrotados por la salpicadura de una unidad de Área suman tres bonos', () => {
+    const area = hunter({ attackType: 'Area', areaRadius: 60 })
+    const next = stepSimulation(stateWithEnergy(10, [area, weakEnemy('e1'), weakEnemy('e2', { x: 8 }), weakEnemy('e3', { x: 10 })]), 0.1)
+
+    expect(next.units.filter((u) => u.team === 'Enemy')).toHaveLength(0)
+    expect(next.energy.current).toBe(10 + 3 * 5)
+  })
+
+  it('una unidad del jugador que cae en el mismo paso en que derrota al enemigo concede igualmente el bono (intercambio simultáneo)', () => {
+    const dyingHunter = hunter({ hp: 1 })
+    const killer = weakEnemy('e1', { damage: 50, attackCooldownRemaining: 0 })
+
+    const next = stepSimulation(stateWithEnergy(10, [dyingHunter, killer]), 0.1)
+
+    expect(next.units.some((u) => u.instanceId === 'hunter')).toBe(false) // cayó
+    expect(next.units.some((u) => u.instanceId === 'e1')).toBe(false) // el enemigo también
+    expect(next.energy.current).toBe(15)
+  })
+
+  it('un enemigo derrotado sin defeatBounty (p. ej. por el cañón especial) suma 0', () => {
+    const next = stepSimulation(stateWithEnergy(10, [makeUnit({ instanceId: 'e-dead', team: 'Enemy', x: 300, hp: 0, state: 'Dead' })]), 0.1)
+
+    expect(next.energy.current).toBe(10)
+  })
+
+  it('la regeneración por tiempo y el bono se combinan sin pisarse', () => {
+    const state = makeState({ energy: { current: 10, max: 100, regenPerSecond: 10 }, units: [hunter(), weakEnemy('e1')] })
+
+    const next = stepSimulation(state, 0.5)
+
+    expect(next.energy.current).toBe(10 + 10 * 0.5 + 5)
   })
 })

@@ -15,7 +15,7 @@ export function PlayerProfilePanel({ onOpenSettings }: PlayerProfilePanelProps) 
   const ownedCount = Object.keys(ownedCats).length
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
       <h1>Perfil de Jugador</h1>
       <div className="hud-bar">
         <span className="hud-chip">Rango {rank}</span>

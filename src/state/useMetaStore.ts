@@ -4,7 +4,15 @@ import { BASE_UPGRADES, getAccountingMultiplier, getBaseUpgradeCost, getEnergyCa
 import { BATTLE_ITEMS, MAX_BATTLE_ITEMS_PER_BATTLE } from '../data/battleItems'
 import { MISSIONS, getDateKey, type MissionMetric } from '../data/missions'
 import { GAMATOTO_EXPEDITION_OPTIONS, isExpeditionReady, type GamatotoExpedition } from '../data/gamatoto'
-import { OTOTO_BUILDINGS, isConstructionReady as isOtotoConstructionReady, type OtotoConstruction } from '../data/ototoCorps'
+import {
+  CANNON_HEAD_OPTIONS,
+  OTOTO_BUILDINGS,
+  isConstructionReady as isOtotoConstructionReady,
+  type CannonHeadEffect,
+  type OtotoBuildingId,
+  type OtotoBuildings,
+  type OtotoConstruction,
+} from '../data/ototoCorps'
 import {
   MAX_TALENT_POINTS,
   getTalentPointCost,
@@ -110,7 +118,7 @@ interface MetaState {
   /** specs/035-ototo-corps. `null` = sin construcción en curso. */
   ototoConstruction: OtotoConstruction | null
   /** specs/035-ototo-corps. Elección activa por categoría — ausente = esa construcción nunca se completó. */
-  ototoBuildings: { foundation?: ClassificationType; style?: EffectType }
+  ototoBuildings: OtotoBuildings
 
   hydrate: () => Promise<void>
   addCurrency: (amount: number) => void
@@ -144,7 +152,7 @@ interface MetaState {
   /** specs/034-gamatoto (US3). `false` si no hay expedición o todavía no está lista. */
   claimGamatotoExpedition: () => boolean
   /** specs/035-ototo-corps (US1/US2). `false` si ya hay una construcción en curso o `gamatotoMaterials` insuficientes. */
-  startOtotoConstruction: (building: 'foundation' | 'style', choice: string) => boolean
+  startOtotoConstruction: (building: OtotoBuildingId, choice: string) => boolean
   /** specs/035-ototo-corps (US1/US2). `false` si no hay construcción o todavía no está lista. */
   claimOtotoConstruction: () => boolean
   /** specs/036-talentos-orbes (US1/FR-004/FR-005). `false` = gato no elegible, elección distinta ya fijada, NP insuficiente, o pista al máximo. */
@@ -244,7 +252,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   gamatotoExpedition: null as GamatotoExpedition | null,
   gamatotoMaterials: 0,
   ototoConstruction: null as OtotoConstruction | null,
-  ototoBuildings: {} as { foundation?: ClassificationType; style?: EffectType },
+  ototoBuildings: {} as OtotoBuildings,
 
   hydrate: async () => {
     await ensureDefaultProfile()
@@ -655,6 +663,8 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     if (get().ototoConstruction) return false
     const definition = OTOTO_BUILDINGS.find((candidate) => candidate.id === building)
     if (!definition) return false
+    // specs/041-cabezas-de-canon (FR-002): solo la construcción nueva valida su elección (la UI ya restringe las de Base/Estilo).
+    if (building === 'cannonHead' && !CANNON_HEAD_OPTIONS.includes(choice as CannonHeadEffect)) return false
     if (get().gamatotoMaterials < definition.materialsCost) return false
 
     const construction: OtotoConstruction = { building, choice, startedAtMs: Date.now() }

@@ -9,7 +9,7 @@ export function MissionsPanel() {
   const claimMission = useMetaStore((state) => state.claimMission)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
       <h1>Misiones</h1>
       <ul className="list-card">
         {MISSIONS.map((mission) => {

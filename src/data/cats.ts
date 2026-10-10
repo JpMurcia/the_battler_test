@@ -1,4 +1,12 @@
-import type { Ability, AppliesEffect, AttackType, ClassificationType, EffectType, SpecialClassificationType } from '../engine/types'
+import type {
+  Ability,
+  AppliesEffect,
+  AttackType,
+  ClassificationType,
+  EffectType,
+  ImmunizableAbilityKind,
+  SpecialClassificationType,
+} from '../engine/types'
 import { SEED_CATS_AS_CATS, SEED_ENEMIES_AS_CATS } from './seedData'
 import { GACHA_UNITS } from './gachaUnits'
 
@@ -53,6 +61,8 @@ export interface Cat {
   specialClassification?: SpecialClassificationType
   abilities?: Ability[]
   immuneEffects?: EffectType[]
+  /** specs/040-dinero-extra-inmunidades (FR-005). Copiado al `BattleUnit` en deployUnit/spawnUnitFromCat. */
+  immuneAbilities?: ImmunizableAbilityKind[]
   appliesEffect?: AppliesEffect
   /** specs/010-evolucion-de-gatos. Ausente = el gato no tiene evoluciones definidas (FR-011).
    * specs/030-filtro-detalle-unidad (FR-008): `second`/`true` son independientes — un gato puede
@@ -375,6 +385,104 @@ export const CATS: Cat[] = [
     rarity: 'Raro',
     abilities: [{ kind: 'SummonOnDeath', summonCatId: 'basic-cat', count: 1 }],
   },
+  // specs/039-habilidades-control-defensa: un gato de ejemplo por habilidad nueva — sin tocar ninguno de los anteriores.
+  {
+    id: 'strengthen-cat',
+    name: 'Gato Enfurecido',
+    cost: 45,
+    cooldownSeconds: 7,
+    hp: 110,
+    damage: 9,
+    speed: 14,
+    width: 20,
+    attackIntervalSeconds: 1.4,
+    attackType: 'Single',
+    attackRange: 0,
+    classification: 'Traitless',
+    rarity: 'Raro',
+    abilities: [{ kind: 'Strengthen', hpThresholdFraction: 0.5, damageMultiplier: 2 }],
+  },
+  {
+    id: 'dodge-cat',
+    name: 'Gato Escurridizo',
+    cost: 40,
+    cooldownSeconds: 6,
+    hp: 70,
+    damage: 7,
+    speed: 22,
+    width: 16,
+    attackIntervalSeconds: 1.1,
+    attackType: 'Single',
+    attackRange: 0,
+    classification: 'Traitless',
+    rarity: 'Raro',
+    abilities: [{ kind: 'Dodge', chance: 0.25 }],
+  },
+  {
+    id: 'survivor-cat',
+    name: 'Gato Superviviente',
+    cost: 50,
+    cooldownSeconds: 8,
+    hp: 90,
+    damage: 8,
+    speed: 12,
+    width: 20,
+    attackIntervalSeconds: 1.5,
+    attackType: 'Single',
+    attackRange: 0,
+    classification: 'Traitless',
+    rarity: 'Raro',
+    abilities: [{ kind: 'Survive', chance: 0.3 }],
+  },
+  {
+    id: 'knockback-cat',
+    name: 'Gato Empujón',
+    cost: 55,
+    cooldownSeconds: 8,
+    hp: 130,
+    damage: 12,
+    speed: 12,
+    width: 22,
+    attackIntervalSeconds: 1.8,
+    attackType: 'Single',
+    attackRange: 0,
+    classification: 'Traitless',
+    rarity: 'Raro',
+    abilities: [{ kind: 'Knockback', chance: 0.3, distance: 30 }],
+  },
+  // specs/040-dinero-extra-inmunidades: Dinero Extra e inmunidad a habilidades — mismos criterios que los gatos de 038/039.
+  {
+    id: 'wallet-cat',
+    name: 'Gato Cobrador',
+    cost: 35,
+    cooldownSeconds: 6,
+    hp: 80,
+    damage: 9,
+    speed: 15,
+    width: 18,
+    attackIntervalSeconds: 1.3,
+    attackType: 'Single',
+    attackRange: 0,
+    classification: 'Traitless',
+    rarity: 'Raro',
+    abilities: [{ kind: 'ExtraMoney', energyBonus: 5 }],
+  },
+  {
+    id: 'anchor-cat',
+    name: 'Gato Ancla',
+    cost: 45,
+    cooldownSeconds: 7,
+    hp: 160,
+    damage: 6,
+    speed: 8,
+    width: 24,
+    attackIntervalSeconds: 1.7,
+    attackType: 'Single',
+    attackRange: 0,
+    classification: 'Traitless',
+    rarity: 'Raro',
+    immuneAbilities: ['Knockback'],
+  },
   /** specs/022-datos-semilla-flujo-navegacion (FR-001/FR-002). Append — nunca reemplaza el catálogo de producción de arriba. */
   ...SEED_CATS_AS_CATS,
   ...SEED_ENEMIES_AS_CATS,
@@ -400,7 +508,7 @@ export const CATS: Cat[] = [
   { id: 'enemy-embestida', name: 'Embestida', cost: 0, cooldownSeconds: 3, hp: 4000, damage: 654, speed: 10, width: 32, attackIntervalSeconds: 2.6, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
   { id: 'enemy-instructor-feroz', name: 'Instructor Feroz', cost: 0, cooldownSeconds: 3, hp: 3000, damage: 1000, speed: 4, width: 34, attackIntervalSeconds: 3.5, attackType: 'Area', attackRange: 140, areaRadius: 45, classification: 'Traitless' },
   { id: 'enemy-unicornio-guerra', name: 'Unicornio de Guerra', cost: 0, cooldownSeconds: 3, hp: 15000, damage: 500, speed: 5, width: 36, attackIntervalSeconds: 2.4, attackType: 'Single', attackRange: 0, classification: 'Traitless' },
-  { id: 'enemy-la-mascara', name: 'La Máscara', cost: 0, cooldownSeconds: 3, hp: 99999, damage: 2000, speed: 4, width: 44, attackIntervalSeconds: 2.8, attackType: 'LongRange', attackRange: 160, classification: 'Traitless' },
+  { id: 'enemy-la-mascara', name: 'La Máscara', cost: 0, cooldownSeconds: 3, hp: 99999, damage: 2000, speed: 4, width: 44, attackIntervalSeconds: 2.8, attackType: 'LongRange', attackRange: 160, classification: 'Traitless', immuneAbilities: ['MassiveDamage', 'TraitKiller', 'Knockback'] },
   /**
    * specs/027-capitulo-1-imperio-gatos (FR-001/FR-002/FR-004). 14 gatos jugables del Capítulo 1 — stats de
    * data-model.md § gatos jugables. Ninguno declara spriteKey (research.md Decisión 4: fallback procedural

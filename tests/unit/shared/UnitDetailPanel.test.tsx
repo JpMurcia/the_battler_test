@@ -205,3 +205,56 @@ describe('UnitDetailPanel — Talentos y Orbes (specs/036-talentos-orbes)', () =
     expect(useMetaStore.getState().ownedCats['legend-cat-eclipse'].talents?.orb).toEqual({ classification: 'Red', points: 1 })
   })
 })
+
+describe('UnitDetailPanel — habilidades de combate (specs/039-habilidades-control-defensa FR-010)', () => {
+  const ownCat = (catId: string) => useMetaStore.setState({ ownedCats: { [catId]: { level: 1, experienceInvested: 0, evolutionStage: 'Base' } } })
+
+  it.each([
+    ['strengthen-cat', /Fortalecer \(≤50% HP, x2\)/],
+    ['dodge-cat', /Esquivar \(25%\)/],
+    ['survivor-cat', /Sobrevivir \(30%\)/],
+    ['knockback-cat', /Retroceso \(30%, 30\)/],
+  ])('%s describe su habilidad con nombre y valores configurados', (catId, expected) => {
+    ownCat(catId)
+    render(<UnitDetailPanel catId={catId} onClose={noop} />)
+
+    expect(screen.getByText(/Habilidades:/)).toHaveTextContent(expected)
+  })
+
+  it('los gatos de specs/038 siguen mostrando su texto actual', () => {
+    ownCat('massive-strike-cat')
+    const { unmount } = render(<UnitDetailPanel catId="massive-strike-cat" onClose={noop} />)
+    expect(screen.getByText(/Habilidades:/)).toHaveTextContent('Golpe Letal (5%, x3)')
+    unmount()
+
+    ownCat('summoner-cat')
+    render(<UnitDetailPanel catId="summoner-cat" onClose={noop} />)
+    expect(screen.getByText(/Habilidades:/)).toHaveTextContent('Invoca 1x basic-cat al morir')
+  })
+})
+
+describe('UnitDetailPanel — Dinero Extra e inmunidades (specs/040-dinero-extra-inmunidades FR-010)', () => {
+  const ownCat = (catId: string) => useMetaStore.setState({ ownedCats: { [catId]: { level: 1, experienceInvested: 0, evolutionStage: 'Base' } } })
+
+  it('Dinero Extra se describe con su bono de energía y no muestra fila de inmunidades', () => {
+    ownCat('wallet-cat')
+    render(<UnitDetailPanel catId="wallet-cat" onClose={noop} />)
+
+    expect(screen.getByText(/Habilidades:/)).toHaveTextContent('Dinero Extra (+5 energía por enemigo derrotado)')
+    expect(screen.queryByText(/Inmune a/)).not.toBeInTheDocument()
+  })
+
+  it('una unidad con inmunidades muestra la fila "Inmune a" con los nombres de esas habilidades', () => {
+    ownCat('anchor-cat')
+    render(<UnitDetailPanel catId="anchor-cat" onClose={noop} />)
+
+    expect(screen.getByText(/Inmune a:/)).toHaveTextContent('Inmune a: Retroceso')
+  })
+
+  it('una unidad sin inmunidades no muestra la fila "Inmune a"', () => {
+    ownCat('basic-cat')
+    render(<UnitDetailPanel catId="basic-cat" onClose={noop} />)
+
+    expect(screen.queryByText(/Inmune a/)).not.toBeInTheDocument()
+  })
+})

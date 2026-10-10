@@ -66,12 +66,12 @@ code {
     display: flex;
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: var(--bc-z-system);
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    padding: 24px;
+    gap: var(--bc-space-6);
+    padding: var(--bc-space-12);
     text-align: center;
     background: var(--bc-bg);
     color: var(--bc-text);
@@ -79,17 +79,17 @@ code {
   }
 
   .rotate-prompt__icon {
-    font-size: 40px;
-    animation: bc-rotate-hint 1.6s ease-in-out infinite;
+    font-size: var(--bc-text-2xl);
+    animation: bc-rotate-hint var(--bc-duration-loop-fast) var(--bc-ease-loop) infinite;
   }
 
   .rotate-prompt__title {
-    font: 800 16px var(--bc-font-heading);
+    font: var(--bc-weight-black) var(--bc-text-md) var(--bc-font-heading);
     letter-spacing: 0.02em;
   }
 
   .rotate-prompt__body {
-    font-size: 13px;
+    font-size: var(--bc-text-sm);
     color: var(--bc-text-dim);
     max-width: 280px;
   }
@@ -107,5 +107,12 @@ code {
   }
   50% {
     transform: rotate(90deg);
+  }
+}
+
+/* Va después del bloque portrait de arriba: misma especificidad, gana el último. */
+@media (prefers-reduced-motion: reduce) {
+  .rotate-prompt__icon {
+    animation: none;
   }
 }

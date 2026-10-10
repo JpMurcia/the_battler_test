@@ -22,7 +22,7 @@ function CatComboSection({ ownedCatIds, selectedIds }: { ownedCatIds: string[]; 
           const isComplete = completedComboIds.has(combo.id)
           const memberStatus = getComboMemberStatus(combo, ownedCatIds, selectedIds)
           return (
-            <li key={combo.id} className="list-card__row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+            <li key={combo.id} className="list-card__row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 'var(--bc-space-2)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                 <strong>{combo.name}</strong>
                 <span className={`tag ${isComplete ? 'tag--normal' : 'tag--especial'}`}>{isComplete ? 'Completo' : 'Incompleto'}</span>
@@ -70,7 +70,7 @@ function BattleItemSelector() {
           const disabledToSelect = selectedCount >= owned || selectedBattleItemIds.length >= MAX_BATTLE_ITEMS_PER_BATTLE
           return (
             <li key={item.id} className="list-card__row">
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-4)', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={checked}
@@ -115,7 +115,7 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
       {/* Única región con scroll interno de esta pantalla — lista de gatos + Objetos de Batalla juntos,
           para que "Confirmar equipo"/"Volver" queden siempre visibles (nunca clipeados por el alto
           fijo de `.screen`). */}
-      <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
         <CatFilterControls filter={filter} onChange={setFilter} sortByLevel={sortByLevel} onToggleSort={() => setSortByLevel((v) => !v)} />
         <ul className="list-card">
           {visibleCats.map((cat) => {
@@ -126,7 +126,7 @@ export function TeamScreen({ onNavigate }: TeamScreenProps) {
             const disabledToSelect = !checked && selectedIds.length >= MAX_TEAM_ROSTER_SIZE
             return (
               <li key={cat.id} className="list-card__row">
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-4)', cursor: 'pointer' }}>
                   <input type="checkbox" checked={checked} disabled={disabledToSelect} onChange={() => toggleCat(cat.id)} />
                   {cat.name}
                 </label>

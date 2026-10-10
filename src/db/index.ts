@@ -4,9 +4,8 @@ import { CATS, type RarityType } from '../data/cats'
 import { computeMissionEnergyMax } from '../data/missionEnergy'
 import type { MissionMetric } from '../data/missions'
 import type { GamatotoExpedition } from '../data/gamatoto'
-import type { OtotoConstruction } from '../data/ototoCorps'
+import type { OtotoBuildings, OtotoConstruction } from '../data/ototoCorps'
 import type { CatTalents } from '../data/talents'
-import type { ClassificationType, EffectType } from '../engine/types'
 
 export interface PlayerProfileRow {
   id: 1 // fila única (singleton)
@@ -137,7 +136,7 @@ export interface GamatotoRow {
 export interface OtotoCorpsRow {
   id: 1 // fila única (singleton)
   construction: OtotoConstruction | null
-  buildings: { foundation?: ClassificationType; style?: EffectType }
+  buildings: OtotoBuildings
 }
 
 class BattleCatsDB extends Dexie {

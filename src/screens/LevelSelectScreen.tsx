@@ -40,7 +40,7 @@ function TreasureFestivalBanner() {
   const remainingSeconds = getFestivalTimeRemainingMs(festival, Date.now()) / 1000
 
   return (
-    <div className="glass-panel" data-testid="treasure-festival-banner" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px' }}>
+    <div className="glass-panel" data-testid="treasure-festival-banner" style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-4)', padding: 'var(--bc-space-4) var(--bc-space-6)' }}>
       <Gem size={16} aria-hidden="true" color="var(--bc-gold)" />
       <strong>{festival.name}</strong>
       <span>x{festival.currencyMultiplier} Moneda</span>
@@ -150,7 +150,7 @@ export function LevelSelectScreen({ onNavigate }: LevelSelectScreenProps) {
 
   return (
     <main className="screen">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--bc-space-4)' }}>
         <button className="btn btn-ghost btn-icon" onClick={() => onNavigate('MainMenu')} aria-label="Volver">
           <ArrowLeft size={16} aria-hidden="true" />
         </button>
@@ -191,7 +191,7 @@ export function LevelSelectScreen({ onNavigate }: LevelSelectScreenProps) {
                   y1={level.mapPosition.y}
                   x2={next.mapPosition.x}
                   y2={next.mapPosition.y}
-                  stroke="rgba(255,255,255,.22)"
+                  className="stage-map__link"
                   strokeWidth={0.6}
                   strokeDasharray="2,2"
                 />

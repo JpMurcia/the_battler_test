@@ -14,7 +14,7 @@ export function LibraryPanel({ onClose }: LibraryPanelProps) {
   const [activeTab, setActiveTab] = useState<'cats' | 'enemies'>('cats')
 
   return (
-    <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}>
+    <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)', height: '100%' }}>
       <div className="hud-bar">
         <button className={activeTab === 'cats' ? 'btn btn-outline--cyan' : 'btn'} onClick={() => setActiveTab('cats')}>
           Cat Guide

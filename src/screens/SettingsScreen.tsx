@@ -35,7 +35,7 @@ export function SettingsScreen({ onNavigate }: SettingsScreenProps) {
     <main className="screen">
       <h1>{t('settings.heading')}</h1>
 
-      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-8)' }}>
         <div className="field">
           <label htmlFor="musicVolume">{t('settings.musicVolume')}</label>
           <input
@@ -78,7 +78,7 @@ export function SettingsScreen({ onNavigate }: SettingsScreenProps) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 'var(--bc-space-5)' }}>
         <button className="btn btn-primary" onClick={handleApply}>
           <Check size={16} aria-hidden="true" />
           {t('settings.apply')}

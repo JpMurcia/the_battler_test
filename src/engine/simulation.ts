@@ -92,6 +92,8 @@ function spawnUnitFromCat(
     specialClassification: cat.specialClassification,
     abilities: cat.abilities,
     immuneEffects: cat.immuneEffects,
+    // specs/040-dinero-extra-inmunidades (FR-005).
+    immuneAbilities: cat.immuneAbilities,
     appliesEffect: cat.appliesEffect,
     curseRemainingSeconds: 0,
     resistantTo: cat.resistantTo,
@@ -305,12 +307,14 @@ export function stepSimulation(state: SimState, deltaSeconds: number): SimState 
     // findTargetsInRange nunca devuelve >1 candidato para el resto de attackType.
     if (targetIds.length > 1) {
       const splashTargets = targetIds.slice(1).map((id) => byId.get(id)!)
-      const result = resolveAreaEngagement(attacker, primary, splashTargets, deltaSeconds)
+      // specs/039-habilidades-control-defensa (research.md Decisión 5): `laneLength` llega hasta `applyHit` para
+      // acotar el desplazamiento de Retroceso del lado enemigo (`Level.laneLength` no es una constante global).
+      const result = resolveAreaEngagement(attacker, primary, splashTargets, deltaSeconds, Math.random, state.laneLength)
       byId.set(attackerId, result.attacker)
       byId.set(targetIds[0], result.primaryTarget)
       result.splashTargets.forEach((target, index) => byId.set(targetIds[index + 1], target))
     } else {
-      const result = resolveEngagement(attacker, primary, deltaSeconds)
+      const result = resolveEngagement(attacker, primary, deltaSeconds, Math.random, state.laneLength)
       byId.set(attackerId, result.a)
       byId.set(targetIds[0], result.b)
     }
@@ -372,6 +376,15 @@ export function stepSimulation(state: SimState, deltaSeconds: number): SimState 
     }
   }
 
+  // specs/040-dinero-extra-inmunidades (FR-001/FR-002, research.md Decisión 4): Dinero Extra. `applyHit` marcó el
+  // `defeatBounty` en cada enemigo derrotado por el golpe de una unidad del jugador con la habilidad; se suma aquí, una
+  // sola vez por paso y antes del filtro de `Dead` (que descarta el campo junto con la unidad), con el mismo tope que la regeneración.
+  let defeatBountyTotal = 0
+  for (const unit of byId.values()) {
+    if (unit.state === 'Dead' && unit.team === 'Enemy') defeatBountyTotal += unit.defeatBounty ?? 0
+  }
+  const nextEnergy = { ...energy, current: Math.min(energy.max, energy.current + defeatBountyTotal) }
+
   const units = [...Array.from(byId.values()).filter((unit) => unit.state !== 'Dead'), ...summoned]
 
   // specs/012-saga-imperio-de-los-gatos (US2/FR-005): dispara cada umbral no disparado todavía exactamente una vez al cruzarlo hacia abajo.
@@ -396,7 +409,7 @@ export function stepSimulation(state: SimState, deltaSeconds: number): SimState 
     playerBase,
     enemyBase,
     units,
-    energy,
+    energy: nextEnergy,
     deployCooldowns,
     elapsedSeconds,
     enemiesSpawnedCount,

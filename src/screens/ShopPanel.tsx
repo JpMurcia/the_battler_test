@@ -22,7 +22,7 @@ export function ShopPanel() {
     )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
       <h1>Tienda</h1>
       <span className="hud-chip">Moneda: {currency}</span>
 

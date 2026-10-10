@@ -21,7 +21,7 @@ export function TreasureMenuScreen({ onNavigate }: TreasureMenuScreenProps) {
           const isGranted = grantedTreasureSetIds.includes(set.id)
           const pct = set.treasureIds.length > 0 ? Math.round((obtainedCount / set.treasureIds.length) * 100) : 0
           return (
-            <li key={set.id} className="list-card__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
+            <li key={set.id} className="list-card__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 'var(--bc-space-3)' }}>
               <span className="list-card__title">
                 {set.name}: {obtainedCount}/{set.treasureIds.length}
                 {isGranted ? ' (Bonificación otorgada)' : ''}

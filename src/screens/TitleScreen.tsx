@@ -12,7 +12,7 @@ export function TitleScreen({ onNavigate }: TitleScreenProps) {
   const hasProgress = useMetaStore((state) => state.completedLevelIds.length > 0)
 
   return (
-    <main className="screen" style={{ alignItems: 'center', justifyContent: 'center', gap: 28 }}>
+    <main className="screen" style={{ alignItems: 'center', justifyContent: 'center', gap: 'var(--bc-space-12)' }}>
       <div className="screen-kicker">Cyber-Modern Game UI</div>
       <h1 className="heading-hero">{t('title.heading')}</h1>
       <button className="btn btn-primary anim-pulse" onClick={() => onNavigate('MainMenu')}>

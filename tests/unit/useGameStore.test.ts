@@ -743,3 +743,73 @@ describe('useGameStore.deployUnit — Investigación (specs/031-mejoras-de-base 
     expect(assigned).toBeGreaterThanOrEqual(0.5)
   })
 })
+
+describe('useGameStore.activateSpecialCannon — Cabeza de Cañón (specs/041-cabezas-de-canon US2)', () => {
+  const cannon = { rechargeRemaining: 0, rechargeDurationSeconds: 20, areaRadius: 40, damage: 50 }
+
+  it('con cabeza de Retroceso, solo los enemigos alcanzados que sobreviven se desplazan y todos reciben el mismo daño que sin cabeza', () => {
+    useMetaStore.setState({ ototoBuildings: { cannonHead: 'Knockback' } })
+    const survivor = makeEnemyUnit({ instanceId: 'survivor', x: 0, hp: 80, maxHp: 80 })
+    const doomed = makeEnemyUnit({ instanceId: 'doomed', x: 4, hp: 10, maxHp: 10 })
+    const outOfRange = makeEnemyUnit({ instanceId: 'out-of-range', x: 300, hp: 80, maxHp: 80 })
+    const ally = makeEnemyUnit({ instanceId: 'ally', team: 'Player', x: 2, hp: 80, maxHp: 80 })
+    useGameStore.setState({ specialCannon: cannon, units: [survivor, doomed, outOfRange, ally] })
+
+    const ok = useGameStore.getState().activateSpecialCannon()
+
+    expect(ok).toBe(true)
+    const { units, specialCannon } = useGameStore.getState()
+    expect(units.find((u) => u.instanceId === 'survivor')).toMatchObject({ hp: 30, x: 40 }) // 50 de daño, +40 de retroceso
+    expect(units.find((u) => u.instanceId === 'doomed')).toBeUndefined() // derrotado: removido, sin efecto
+    expect(units.find((u) => u.instanceId === 'out-of-range')).toMatchObject({ hp: 80, x: 300 }) // fuera del radio: intacto
+    expect(units.find((u) => u.instanceId === 'ally')).toMatchObject({ hp: 80, x: 2 }) // no enemiga: intacta
+    expect(specialCannon.rechargeRemaining).toBe(20) // la recarga se reinicia igual
+  })
+
+  it('con cabeza de Congelar, los enemigos alcanzados que sobreviven quedan congelados con la duración del catálogo', () => {
+    useMetaStore.setState({ ototoBuildings: { cannonHead: 'Freeze' } })
+    useGameStore.setState({ specialCannon: cannon, units: [makeEnemyUnit({ instanceId: 'e1', x: 0, hp: 80, maxHp: 80 })] })
+
+    useGameStore.getState().activateSpecialCannon()
+
+    expect(useGameStore.getState().units[0]).toMatchObject({ hp: 30, freezeRemainingSeconds: 3 })
+  })
+
+  it('un enemigo inmune a Retroceso recibe el daño pero no se desplaza', () => {
+    useMetaStore.setState({ ototoBuildings: { cannonHead: 'Knockback' } })
+    useGameStore.setState({
+      specialCannon: cannon,
+      units: [makeEnemyUnit({ instanceId: 'boss', x: 0, hp: 80, maxHp: 80, immuneAbilities: ['Knockback'] })],
+    })
+
+    useGameStore.getState().activateSpecialCannon()
+
+    expect(useGameStore.getState().units[0]).toMatchObject({ hp: 30, x: 0 })
+  })
+
+  it('sin ninguna cabeza el disparo es idéntico al de antes: daño y recarga, sin ningún efecto secundario', () => {
+    useMetaStore.setState({ ototoBuildings: {} })
+    useGameStore.setState({ specialCannon: cannon, units: [makeEnemyUnit({ instanceId: 'e1', x: 0, hp: 80, maxHp: 80 })] })
+
+    useGameStore.getState().activateSpecialCannon()
+
+    const unit = useGameStore.getState().units[0]
+    expect(unit).toMatchObject({ hp: 30, x: 0 })
+    expect(unit.freezeRemainingSeconds).toBeUndefined()
+    expect(useGameStore.getState().specialCannon.rechargeRemaining).toBe(20)
+  })
+
+  it('el tope de Retroceso del enemigo sale del laneLength de la partida', () => {
+    useMetaStore.setState({ ototoBuildings: { cannonHead: 'Knockback' } })
+    // Enemigo dentro del radio de una base cuyo carril es corto: el retroceso se detiene en laneLength - width.
+    useGameStore.setState({
+      laneLength: 50,
+      specialCannon: cannon,
+      units: [makeEnemyUnit({ instanceId: 'e1', x: 0, width: 16, hp: 80, maxHp: 80 })],
+    })
+
+    useGameStore.getState().activateSpecialCannon()
+
+    expect(useGameStore.getState().units[0].x).toBe(34) // 50 - 16, no 0 + 40
+  })
+})

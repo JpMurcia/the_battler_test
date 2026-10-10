@@ -111,7 +111,7 @@ export function UpgradeScreen({ onNavigate }: UpgradeScreenProps) {
       </div>
       {/* Única región con scroll interno de esta pantalla — para que la fila de navegación y "Volver"
           de abajo queden siempre visibles (nunca clipeados por el alto fijo de `.screen`). */}
-      <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="screen-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--bc-space-5)' }}>
         {tab === 'units' ? (
           <>
             <ul className="list-card">
