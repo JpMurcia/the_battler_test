@@ -4,9 +4,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { CATS } from '../data/cats'
 import { resolveUnitDesign } from '../data/unitDesigns'
 import type { BattleUnit } from '../engine/types'
-import { getDeathEchoDurationSeconds, getDeathEchoPose, getVisualProfile } from './animation'
+import { getVisualProfile } from './animation'
+import { EVENT_ANIMATION, getDeathPose } from './eventAnimations'
 import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
 import { getOrCreateUnitTexture } from './graphics/unitFactory'
+import { prefersReducedMotion } from './motionPreference'
 import { useGameStore } from '../state/useGameStore'
 import { loadSpriteTextures, resolveSpriteAnimationSet } from './spriteAssets'
 
@@ -27,8 +29,10 @@ interface DeathEchoSpriteProps {
 }
 
 /**
- * Señal visual efímera de derrota — cuerpo congelado en su última posición conocida que se
- * encoge y desvanece hasta desaparecer. Vive fuera de useGameStore/SimState por completo
+ * Señal visual efímera de derrota — cuerpo congelado en su última posición conocida que sale
+ * despedido hacia su propia base, gira y se desvanece (specs/044-animaciones-de-evento US2/FR-003,
+ * que sustituye al encogimiento de specs/003). Con «reducir movimiento» solo se desvanece. El pivote
+ * está en el centro de los pies para que el giro no desplace el punto de partida (research.md Decisión 7). Vive fuera de useGameStore/SimState por completo
  * (specs/003-identidad-visual-animada/data-model.md § DeathEcho); se retira a sí mismo del
  * registro de BattleField llamando a onExpire al llegar a remainingSeconds === 0.
  *
@@ -42,7 +46,7 @@ interface DeathEchoSpriteProps {
 export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathEchoSpriteProps) {
   const { app } = useApplication()
   const containerRef = useRef<Container>(null)
-  const remainingRef = useRef(getDeathEchoDurationSeconds())
+  const elapsedRef = useRef(0)
 
   const cat = useMemo(() => CATS.find((candidate) => candidate.id === catId), [catId])
   const profile = useMemo(() => (cat ? getVisualProfile(cat) : null), [cat])
@@ -90,16 +94,18 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
 
   useTick(({ deltaMS }) => {
     const container = containerRef.current
-    if (!container) return
+    if (!container || !profile) return
 
-    remainingRef.current -= deltaMS / 1000
-    if (remainingRef.current <= 0) {
+    elapsedRef.current += deltaMS / 1000
+    if (elapsedRef.current >= EVENT_ANIMATION.deathSeconds) {
       onExpire(instanceId)
       return
     }
 
-    const pose = getDeathEchoPose(remainingRef.current)
-    container.scale.set(pose.scale)
+    const pose = getDeathPose(elapsedRef.current, team, prefersReducedMotion())
+    container.x = screenX + profile.bodyWidth / 2 + pose.offsetX
+    container.y = screenY + pose.offsetY
+    container.rotation = pose.rotation
     container.alpha = pose.alpha
   })
 
@@ -108,7 +114,12 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
   const body = idleFrame ?? designTexture
 
   return (
-    <pixiContainer ref={containerRef} x={screenX} y={screenY} pivot={{ x: 0, y: profile.bodyHeight }}>
+    <pixiContainer
+      ref={containerRef}
+      x={screenX + profile.bodyWidth / 2}
+      y={screenY}
+      pivot={{ x: profile.bodyWidth / 2, y: profile.bodyHeight }}
+    >
       {body ? (
         <pixiSprite
           texture={body}

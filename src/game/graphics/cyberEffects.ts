@@ -2,7 +2,7 @@
  * specs/021-reskin-cyber-modern (rediseño Cyber-Modern). Poses puras y deterministas para los
  * efectos de impacto efímeros (onda de choque, chispas, texto de daño flotante) que `BattleField`
  * dispara al detectar pérdida de hp de una unidad o base en un tick. Mismo patrón que
- * `getDeathEchoPose` en src/game/animation.ts: solo matemática, sin Pixi/React — el componente que
+ * `getDeathPose` en src/game/eventAnimations.ts (specs/044): solo matemática, sin Pixi/React — el componente que
  * las consume decide cuándo expirar (Constitución § VI).
  */
 

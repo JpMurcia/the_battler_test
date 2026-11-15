@@ -37,8 +37,6 @@ const IDLE_BOB_AMPLITUDE = 2 // píxeles
 const ATTACK_SQUASH_AMOUNT = 0.12
 const ATTACK_ROTATION_MAX_RADIANS = 0.15
 
-const DEATH_ECHO_DURATION_SECONDS = 0.35
-
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
@@ -109,14 +107,4 @@ export function getAnimationPose(
     scaleY: 1 - pulse * ATTACK_SQUASH_AMOUNT,
     rotationRadians: pulse * ATTACK_ROTATION_MAX_RADIANS,
   }
-}
-
-export function getDeathEchoDurationSeconds(): number {
-  return DEATH_ECHO_DURATION_SECONDS
-}
-
-/** Escala/alpha decrecientes para un DeathEcho — specs/003-identidad-visual-animada/data-model.md § DeathEcho. */
-export function getDeathEchoPose(remainingSeconds: number): { scale: number; alpha: number } {
-  const progress = clamp(remainingSeconds / DEATH_ECHO_DURATION_SECONDS, 0, 1)
-  return { scale: progress, alpha: progress }
 }

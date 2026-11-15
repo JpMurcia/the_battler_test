@@ -4,7 +4,6 @@ import {
   ANIMATION_STATE_TO_SPRITE_FOLDER,
   getAnimationPose,
   getAnimationState,
-  getDeathEchoPose,
   getVisualProfile,
 } from '../../../src/game/animation'
 
@@ -109,29 +108,5 @@ describe('getAnimationPose', () => {
     expect(pose.scaleX).toBeGreaterThan(1)
     expect(pose.scaleY).toBeLessThan(1)
     expect(pose.rotationRadians).toBeGreaterThan(0)
-  })
-})
-
-describe('getDeathEchoPose', () => {
-  it('al inicio (remainingSeconds al máximo) escala y alpha están en su valor pleno', () => {
-    const pose = getDeathEchoPose(0.35)
-
-    expect(pose.scale).toBeCloseTo(1)
-    expect(pose.alpha).toBeCloseTo(1)
-  })
-
-  it('al llegar a 0 segundos restantes, escala y alpha llegan a 0', () => {
-    const pose = getDeathEchoPose(0)
-
-    expect(pose.scale).toBe(0)
-    expect(pose.alpha).toBe(0)
-  })
-
-  it('nunca produce valores fuera de [0, 1]', () => {
-    const negative = getDeathEchoPose(-1)
-    const overflow = getDeathEchoPose(10)
-
-    expect(negative.scale).toBe(0)
-    expect(overflow.scale).toBe(1)
   })
 })

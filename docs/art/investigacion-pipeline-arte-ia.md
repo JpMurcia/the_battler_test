@@ -158,6 +158,8 @@ Estados del motor: `Moving`, `Engaged`, `Dead`. Habilidades con efecto visible p
 | 8 | Efectos de habilidad (rotura de escudo, invocación, esquiva) | Efecto aparte | Mínimo | 0,3–0,6 s | P2 | Habilidad correspondiente |
 | 9 | Victoria / celebración | Para pantalla de resultado, gacha, ficha | Movimiento de piezas | 1–2 s | P3 | UI |
 
+> **Estado (2026-11-15):** las filas 3–6 (Golpeado, Muerte, Aparición, Retroceso) están implementadas en `specs/044-animaciones-de-evento`, sin depender del rig de la spec 043.
+
 > La biblia (§1, §5) exige que **estados de unidad no se muestren oscureciendo o desaturando al personaje**; las animaciones 3–8 respetan esa regla (el estado va en la capa neón).
 
 ### 5.3 Recomendación: cuántas automatizar

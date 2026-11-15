@@ -11,6 +11,9 @@ import { computeTeamRingGeometry, drawTeamRing } from './graphics/teamRing'
 import { drawUnitHpBar } from './graphics/unitHpBar'
 import { useGameStore } from '../state/useGameStore'
 import { ANIMATION_STATE_TO_SPRITE_FOLDER, getAnimationPose, getAnimationState, getVisualProfile } from './animation'
+import { createUnitEventState, getUnitEventPose, updateUnitEvents } from './eventAnimations'
+import { getHitFlashFilter } from './graphics/hitFlash'
+import { prefersReducedMotion } from './motionPreference'
 import { loadSpriteTextures, resolveSpriteAnimationSet } from './spriteAssets'
 
 extend({ Container, Graphics, AnimatedSprite, Sprite })
@@ -48,6 +51,10 @@ interface LoadedTextures {
  * textura cartoon de su diseño (`resolveUnitDesign`); el cuerpo "cyber" genérico ya no existe (FR-002).
  * Bajo los pies, un anillo de equipo estático hermano del cuerpo: sigue a la unidad en x pero no hereda
  * su rebote, aplastamiento ni giro (US2/FR-008, research.md Decisión 4).
+ *
+ * specs/044-animaciones-de-evento: Aparición, Golpeado y Retroceso se deducen en este mismo `useTick` comparando la
+ * unidad con el fotograma anterior (`updateUnitEvents`) y se componen con el reposo/ataque (`getUnitEventPose`). El
+ * destello asigna un filtro compartido al cuerpo solo cuando cambia; el anillo solo sigue el deslizamiento y la aparición.
  */
 export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
   const { app } = useApplication()
@@ -57,6 +64,10 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
   // Offset aleatorio por instancia para que el bob de idle de varias unidades no quede sincronizado.
   const clockRef = useRef(Math.random() * 10)
   const activeFolderRef = useRef<'idle' | 'attack' | null>(null)
+  // specs/044: rastreador de eventos (estado efímero de render, nunca en el store) y cuerpo que recibe el destello.
+  const eventsRef = useRef(createUnitEventState())
+  const bodySpriteRef = useRef<Sprite>(null)
+  const flashingRef = useRef(false)
 
   // specs/010-evolucion-de-gatos (FR-009): el perfil visual se deriva de los stats efectivos
   // del BattleUnit ya desplegado (maxHp/damage ya incluyen el multiplicador de evolución
@@ -144,7 +155,7 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     clockRef.current += deltaMS / 1000
 
     const animationState = getAnimationState(unit.state)
-    const pose = getAnimationPose(animationState, profile, clockRef.current, unit.attackCooldownRemaining)
+    const basePose = getAnimationPose(animationState, profile, clockRef.current, unit.attackCooldownRemaining)
 
     // specs/021-reskin-cyber-modern: unit.x vive en coordenadas del carril de simulación
     // (src/engine/simulation.ts, típicamente [0, laneLength]) — se mapea a píxeles de pantalla
@@ -152,15 +163,36 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     const laneX = getLaneScreenX(unit.x, store.laneLength, app.screen.width)
     const laneY = getLaneScreenY(app.screen.height)
 
-    container.x = laneX
-    container.y = laneY + pose.bobOffsetY
-    container.scale.set(pose.scaleX, pose.scaleY)
-    container.rotation = pose.rotationRadians
+    // specs/044: eventos deducidos de la unidad fresca y compuestos con el reposo/ataque.
+    const reduced = prefersReducedMotion()
+    const events = eventsRef.current
+    updateUnitEvents(
+      events,
+      { x: unit.x, screenX: laneX, hp: unit.hp, shield: unit.shieldRemainingHp ?? 0, team: unit.team },
+      deltaMS / 1000,
+      reduced,
+    )
+    const pose = getUnitEventPose(events, basePose, unit.team, reduced)
 
-    // specs/042 (US2/FR-008): el anillo queda en el suelo — sin rebote, aplastamiento ni giro.
+    container.x = laneX + pose.offsetX
+    container.y = laneY + pose.offsetY
+    container.scale.set(pose.scaleX, pose.scaleY)
+    container.rotation = pose.rotation
+    container.alpha = pose.alpha
+
+    // specs/042 (US2/FR-008): el anillo queda en el suelo — sin rebote, aplastamiento, sacudida ni giro. specs/044:
+    // acompaña el deslizamiento del retroceso y surge con la aparición.
     if (ringRef.current) {
-      ringRef.current.x = laneX
+      ringRef.current.x = laneX + pose.ringOffsetX
       ringRef.current.y = laneY
+      ringRef.current.alpha = pose.ringAlpha
+    }
+
+    // specs/044 (US1): el filtro compartido solo se asigna o se quita al empezar o terminar el destello.
+    const body = spriteRef.current ?? bodySpriteRef.current
+    if (body && pose.flash !== flashingRef.current) {
+      flashingRef.current = pose.flash
+      body.filters = pose.flash ? [getHitFlashFilter()] : null
     }
 
     // specs/021-reskin-cyber-modern (US4): intercambio de arreglo de texturas por mutación directa,
@@ -208,6 +240,7 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
           // specs/022 (US2) / specs/042: textura cartoon cacheada del diseño — misma convención de anchor/scale
           // que el sprite real, sin animación de frames propia (el bob/squash del useTick de arriba sigue aplicando).
           <pixiSprite
+            ref={bodySpriteRef}
             texture={proceduralTexture}
             width={profile.bodyWidth}
             height={profile.bodyHeight}

@@ -153,7 +153,12 @@ La rareza usa su propia escala de siete colores (`RARITY_TAG_CLASS` en `src/data
 **Animación y pose** (suelo de la Constitución § III: reposo + ataque)
 - Nivel A: reposo en bucle (respiración/parpadeo) y ataque en tres tiempos (anticipación inclinada hacia atrás, impacto con el arma extendida, recuperación). Pose exagerada y legible; cara con dos estados (neutro y esfuerzo).
 - Nivel B: bastan las transformaciones de `animation.ts` (rebote en reposo, aplastamiento y giro al atacar).
-- Muerte: el `DeathEcho` actual (0,35 s).
+- Reacciones de evento, iguales para los niveles A y B y sin arte nuevo (`specs/044-animaciones-de-evento`, `src/game/eventAnimations.ts`):
+  - **Aparición** (0,3 s): surge aplastada, salta y aterriza.
+  - **Golpeado** (0,15 s): destello hacia el blanco y sacudida de ±1,5 px; como mucho 3 por segundo, porque es un evento, no un estado.
+  - **Retroceso** (0,25 s): se desliza hasta su nueva posición, inclinada hacia atrás, en vez de teletransportarse.
+  - **Muerte** (0,45 s): el eco salta hacia su propia base, gira y se desvanece.
+  - Con «reducir movimiento», Aparición y Muerte se quedan en un fundido; Golpeado y Retroceso no se reproducen.
 
 **Nivel de detalle (LOD)**
 - Se diseña para 24–44 px de alto y se exporta a 300×300. **Si un detalle desaparece al reducir, no existe**: no se dibuja.
