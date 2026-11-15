@@ -95,7 +95,7 @@ El ánimo de cada estado se fija con **dos palancas**: la temperatura y el valor
 - **Contorno:** casi negro, equivalente a `--bc-bg-2` (`#0a0c14`).
 - **Relleno:** libre en matiz, pero **nunca más saturado ni más luminoso que el token de información del mismo matiz**. El neón es siempre lo más vivo de la escena.
 - **Valores espejo que se mantienen:** equipo aliado `0x22d3ee` = `--bc-cyan`, equipo enemigo `0xef4444` = `--bc-red`, impacto `0xfacc15` = `--bc-gold`.
-- **Deuda de color:** cuatro unidades usan *exactamente* un token de información como color de cuerpo: `cat-deidad` (dorado), `seed-cat-ranged` (cian), `seed-cat-titan` (rojo) y `enemy-saltarin-alado` (rosa). Deben bajar de saturación o de luminosidad.
+- **Deuda de color:** cuatro unidades usan *exactamente* un token de información como color de cuerpo: `cat-deidad` (dorado), `seed-cat-ranged` (cian), `seed-cat-titan` (rojo) y `enemy-saltarin-alado` (rosa). Deben bajar de saturación o de luminosidad. **Resuelta en la spec 042**, que además fija la regla verificable para colores nuevos de unidad: HSL S < 0,69 y L < 0,48, por debajo de los siete tokens (`tests/unit/data/unitDesigns.test.ts`).
 
 **Significado de cada color**
 
@@ -128,7 +128,7 @@ La rareza usa su propia escala de siete colores (`RARITY_TAG_CLASS` en `src/data
 - **Enemigos:** criaturas y animales de caricatura que **nunca son gatos** (perros, serpientes, hipopótamos, focas, unicornios, brutos, La Máscara…). Así «nosotros = gatos» se lee a primera vista.
 
 **Distinguir aliado de enemigo (capa de información, neón)**
-1. **Anillo de equipo en el suelo** bajo cada unidad: una elipse fina cian (aliado) o roja (enemigo) con `--bc-glow-*`. Es nuevo y exige una spec.
+1. **Anillo de equipo en el suelo** bajo cada unidad: una elipse fina cian (aliado) o roja (enemigo) con `--bc-glow-*`. Implementado en la spec 042 (`src/game/graphics/teamRing.ts`).
 2. **Barra de vida con color de equipo** (ya existe).
 3. **Respaldo no cromático:** los aliados miran en el sentido de avance y los enemigos, espejados, en el contrario (ya existe).
 
@@ -138,7 +138,7 @@ La rareza usa su propia escala de siete colores (`RARITY_TAG_CLASS` en `src/data
 |---|---|---|
 | A. Sprite | gato cartoon animado por fotogramas (16 reposo + 12 ataque) | es el arte final |
 | B. Procedural | cuerpo plano generado por código: contorno `#0a0c14`, relleno plano de `primaryColor`, orejas (aliado) y un rasgo | marcador provisional **sin borde neón, sin visor, sin placas brillantes** |
-| C. Cuerpo cyber | el cuerpo actual con degradado, anillos, visor y propulsor | **se retira como apariencia**: las 16 unidades que lo usan migran a B |
+| C. Cuerpo cyber | el cuerpo actual con degradado, anillos, visor y propulsor | **se retira como apariencia**: las 16 unidades que lo usan migran a B. **Hecho en la spec 042** (el módulo `cyberUnitBody.ts` ya no existe; los 12 sprites tienen además respaldo B) |
 
 - **Ninguna unidad nueva entra al catálogo sin al menos nivel B.**
 - **Qué promueve de B a A** (propuesta): jefes y enemigos del Capítulo 1, unidades del equipo inicial y de las primeras etapas, y luego por rareza ascendente.

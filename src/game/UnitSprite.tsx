@@ -2,13 +2,12 @@ import { extend, useApplication, useTick } from '@pixi/react'
 import { AnimatedSprite, Container, Graphics, Sprite, type Texture } from 'pixi.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CATS } from '../data/cats'
-import { IMPERIO_CAP1_DESIGNS } from '../data/imperioCap1Design'
-import { SEED_ENEMIES, SEED_UNITS } from '../data/seedData'
+import { resolveUnitDesign } from '../data/unitDesigns'
 import type { BattleUnit } from '../engine/types'
 import { getOrCreateUnitTexture } from './graphics/unitFactory'
 import { getHpFraction } from './graphics/baseTower'
-import { computeCyberBodyLayout, drawCyberBodyBase, drawCyberThruster, drawCyberVisor, getGlowPulseAlpha } from './graphics/cyberUnitBody'
 import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
+import { computeTeamRingGeometry, drawTeamRing } from './graphics/teamRing'
 import { drawUnitHpBar } from './graphics/unitHpBar'
 import { useGameStore } from '../state/useGameStore'
 import { ANIMATION_STATE_TO_SPRITE_FOLDER, getAnimationPose, getAnimationState, getVisualProfile } from './animation'
@@ -17,10 +16,11 @@ import { loadSpriteTextures, resolveSpriteAnimationSet } from './spriteAssets'
 extend({ Container, Graphics, AnimatedSprite, Sprite })
 
 const SPRITE_ANIMATION_SPEED = 0.3
-const VISOR_PULSE_HZ = 1.8
-const THRUSTER_PULSE_HZ = 6
 /** specs/029-pulido-batalla-hud (US3). Mismo umbral que BaseTower.tsx — evita redibujar por ruido de punto flotante. */
 const HP_BAR_REDRAW_THRESHOLD = 0.004
+
+/** specs/042 (research.md Decisión 5): una unidad sin sprite ni diseño se avisa una sola vez, nunca se tapa con un cuerpo genérico. */
+const reportedMissingDesigns = new Set<string>()
 
 interface UnitSpriteProps {
   instanceId: string
@@ -41,13 +41,18 @@ interface LoadedTextures {
  * Decisión 2/3). Cierra la excepción a Constitución § III declarada en specs/002-motor-de-combate/plan.md.
  *
  * specs/021-reskin-cyber-modern (US4): si `catId` tiene `spriteKey` y su carga de texturas resuelve,
- * el cuerpo se reemplaza por un `AnimatedSprite` real (reposo/ataque) — el intercambio de arreglo de
- * texturas ocurre dentro del mismo `useTick`, nunca por prop/re-render (research.md Decisión 2). Si no
- * hay `spriteKey`, o si la carga falla, se conserva el `Graphics` placeholder de siempre (FR-011).
+ * el cuerpo es un `AnimatedSprite` real (reposo/ataque) — el intercambio de arreglo de texturas ocurre
+ * dentro del mismo `useTick`, nunca por prop/re-render (research.md Decisión 2).
+ *
+ * specs/042-unidades-mundo-cartoon: sin sprite cargado (no tiene, aún carga o falló) el cuerpo es la
+ * textura cartoon de su diseño (`resolveUnitDesign`); el cuerpo "cyber" genérico ya no existe (FR-002).
+ * Bajo los pies, un anillo de equipo estático hermano del cuerpo: sigue a la unidad en x pero no hereda
+ * su rebote, aplastamiento ni giro (US2/FR-008, research.md Decisión 4).
  */
 export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
   const { app } = useApplication()
   const containerRef = useRef<Container>(null)
+  const ringRef = useRef<Graphics>(null)
   const spriteRef = useRef<AnimatedSprite>(null)
   // Offset aleatorio por instancia para que el bob de idle de varias unidades no quede sincronizado.
   const clockRef = useRef(Math.random() * 10)
@@ -76,21 +81,20 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
 
   const [textures, setTextures] = useState<LoadedTextures | null>(null)
 
-  // specs/022-datos-semilla-flujo-navegacion (US2) / specs/028-ajustes-combate-mapa-disenos (US3, research.md
-  // Decisión 4): tercer nivel de fallback — resuelve el `ProceduralDesign` directamente (nunca necesitó el
-  // `SeedUnit` completo) por catálogo semilla o, si tampoco está ahí, por el registro del Capítulo 1.
-  const proceduralDesign = useMemo(
-    () =>
-      SEED_UNITS.find((unit) => unit.id === catId)?.proceduralDesign ??
-      SEED_ENEMIES.find((unit) => unit.id === catId)?.proceduralDesign ??
-      IMPERIO_CAP1_DESIGNS[catId],
-    [catId],
-  )
+  // specs/042 (research.md Decisión 1): un único resolvedor para catálogo semilla, Capítulo 1 y el registro
+  // de las 28 unidades que antes no tenían diseño (incluidos los respaldos de las 12 con sprite).
+  const proceduralDesign = useMemo(() => resolveUnitDesign(catId), [catId])
 
   const proceduralTexture = useMemo(() => {
     if (textures || !proceduralDesign || !app?.renderer) return null
     return getOrCreateUnitTexture(app.renderer, catId, proceduralDesign, team === 'Player' ? 'ally' : 'enemy')
   }, [textures, proceduralDesign, app, catId, team])
+
+  useEffect(() => {
+    if (animationSet || proceduralDesign || reportedMissingDesigns.has(catId)) return
+    reportedMissingDesigns.add(catId)
+    console.error(`[specs/042] La unidad "${catId}" no tiene sprite ni diseño: se dibuja sin cuerpo (revisa src/data/unitDesigns.ts).`)
+  }, [animationSet, proceduralDesign, catId])
 
   useEffect(() => {
     if (!animationSet) {
@@ -103,7 +107,7 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
         if (!cancelled) setTextures({ idle, attack })
       })
       .catch(() => {
-        // Edge case de spec.md: carga fallida en runtime degrada al mismo fallback que "sin spriteKey".
+        // Edge case de spec.md: carga fallida en runtime degrada al diseño cartoon de respaldo (specs/042 FR-004).
         if (!cancelled) setTextures(null)
       })
     return () => {
@@ -111,46 +115,23 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     }
   }, [animationSet])
 
-  // specs/021-reskin-cyber-modern (rediseño Cyber-Modern): geometría del cuerpo placeholder derivada
-  // una sola vez del profile — compartida entre las 3 capas Graphics de abajo (cuerpo, visor, propulsor).
-  const bodyLayout = useMemo(() => (profile ? computeCyberBodyLayout(profile) : null), [profile])
-
-  const visorRef = useRef<Graphics>(null)
-  const thrusterRef = useRef<Graphics>(null)
   // specs/029-pulido-batalla-hud (US3): barra de HP redibujada imperativamente, solo cuando la
   // fracción cambia más allá de HP_BAR_REDRAW_THRESHOLD (mismo patrón que BaseTower.tsx).
   const hpBarRef = useRef<Graphics>(null)
   const lastDrawnHpFractionRef = useRef(-1)
 
-  const drawBody = useCallback(
-    (g: Graphics) => {
-      if (!profile || !bodyLayout) return
-      drawCyberBodyBase(g, bodyLayout, team, profile.accentColor)
-    },
-    [profile, bodyLayout, team],
-  )
-
-  // Geometría fija dibujada una sola vez — el brillo/parpadeo se anima después por `.alpha` en useTick,
-  // nunca redibujando (Constitución § VI: nada se recalcula por frame más allá de transforms/alpha).
-  const drawVisorLayer = useCallback(
-    (g: Graphics) => {
-      if (!bodyLayout) return
-      drawCyberVisor(g, bodyLayout, team)
-    },
-    [bodyLayout, team],
-  )
-
-  const drawThrusterLayer = useCallback(
-    (g: Graphics) => {
-      if (!bodyLayout) return
-      drawCyberThruster(g, bodyLayout, team)
-    },
-    [bodyLayout, team],
-  )
-
   // La barra de HP se dibuja imperativamente por ref en el useTick de abajo (solo cuando cambia la
   // fracción) — este `draw` inicial solo deja el Graphics listo para recibir esas llamadas.
   const drawHpBarPlaceholder = useCallback((g: Graphics) => g.clear(), [])
+
+  // specs/042 (US2): geometría fija del anillo, dibujada una sola vez — por fotograma solo cambia su posición.
+  const drawRing = useCallback(
+    (g: Graphics) => {
+      if (!profile) return
+      drawTeamRing(g, computeTeamRingGeometry(profile.bodyWidth), team)
+    },
+    [profile, team],
+  )
 
   useTick(({ deltaMS }) => {
     const container = containerRef.current
@@ -176,14 +157,10 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     container.scale.set(pose.scaleX, pose.scaleY)
     container.rotation = pose.rotationRadians
 
-    // "Ojos animados": pulso de brillo neón continuo en el visor holográfico — mismo Graphics
-    // estático de siempre, solo se modula alpha (specs/021 punto "detalles neón/ojos animados").
-    if (visorRef.current) visorRef.current.alpha = getGlowPulseAlpha(clockRef.current, VISOR_PULSE_HZ, 0.55, 1)
-    // Propulsor: parpadeo rápido, más brillante mientras la unidad avanza ('Moving') que mientras
-    // combate detenida ('Engaged') — refuerza la lectura de "en movimiento" (specs/021 "propulsores").
-    if (thrusterRef.current) {
-      const [min, max] = unit.state === 'Moving' ? [0.6, 1] : [0.25, 0.55]
-      thrusterRef.current.alpha = getGlowPulseAlpha(clockRef.current, THRUSTER_PULSE_HZ, min, max)
+    // specs/042 (US2/FR-008): el anillo queda en el suelo — sin rebote, aplastamiento ni giro.
+    if (ringRef.current) {
+      ringRef.current.x = laneX
+      ringRef.current.y = laneY
     }
 
     // specs/021-reskin-cyber-modern (US4): intercambio de arreglo de texturas por mutación directa,
@@ -198,11 +175,11 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     }
 
     // specs/029-pulido-batalla-hud (US3): HP individual, redibujado solo cuando cambia perceptiblemente.
-    if (hpBarRef.current && bodyLayout) {
+    if (hpBarRef.current) {
       const fraction = getHpFraction(unit.hp, unit.maxHp)
       if (Math.abs(fraction - lastDrawnHpFractionRef.current) > HP_BAR_REDRAW_THRESHOLD) {
         lastDrawnHpFractionRef.current = fraction
-        drawUnitHpBar(hpBarRef.current, bodyLayout, team, fraction)
+        drawUnitHpBar(hpBarRef.current, profile, team, fraction)
       }
     }
   })
@@ -210,40 +187,36 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
   if (!profile) return null
 
   return (
-    <pixiContainer ref={containerRef} pivot={{ x: 0, y: profile.bodyHeight }}>
-      {textures ? (
-        <pixiAnimatedSprite
-          ref={spriteRef}
-          textures={textures.idle}
-          width={profile.bodyWidth}
-          height={profile.bodyHeight}
-          anchor={{ x: team === 'Enemy' ? 1 : 0, y: 0 }}
-          // specs/021-reskin-cyber-modern (FR-010): la unidad enemiga se dibuja en espejo — flip
-          // local al sprite, sin tocar el transform del Container (bob/squash ya aplicado arriba).
-          scale={{ x: team === 'Enemy' ? -1 : 1, y: 1 }}
-          animationSpeed={SPRITE_ANIMATION_SPEED}
-          loop
-          autoPlay
-        />
-      ) : proceduralTexture ? (
-        // specs/022-datos-semilla-flujo-navegacion (US2): textura procedimental cacheada del catálogo
-        // semilla — misma convención de anchor/scale que el sprite real, sin animación de frames propia
-        // (el bob/squash del useTick de arriba sigue aplicando, igual que al Graphics de stats).
-        <pixiSprite
-          texture={proceduralTexture}
-          width={profile.bodyWidth}
-          height={profile.bodyHeight}
-          anchor={{ x: team === 'Enemy' ? 1 : 0, y: 0 }}
-          scale={{ x: team === 'Enemy' ? -1 : 1, y: 1 }}
-        />
-      ) : (
-        <>
-          <pixiGraphics draw={drawBody} />
-          <pixiGraphics ref={visorRef} draw={drawVisorLayer} />
-          <pixiGraphics ref={thrusterRef} draw={drawThrusterLayer} />
-        </>
-      )}
-      <pixiGraphics ref={hpBarRef} draw={drawHpBarPlaceholder} />
-    </pixiContainer>
+    <>
+      <pixiGraphics ref={ringRef} draw={drawRing} />
+      <pixiContainer ref={containerRef} pivot={{ x: 0, y: profile.bodyHeight }}>
+        {textures ? (
+          <pixiAnimatedSprite
+            ref={spriteRef}
+            textures={textures.idle}
+            width={profile.bodyWidth}
+            height={profile.bodyHeight}
+            anchor={{ x: team === 'Enemy' ? 1 : 0, y: 0 }}
+            // specs/021-reskin-cyber-modern (FR-010): la unidad enemiga se dibuja en espejo — flip
+            // local al sprite, sin tocar el transform del Container (bob/squash ya aplicado arriba).
+            scale={{ x: team === 'Enemy' ? -1 : 1, y: 1 }}
+            animationSpeed={SPRITE_ANIMATION_SPEED}
+            loop
+            autoPlay
+          />
+        ) : proceduralTexture ? (
+          // specs/022 (US2) / specs/042: textura cartoon cacheada del diseño — misma convención de anchor/scale
+          // que el sprite real, sin animación de frames propia (el bob/squash del useTick de arriba sigue aplicando).
+          <pixiSprite
+            texture={proceduralTexture}
+            width={profile.bodyWidth}
+            height={profile.bodyHeight}
+            anchor={{ x: team === 'Enemy' ? 1 : 0, y: 0 }}
+            scale={{ x: team === 'Enemy' ? -1 : 1, y: 1 }}
+          />
+        ) : null}
+        <pixiGraphics ref={hpBarRef} draw={drawHpBarPlaceholder} />
+      </pixiContainer>
+    </>
   )
 }

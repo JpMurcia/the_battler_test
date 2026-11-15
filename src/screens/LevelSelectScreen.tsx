@@ -16,7 +16,7 @@ interface LevelSelectScreenProps {
 }
 
 /** Mismo formateador que `formatCountdown` de `HubScreen.tsx` (specs/029) — duplicado deliberado, trivial
- * de mantener sincronizado, mismo criterio que `lighten()` en `cyberUnitBody.ts`/`unitFactory.ts`. */
+ * de mantener sincronizado, mismo criterio que los helpers triviales de color de `src/game/graphics/`. */
 function formatCountdown(totalSeconds: number): string {
   const clamped = Math.max(0, Math.ceil(totalSeconds))
   const minutes = Math.floor(clamped / 60)

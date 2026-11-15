@@ -1,15 +1,22 @@
 import { extend, useApplication, useTick } from '@pixi/react'
-import { Container, Graphics, Sprite, type Texture } from 'pixi.js'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Container, Sprite, type Texture } from 'pixi.js'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CATS } from '../data/cats'
+import { resolveUnitDesign } from '../data/unitDesigns'
 import type { BattleUnit } from '../engine/types'
 import { getDeathEchoDurationSeconds, getDeathEchoPose, getVisualProfile } from './animation'
-import { computeCyberBodyLayout, drawCyberBodyBase } from './graphics/cyberUnitBody'
 import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
+import { getOrCreateUnitTexture } from './graphics/unitFactory'
 import { useGameStore } from '../state/useGameStore'
 import { loadSpriteTextures, resolveSpriteAnimationSet } from './spriteAssets'
 
-extend({ Container, Graphics, Sprite })
+extend({ Container, Sprite })
+
+/**
+ * specs/042-unidades-mundo-cartoon (US4/FR-010, research.md Decisión 6): tinte multiplicativo que apaga el dibujo
+ * cartoon del eco sin redibujarlo ni generar otra textura — misma forma, tonos apagados, sin brillo.
+ */
+export const ECHO_TINT = 0x8a8f99
 
 interface DeathEchoSpriteProps {
   instanceId: string
@@ -26,8 +33,11 @@ interface DeathEchoSpriteProps {
  * registro de BattleField llamando a onExpire al llegar a remainingSeconds === 0.
  *
  * specs/021-reskin-cyber-modern (US4): si `catId` tiene `spriteKey` con carga exitosa, el cuerpo
- * congelado usa el primer frame de reposo (`idle[0]`) en vez del `Graphics` placeholder — sin
- * arte de "muerte" propio en esta spec (data-model.md § Rendering). Fallback igual que UnitSprite.
+ * congelado usa el primer frame de reposo (`idle[0]`) — sin arte de "muerte" propio.
+ *
+ * specs/042-unidades-mundo-cartoon (US4/FR-010): en cualquier otro caso el cuerpo es la misma textura
+ * cartoon cacheada de la unidad viva (mismo diseño, misma clave de caché), apagada con `ECHO_TINT` — nunca el
+ * cuerpo "cyber" retirado. El eco no lleva anillo de equipo.
  */
 export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathEchoSpriteProps) {
   const { app } = useApplication()
@@ -37,7 +47,7 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
   const cat = useMemo(() => CATS.find((candidate) => candidate.id === catId), [catId])
   const profile = useMemo(() => (cat ? getVisualProfile(cat) : null), [cat])
   const animationSet = useMemo(() => resolveSpriteAnimationSet(cat?.spriteKey), [cat])
-  const bodyLayout = useMemo(() => (profile ? computeCyberBodyLayout(profile) : null), [profile])
+  const design = useMemo(() => resolveUnitDesign(catId), [catId])
 
   // specs/021-reskin-cyber-modern: `x` llega en coordenadas del carril de simulación (misma
   // convención que UnitSprite) — un DeathEcho no se mueve, así que el mapeo a pantalla se calcula
@@ -72,16 +82,11 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
     }
   }, [animationSet])
 
-  // specs/021-reskin-cyber-modern: cuerpo "apagado" (dimmed) — desatura el gradiente de equipo y
-  // suprime los anillos de resplandor, visualmente distinto de una unidad viva (sin visor/propulsor:
-  // un casco inerte, no un droide todavía activo).
-  const drawBody = useCallback(
-    (g: Graphics) => {
-      if (!profile || !bodyLayout) return
-      drawCyberBodyBase(g, bodyLayout, team, profile.accentColor, { dimmed: true })
-    },
-    [profile, bodyLayout, team],
-  )
+  // specs/042: misma textura (y misma clave de caché) que la unidad viva — un eco no genera ninguna textura nueva.
+  const designTexture = useMemo(() => {
+    if (idleFrame || !design || !app?.renderer) return null
+    return getOrCreateUnitTexture(app.renderer, catId, design, team === 'Player' ? 'ally' : 'enemy')
+  }, [idleFrame, design, app, catId, team])
 
   useTick(({ deltaMS }) => {
     const container = containerRef.current
@@ -100,19 +105,21 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
 
   if (!profile) return null
 
+  const body = idleFrame ?? designTexture
+
   return (
     <pixiContainer ref={containerRef} x={screenX} y={screenY} pivot={{ x: 0, y: profile.bodyHeight }}>
-      {idleFrame ? (
+      {body ? (
         <pixiSprite
-          texture={idleFrame}
+          texture={body}
           width={profile.bodyWidth}
           height={profile.bodyHeight}
           anchor={{ x: team === 'Enemy' ? 1 : 0, y: 0 }}
           scale={{ x: team === 'Enemy' ? -1 : 1, y: 1 }}
+          // El fotograma de un sprite no cambia (FR-010); solo el dibujo cartoon se apaga.
+          tint={idleFrame ? 0xffffff : ECHO_TINT}
         />
-      ) : (
-        <pixiGraphics draw={drawBody} />
-      )}
+      ) : null}
     </pixiContainer>
   )
 }

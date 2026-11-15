@@ -60,7 +60,8 @@ describe('computeBaseTowerLayout', () => {
 })
 
 // drawBaseTowerBody/drawBaseTowerHpBar no se testean directamente: usan PIXI.FillGradient, que en
-// jsdom (sin el paquete `canvas`) lanza al construir su textura — mismo límite que cyberUnitBody.test.ts.
+// jsdom (sin el paquete `canvas`) lanza al construir su textura — por eso los dibujos de unidad (specs/042)
+// evitan los degradados y sí se testean directamente.
 describe('drawBaseTowerTurret / drawBaseTowerShield', () => {
   it('no lanzan para ningún rol', () => {
     const layout = computeBaseTowerLayout()

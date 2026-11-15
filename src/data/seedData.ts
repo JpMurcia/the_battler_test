@@ -74,7 +74,8 @@ export const SEED_UNITS: SeedUnit[] = [
     stats: { hp: 35, attackPower: 12, attackRange: 250, moveSpeed: 14, attackCooldown: 1.8, cost: 6, spawnCooldown: 8 },
     targetType: 'Single',
     traits: [],
-    proceduralDesign: { primaryColor: 0x22d3ee, baseShape: 'poly', size: 18, distinctiveFeature: 'cat-ears' },
+    // specs/042-unidades-mundo-cartoon (FR-005): antes 0x22d3ee (= --bc-cyan, color de información) → tono apagado.
+    proceduralDesign: { primaryColor: 0x2b8a99, baseShape: 'poly', size: 18, distinctiveFeature: 'cat-ears' },
   },
   {
     id: 'seed-cat-titan',
@@ -83,7 +84,8 @@ export const SEED_UNITS: SeedUnit[] = [
     stats: { hp: 350, attackPower: 90, attackRange: 0, moveSpeed: 10, attackCooldown: 4.0, cost: 77, spawnCooldown: 40 },
     targetType: 'Single',
     traits: [],
-    proceduralDesign: { primaryColor: 0xef4444, baseShape: 'rect', size: 44, distinctiveFeature: 'crest' },
+    // specs/042-unidades-mundo-cartoon (FR-005): antes 0xef4444 (= --bc-red, color de información) → tono apagado.
+    proceduralDesign: { primaryColor: 0xa33a3a, baseShape: 'rect', size: 44, distinctiveFeature: 'crest' },
   },
 ]
 

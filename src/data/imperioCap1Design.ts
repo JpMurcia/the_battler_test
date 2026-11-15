@@ -14,10 +14,12 @@ export const IMPERIO_CAP1_DESIGNS: Record<string, ProceduralDesign> = {
   'cat-recluta': { primaryColor: 0x94a3b8, baseShape: 'circle', size: 16, distinctiveFeature: 'none' },
   'cat-yunque': { primaryColor: 0x64748b, baseShape: 'rect', size: 26, distinctiveFeature: 'shield' },
   'cat-sigiloso': { primaryColor: 0x8b5cf6, baseShape: 'poly', size: 14, distinctiveFeature: 'tail' },
-  'cat-cuchilla': { primaryColor: 0xdc2626, baseShape: 'poly', size: 20, distinctiveFeature: 'spikes' },
+  // specs/042-unidades-mundo-cartoon (FR-005): antes 0xdc2626, duplicado exacto de `seed-enemy-red-snake` (research.md Decisión 8).
+  'cat-cuchilla': { primaryColor: 0xa5512f, baseShape: 'poly', size: 20, distinctiveFeature: 'spikes' },
   'cat-forzudo': { primaryColor: 0x92400e, baseShape: 'rect', size: 32, distinctiveFeature: 'horns' },
   'cat-verdoso': { primaryColor: 0x16a34a, baseShape: 'circle', size: 16, distinctiveFeature: 'wings' },
-  'cat-deidad': { primaryColor: 0xfacc15, baseShape: 'circle', size: 20, distinctiveFeature: 'crest' },
+  // specs/042-unidades-mundo-cartoon (FR-005): antes 0xfacc15 (= --bc-gold, color de información) → tono apagado.
+  'cat-deidad': { primaryColor: 0xa88a2c, baseShape: 'circle', size: 20, distinctiveFeature: 'crest' },
   'cat-cornamenta': { primaryColor: 0xd97706, baseShape: 'poly', size: 15, distinctiveFeature: 'horns' },
   'cat-migratorio': { primaryColor: 0x38bdf8, baseShape: 'circle', size: 18, distinctiveFeature: 'wings' },
   'cat-centinela': { primaryColor: 0x475569, baseShape: 'rect', size: 20, distinctiveFeature: 'shield' },
@@ -33,7 +35,8 @@ export const IMPERIO_CAP1_DESIGNS: Record<string, ProceduralDesign> = {
   'enemy-rondador': { primaryColor: 0xc2410c, baseShape: 'circle', size: 16, distinctiveFeature: 'tail' },
   'enemy-turba': { primaryColor: 0xca8a04, baseShape: 'poly', size: 18, distinctiveFeature: 'spikes' },
   'enemy-planeador': { primaryColor: 0x7dd3fc, baseShape: 'circle', size: 22, distinctiveFeature: 'wings' },
-  'enemy-saltarin-alado': { primaryColor: 0xf472b6, baseShape: 'poly', size: 20, distinctiveFeature: 'wings' },
+  // specs/042-unidades-mundo-cartoon (FR-005): antes 0xf472b6 (= --bc-pink, color de información) → tono apagado.
+  'enemy-saltarin-alado': { primaryColor: 0x9c4a76, baseShape: 'poly', size: 20, distinctiveFeature: 'wings' },
   'enemy-behemot-gris': { primaryColor: 0x9ca3af, baseShape: 'rect', size: 30, distinctiveFeature: 'horns' },
   'enemy-carmesi': { primaryColor: 0x991b1b, baseShape: 'rect', size: 26, distinctiveFeature: 'fangs' },
   'enemy-emperador-volador': { primaryColor: 0x7c3aed, baseShape: 'circle', size: 26, distinctiveFeature: 'crest' },
