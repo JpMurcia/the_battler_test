@@ -2,7 +2,7 @@
 
 Tower-defense 1D estilo *The Battle Cats*, 100% web nativo — sin backend, sin cuenta de jugador, progreso local vía IndexedDB.
 
-**Stack**: Vite + React 19 + TypeScript · Pixi.js (`@pixi/react`) para el render de combate en tiempo real, con sprites reales por frame (reskin Cyber-Modern) · Zustand para estado · Dexie sobre IndexedDB para persistencia · Vitest para testing.
+**Stack**: Vite + React 19 + TypeScript · Pixi.js (`@pixi/react`) para el render de combate en tiempo real: sprites reales por fotograma para 12 héroes y diseños procedurales de estilo cartoon para el resto (`specs/042`), con escala visual según el tamaño de pantalla (`specs/045`) · Zustand para estado · Dexie sobre IndexedDB para persistencia · Vitest para testing.
 
 Las reglas de diseño y técnicas del proyecto están fijadas en [`.specify/memory/constitution.md`](.specify/memory/constitution.md). El desarrollo sigue Spec-Driven Development: cada feature no trivial pasa por `spec.md` → `plan.md` → `tasks.md` bajo [`specs/`](specs/) antes de escribirse en código.
 
@@ -33,11 +33,25 @@ El progreso del jugador se guarda en IndexedDB del navegador (base `BattleCatsDB
 
 `scripts/copy-sprites.mjs` es un script manual de un solo uso (no corre en `dev`/`build`) que copia los frames `idle`/`attack` de los 12 héroes usados por `src/data/cats.ts` desde `assets-source/` hacia `public/sprites/`.
 
+`scripts/art/` contiene el **piloto de sprites con IA**, un conjunto de herramientas opcionales para producir arte. Ni el juego ni los tests las usan. Ver [`docs/art/investigacion-pipeline-sprites-n8n-comfyui.md`](docs/art/investigacion-pipeline-sprites-n8n-comfyui.md) § 7.
+- `comfy_piloto.py` genera candidatas en un ComfyUI local con Z-Image Turbo y las corrige con Qwen Image Edit.
+- `evaluar_venice.py` las puntúa con un modelo de visión de Venice. Primero mide en código el fondo, el margen, la ocupación y el contorno. Después aplica unos filtros eliminatorios y unos criterios puntuados, que están en `scripts/art/prompts/`. Por último ordena las aprobadas y propone las dos mejores.
+- `hoja_piloto.py` monta una hoja de contacto que incluye una vista al tamaño real de batalla (55×64 px).
+
+Requieren el Python del entorno de ComfyUI y la variable de entorno `VENICE_API_KEY`; la clave nunca se guarda en el repo. Los resultados del piloto se guardan en `assets-source/units/cats/basic-cat/piloto/`.
+
 ---
 
 ## Estado actual
 
-El proyecto completó 41 specs numeradas bajo `specs/`, cada una construida sobre la anterior sin tocar sus capas ya cerradas. `npx tsc -b` limpio y `npm test` en verde (**58 archivos, 783 tests**) al momento de escribir esto — las 41 specs están 100% completas, incluidas sus tareas de verificación manual en navegador. Las specs `029` a `037` cerraron un backlog propio derivado de comparar el mockup de referencia y el manual técnico contra el estado real de `src/` tras `028` (ver nota de origen en `specs/029-pulido-batalla-hud/spec.md`); `037-tienda` fue, por diseño, la última spec de ese backlog. `038-catalogo-habilidades-avanzado` abre uno nuevo, retomando el catálogo de habilidades de `specs/015` justo donde ese spec dejó explícitamente pendiente ("candidato a una iteración futura") Golpe Letal, Killers de rasgo, Escudo e Invocar; `039-habilidades-control-defensa` continúa esa misma cola con Fortalecer, Esquivar, Sobrevivir y Retroceso, y `040-dinero-extra-inmunidades` la cierra por ahora con Dinero Extra y la inmunidad de unidades (jefes) a Golpe Letal, Killer y Retroceso. `041-cabezas-de-canon` aprovecha el desplazamiento de Retroceso de `039` para cerrar lo que `specs/035` dejó pendiente: las Cabezas de Cañón del Cuerpo Ototo. (El conteo de tests excluye `.claude/worktrees/`, copias antiguas del repo que la app de escritorio deja en disco y que `vite.config.ts` ya no recoge — antes inflaban la cifra a 77 archivos/776 tests.)
+El proyecto tiene 44 specs completas bajo `specs/`: de la `001` a la `042`, la `044` y la `045`. La `043` (rig de recortes) tiene su número reservado y todavía no existe. Cada spec se construye sobre la anterior sin tocar sus capas ya cerradas. A 2026-11-17, `npx tsc -b` pasa sin errores y `npm test` está en verde (**62 archivos, 893 tests**). Todas las specs están completas, incluidas sus tareas de verificación manual en el navegador.
+
+Las tres últimas cambian solo cómo se ve la batalla, no las reglas:
+- `042` es el reskin cartoon de las unidades.
+- `044` añade las animaciones de evento.
+- `045` aplica la escala visual.
+
+ Las specs `029` a `037` cerraron un backlog propio derivado de comparar el mockup de referencia y el manual técnico contra el estado real de `src/` tras `028` (ver nota de origen en `specs/029-pulido-batalla-hud/spec.md`); `037-tienda` fue, por diseño, la última spec de ese backlog. `038-catalogo-habilidades-avanzado` abre uno nuevo, retomando el catálogo de habilidades de `specs/015` justo donde ese spec dejó explícitamente pendiente ("candidato a una iteración futura") Golpe Letal, Killers de rasgo, Escudo e Invocar; `039-habilidades-control-defensa` continúa esa misma cola con Fortalecer, Esquivar, Sobrevivir y Retroceso, y `040-dinero-extra-inmunidades` la cierra por ahora con Dinero Extra y la inmunidad de unidades (jefes) a Golpe Letal, Killer y Retroceso. `041-cabezas-de-canon` aprovecha el desplazamiento de Retroceso de `039` para cerrar lo que `specs/035` dejó pendiente: las Cabezas de Cañón del Cuerpo Ototo. (El conteo de tests excluye `.claude/worktrees/`, copias antiguas del repo que la app de escritorio deja en disco y que `vite.config.ts` ya no recoge — antes inflaban la cifra a 77 archivos/776 tests.)
 
 | Spec | Contenido | Tareas |
 |---|---|---|
@@ -82,6 +96,9 @@ El proyecto completó 41 specs numeradas bajo `specs/`, cada una construida sobr
 | [`039-habilidades-control-defensa`](specs/039-habilidades-control-defensa/) | Segunda tanda del catálogo de habilidades: 4 `Ability` nuevas — Fortalecer (`Strengthen`, más daño bajo un umbral de vida), Esquivar (`Dodge`), Sobrevivir (`Survive`) y Retroceso (`Knockback`, desplaza al objetivo hacia su base); unifica la tubería por golpe en `applyHit` | ✅ 25/25 |
 | [`040-dinero-extra-inmunidades`](specs/040-dinero-extra-inmunidades/) | Tercera tanda del catálogo de habilidades: Dinero Extra (`ExtraMoney`, energía de batalla extra por enemigo derrotado por el golpe de la unidad) e inmunidad a habilidades (`immuneAbilities`: Golpe Letal, Killer, Retroceso), visibles en el detalle de unidad y la Guía de Enemigos | ✅ 23/23 |
 | [`041-cabezas-de-canon`](specs/041-cabezas-de-canon/) | Cabezas de Cañón (Ototo Corps): tercera construcción con cinco efectos secundarios elegibles para el cañón especial (Retroceso, Debilitar, Congelar, Ralentizar, Maldecir), aplicados a los enemigos alcanzados que sobreviven; etiqueta del efecto en el HUD de batalla | ✅ 17/17 |
+| [`042-unidades-mundo-cartoon`](specs/042-unidades-mundo-cartoon/) | Reskin «mundo cartoon» de la biblia de arte: las unidades sin sprite pasan a contorno oscuro grueso y color plano, sin neón. Las 16 que usaban el cuerpo «cyber» genérico reciben un diseño propio ([`src/data/unitDesigns.ts`](src/data/unitDesigns.ts)), los aliados muestran orejas de gato y todas las unidades llevan un anillo de equipo bajo los pies (cian para aliados, rojo para enemigos) | ✅ 23/23 |
+| [`044-animaciones-de-evento`](specs/044-animaciones-de-evento/) | Cuatro animaciones de cuerpo completo para todas las unidades: Golpeado (destello y sacudida), Muerte (salto, giro y desvanecimiento), Aparición (salto con aplastamiento) y Retroceso (deslizamiento con inclinación). Respetan «reducir movimiento» y no provocan re-render por tick | ✅ 21/21 |
+| [`045-escala-visual-batalla`](specs/045-escala-visual-batalla/) | Escala solo de render calculada a partir del tamaño del canvas: el Gato Básico mide 64 px de alto en una ventana de 1280×720 y la escala se mantiene entre 1,5× y 6×. Las bases usan el 75 % de esa escala, y los anillos, ecos e impactos crecen con ella. El canvas se dibuja a la densidad real de la pantalla, las texturas procedurales a resolución 8 y los sprites con mipmaps | ✅ 8/8 |
 
 ### Contenido de juego
 
@@ -107,18 +124,27 @@ El proyecto completó 41 specs numeradas bajo `specs/`, cada una construida sobr
 - **Habilidades de control y defensa** (`specs/039`, `src/engine/types.ts`/`combat.ts`): 4 `Ability` más, sin campos nuevos en `BattleUnit` — **Fortalecer** (`Strengthen`, el daño de la unidad se multiplica mientras su vida esté en o bajo un umbral, también contra bases), **Esquivar** (`Dodge`, probabilidad por golpe de anular el golpe entero: sin daño, escudo, efectos ni Retroceso), **Sobrevivir** (`Survive`, probabilidad de quedar con 1 de vida ante un golpe letal, incluida una eliminación de Killer) y **Retroceso** (`Knockback`, probabilidad de empujar al objetivo vivo hacia su propia base sin sacarlo del carril — el borde enemigo sale de `Level.laneLength`). `Curse` suspende las cuatro. 4 gatos de demostración nuevos (`strengthen-cat`, `dodge-cat`, `survivor-cat`, `knockback-cat`), visibles en `UnitDetailPanel`; igual que los de `038`, los cuatro son de rareza `Raro` y por tanto salen de la Cápsula (ver "Qué falta").
 - **Dinero Extra e inmunidades** (`specs/040`, `src/engine/types.ts`/`combat.ts`/`simulation.ts`): **Dinero Extra** (`ExtraMoney`) concede una cantidad fija de energía de batalla (el "dinero" con que se despliega) cada vez que una unidad del jugador asesta el golpe que derrota a un enemigo — el golpe letal marca el bono en el derrotado (`BattleUnit.defeatBounty`, efímero) y `stepSimulation` lo suma a `energy.current` con tope en el máximo, nunca por el cañón especial ni para el lado enemigo; **inmunidad a habilidades** (`immuneAbilities` en `Cat`/`BattleUnit`) hace que un defensor ignore por completo Golpe Letal, Killer y/o Retroceso — sin consumir su tirada — y `enemy-la-mascara`, el jefe del Capítulo 1, ya es inmune a las tres. Se ven en `UnitDetailPanel` (`Inmune a: …`) y en la Guía de Enemigos. 2 gatos de demostración nuevos (`wallet-cat`, `anchor-cat`); como los de `038`/`039`, de rareza `Raro` (entran en el pool de la Cápsula).
 - **Cabezas de Cañón** (`specs/041`, [`src/data/ototoCorps.ts`](src/data/ototoCorps.ts), `OtotoCorpsPanel`, `applyCannonHead` en `src/engine/combat.ts`): tercera construcción del Cuerpo Ototo — "Cabeza de Cañón", con el mismo flujo de materiales de Gamatoto y construcción por timestamp que Base y Estilo (la elección se guarda junto a ellas en la fila `ototoCorps`, sin nueva versión de esquema) — que da al cañón especial un efecto secundario elegible: **Retroceso** (empuja a los enemigos alcanzados hacia su base, con tope de carril, reutilizando `specs/039`) o **Debilitar/Congelar/Ralentizar/Maldecir** (reutilizando las reglas de `specs/015`: inmunidad, resistencia y refresco). Solo recibe el efecto el enemigo alcanzado que sobrevive al daño, que no cambia; un enemigo inmune a Retroceso (`specs/040`, p. ej. La Máscara) recibe el daño pero no se desplaza. El control de cañón del HUD de batalla muestra "Cañón · {efecto}" cuando hay cabeza construida.
+- **Presentación de la batalla** (`specs/042`, `044` y `045`, todo en `src/game/`). Nada de esto cambia las estadísticas ni el balance.
+  - **Estilo:** las 65 unidades del catálogo siguen la biblia de arte ([`docs/art/art-bible.md`](docs/art/art-bible.md)): el mundo se dibuja en cartoon plano y solo la información brilla. Los 12 héroes conservan su sprite de fotogramas y las demás unidades usan un diseño procedural cartoon propio.
+  - **Animaciones:** cada unidad reacciona al golpe, a su muerte, a su aparición y al retroceso.
+  - **Escala:** el tamaño en pantalla depende del canvas (`getBattleVisualScale`, en [`src/game/graphics/layout.ts`](src/game/graphics/layout.ts)). La posición en el carril y la colisión no se escalan y siguen en unidades de mundo.
 
 ### Qué falta (próximas fases)
 
-No queda ninguna spec abierta: `001`–`041` están completas y no hay tareas pendientes en ningún `tasks.md`. Lo que sigue **no tiene spec todavía**; candidatos, ordenados por cercanía a lo ya construido:
+No queda ninguna spec abierta: las 44 están completas y ningún `tasks.md` tiene tareas pendientes. Lo que sigue **no tiene spec todavía**. Los candidatos, ordenados por cercanía a lo ya construido, son estos:
 
-1. **Cola del catálogo de habilidades (`038`–`040`)** — con `TraitTargeting`, `Neutral`, `TraitResistance`, `MassiveDamage`, `TraitKiller`, `Shield`, `SummonOnDeath`, `Strengthen`, `Dodge`, `Survive`, `Knockback` y `ExtraMoney`, más los efectos `Curse`/`Weaken`/`Freeze`/`Slow` y los ataques `MultiHit`/`Critical`, quedan fuera unas 24 variantes del catálogo de referencia: Warp, Tóxico, Fuerte/Masivo/Resistente por rasgo adicionales, y las Killers de los demás rasgos (el motor ya las soporta: es solo contenido). Además, la ventana de evasión de Esquivar, el retroceso estándar por umbrales de vida, el valor de dinero propio de cada enemigo (que Dinero Extra multiplicaría) e inmunidades a más habilidades.
-2. **Calendario de eventos general (Fase 25 del plan técnico)** — eventos recurrentes (Meow Meow Day, eventos mensuales) más allá del banner único (`014`) y el Festival de Tesoros (`032`).
-3. **Contenido** — solo existe el Capítulo 1 de Imperio de los Gatos (`027`) y el nivel "Hacia el Futuro" (`011`); faltan los capítulos siguientes.
-4. **Respec de Talentos** — reiniciar y reelegir debuff/rasgo (diferido por `036`).
-5. **Migraciones de datos opcionales** — mover `Metal` de clasificación especial a estándar y separar `EnemyStrengthMultiplier` en HP%/Daño% (Grupo B de `docs/plan-tecnico-manual-completo.md`); requieren plan de migración propio.
-6. **Revisar los gatos de demostración en el pool de gacha** — `GACHA_POOL` (`src/data/gacha.ts`) filtra `CATS` por rareza, así que los 10 gatos de demostración de rareza `Raro` de `038`–`040` ya salen de la Cápsula: el pool `Raro` pasó de 6 gatos originales a 16 entradas (el 62,5 % de una tirada `Raro` es hoy un gato de demostración). Solo `shield-cat` (`Especial`) queda fuera de gacha. Decidir si se quedan, se mueven a una rareza fuera de gacha (`Normal`/`Especial`/`Colaboración`) o se reparten como recompensas de nivel/arco es una decisión de balance pendiente.
-7. **Rebranding/Theming (Fase 14 de `docs/roadmap-fases.md`)** — por diseño la última; capa de marca (nombre, logo, textos) sin tocar la lógica.
+1. **Arte nuevo de los gatos.**
+   - **Piloto de sprites con IA (en curso).** El filtro de Venice ya ha propuesto dos referencias para el Gato Básico (`piloto/ref/auto/elegidas/`, semillas 202 y 204), pero falta aprobar una.
+   - **Pasos siguientes:** generar las animaciones de reposo y ataque con Qwen Image Edit o Wan 2.2 y llevarlas a `public/sprites/`.
+   - **Specs previstas:** la `043`, rig de recortes con Marcha y Ataque por esqueleto, y la `046`, que sustituye los `hero_1`…`hero_12` por gatos (ver [`docs/art/investigacion-pipeline-arte-ia.md`](docs/art/investigacion-pipeline-arte-ia.md)).
+   - **Huecos de los sprites actuales:** los `hero_*` tienen mucho margen vacío en su fotograma, así que con la escala de la `045` se ven más pequeños que su caja.
+2. **Cola del catálogo de habilidades (`038`–`040`)** — con `TraitTargeting`, `Neutral`, `TraitResistance`, `MassiveDamage`, `TraitKiller`, `Shield`, `SummonOnDeath`, `Strengthen`, `Dodge`, `Survive`, `Knockback` y `ExtraMoney`, más los efectos `Curse`/`Weaken`/`Freeze`/`Slow` y los ataques `MultiHit`/`Critical`, quedan fuera unas 24 variantes del catálogo de referencia: Warp, Tóxico, Fuerte/Masivo/Resistente por rasgo adicionales, y las Killers de los demás rasgos (el motor ya las soporta: es solo contenido). Además, la ventana de evasión de Esquivar, el retroceso estándar por umbrales de vida, el valor de dinero propio de cada enemigo (que Dinero Extra multiplicaría) e inmunidades a más habilidades.
+3. **Calendario de eventos general (Fase 25 del plan técnico)** — eventos recurrentes (Meow Meow Day, eventos mensuales) más allá del banner único (`014`) y el Festival de Tesoros (`032`).
+4. **Contenido** — solo existe el Capítulo 1 de Imperio de los Gatos (`027`) y el nivel "Hacia el Futuro" (`011`); faltan los capítulos siguientes.
+5. **Respec de Talentos** — reiniciar y reelegir debuff/rasgo (diferido por `036`).
+6. **Migraciones de datos opcionales** — mover `Metal` de clasificación especial a estándar y separar `EnemyStrengthMultiplier` en HP%/Daño% (Grupo B de `docs/plan-tecnico-manual-completo.md`); requieren plan de migración propio.
+7. **Revisar los gatos de demostración en el pool de gacha** — `GACHA_POOL` (`src/data/gacha.ts`) filtra `CATS` por rareza, así que los 10 gatos de demostración de rareza `Raro` de `038`–`040` ya salen de la Cápsula: el pool `Raro` pasó de 6 gatos originales a 16 entradas (el 62,5 % de una tirada `Raro` es hoy un gato de demostración). Solo `shield-cat` (`Especial`) queda fuera de gacha. Decidir si se quedan, se mueven a una rareza fuera de gacha (`Normal`/`Especial`/`Colaboración`) o se reparten como recompensas de nivel/arco es una decisión de balance pendiente.
+8. **Rebranding/Theming (Fase 14 de `docs/roadmap-fases.md`)** — por diseño la última; capa de marca (nombre, logo, textos) sin tocar la lógica.
 
 Fuera de alcance por diseño: el "Cat Food Shop" de pagos reales (Constitución § V).
 
@@ -167,12 +193,19 @@ src/
 │   └── simulation.ts      # stepSimulation — el reducer puro de un tick completo
 ├── game/                   # Puente hacia Pixi.js
 │   ├── BattleStage.tsx    # <Application> de Pixi + BattleField (mount/unmount por unidad)
-│   ├── UnitSprite.tsx     # Sprite real (idle/attack por frame) + animación por transform en cada tick
-│   ├── DeathEchoSprite.tsx # Señal visual de "death echo" al morir una unidad
+│   ├── UnitSprite.tsx     # Sprite real o diseño cartoon + anillo de equipo, animación por transform en cada tick
+│   ├── DeathEchoSprite.tsx # Eco de muerte: salto, giro y desvanecimiento (specs/044)
+│   ├── ImpactEffect.tsx   # Chispas y número de daño de cada golpe
+│   ├── BaseTower.tsx      # Torres de base con su barra de vida
 │   ├── animation.ts       # Funciones puras: Cat → VisualProfile, pose de animación por frame
-│   ├── spriteAssets.ts    # Manifest de rutas de textura idle/attack por spriteKey (hero_1..hero_12)
+│   ├── eventAnimations.ts # Golpeado / Muerte / Aparición / Retroceso (specs/044)
+│   ├── motionPreference.ts # Lee «reducir movimiento» del sistema
+│   ├── spriteAssets.ts    # Manifest de rutas de textura idle/attack por spriteKey (hero_1..hero_12), con mipmaps
 │   ├── enemyEncounters.ts # Registro de enemigos vistos (alimenta EnemyGuideScreen)
-│   └── graphics/unitFactory.ts # Construcción de BattleUnit desde Cat + contenido de nivel/evento
+│   └── graphics/
+│       ├── unitFactory.ts # Texturas procedurales cartoon por (unidad, rol), a resolución 8
+│       ├── layout.ts      # Carril, suelo y getBattleVisualScale (specs/045)
+│       └── teamRing.ts / unitHpBar.ts / hitFlash.ts / baseTower.ts / teamColors.ts
 ├── data/
 │   ├── cats.ts             # Catálogo de gatos (stats + spriteKey)
 │   ├── levels.ts           # Niveles (bases, energía, oleada enemiga, mapPosition en el mapa visual)
@@ -189,6 +222,7 @@ src/
 │   ├── catCombos.ts        # Cat Combos, su bonificación pasiva y getCompletedCombos (specs/025)
 │   ├── news.ts              # Catálogo estático del Buzón de Noticias (specs/026)
 │   ├── imperioCap1Design.ts # Diseño procedural de las 30 unidades del Capítulo 1 (specs/027-028)
+│   ├── unitDesigns.ts      # Diseño cartoon de las 16 unidades que usaban el cuerpo «cyber» (specs/042)
 │   ├── catFilter.ts        # Filtro por rareza/rasgo/habilidad para Equipar y Guía de Gatos (specs/030)
 │   ├── baseUpgrades.ts     # Catálogo de mejoras de base compradas con moneda (specs/031)
 │   ├── treasureFestival.ts # Ventana de tiempo con bonificación extra de tesoros (specs/032)
@@ -244,7 +278,13 @@ Determinista y puro — `stepSimulation(state, deltaSeconds) → nextState`, sin
 
 - `BattleStage.tsx`: monta el `<Application>` de Pixi (vía `@pixi/react`) y su `useTick` maestro llama a `useGameStore.getState().tick(deltaSeconds)` en cada frame. `BattleField` solo dispara `setState` de React (re-render) cuando cambia el **conjunto** de `instanceId`s activos (nace/muere una unidad) — nunca por su posición.
 - `UnitSprite.tsx`: por cada unidad activa, monta su sprite real (`spriteAssets.ts`, frames idle/attack por `spriteKey`) y en un `useTick` propio lee la unidad fresca directo de `useGameStore.getState()` por `instanceId` para mutar `position`/`scale`/frame vía `ref` — sin pasar por props ni re-render de React.
-- `DeathEchoSprite.tsx`: señal visual efímera al morir una unidad (specs/003 US3).
+- `DeathEchoSprite.tsx`: señal visual efímera al morir una unidad (specs/003 US3). Desde `specs/044` salta hacia su base, gira y se desvanece.
+- `eventAnimations.ts`: funciones puras para las reacciones Golpeado, Aparición y Retroceso y para la Muerte (`specs/044`). Con «reducir movimiento» activo no hay pulsos, y ninguna unidad destella más de 3 veces por segundo.
+- **Escala visual** (`specs/045`). El tamaño de mundo de cada unidad (`bodyWidth`/`bodyHeight`, que para el Gato Básico es 16×18,5 px) se multiplica al dibujarlo por `getBattleVisualScale(ancho, alto)`.
+  - **Valor:** la escala es ≈ 3,46 en un canvas de 1256×535 y se mantiene entre 1,5 y 6.
+  - **Qué se escala:** unidades, anillos, ecos e impactos crecen con ella, y las bases usan el 75 %.
+  - **Qué no se escala:** las posiciones del carril, la colisión y los datos.
+  - **Nitidez:** el `<Application>` se rasteriza a `devicePixelRatio` con `autoDensity`.
 - `animation.ts`: funciones puras — `getVisualProfile(cat)` deriva tamaño/ritmo de idle de los stats del gato; `getAnimationPose(...)` calcula la pose para un instante dado.
 - `spriteAssets.ts` / `graphics/unitFactory.ts`: manifest de texturas y construcción de `BattleUnit` a partir de `Cat` + contenido del nivel/evento activo.
 
@@ -266,5 +306,9 @@ Vitest + Testing Library + `fake-indexeddb` (jsdom). La suite cubre `src/engine/
 ## Documentación adicional
 
 - [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — principios de diseño no negociables del proyecto.
-- [`specs/`](specs/) — spec/plan/tasks de cada una de las 40 features, en orden cronológico.
+- [`specs/`](specs/) — spec/plan/tasks de cada una de las 44 features, en orden cronológico.
 - [`docs/`](docs/) — material de diseño y rediseño visual adicional (guías de estilo, roadmap de fases, referencia de manual técnico).
+- [`docs/art/`](docs/art/): estos son los documentos de arte.
+  - [`art-bible.md`](docs/art/art-bible.md): la biblia de arte (estilo, paleta y tamaños: el Gato Básico mide 64 px en batalla).
+  - [`entity-inventory.md`](docs/art/entity-inventory.md): el inventario de unidades por nivel de arte.
+  - [`investigacion-pipeline-arte-ia.md`](docs/art/investigacion-pipeline-arte-ia.md) y [`investigacion-pipeline-sprites-n8n-comfyui.md`](docs/art/investigacion-pipeline-sprites-n8n-comfyui.md): las dos investigaciones sobre arte y animación con IA, que cubren el rig de recortes y los sprites generados en local con n8n, Venice y ComfyUI.
