@@ -13,8 +13,12 @@ export type UnitRole = 'ally' | 'enemy'
 const OUTLINE_COLOR = 0x0a0c14
 /** Blanco roto plano para los colmillos — sin el blanco puro que se leería como brillo. */
 const FANG_COLOR = 0xe8e2d4
-/** research.md Decisión 10: el sprite se estira a la caja del cuerpo; a resolución 2 el contorno sigue nítido. */
-const TEXTURE_RESOLUTION = 2
+/**
+ * research.md Decisión 10: el sprite se estira a la caja del cuerpo. specs/045: la batalla ahora dibuja los cuerpos
+ * hasta 6 veces más grandes (getBattleVisualScale), así que la textura se rasteriza a resolución 8 para que el
+ * contorno siga nítido; con 2 se vería borroso a 64 px.
+ */
+const TEXTURE_RESOLUTION = 8
 
 const EAR_SIZE_RATIO = 0.28
 const EYE_RADIUS_RATIO = 0.08
@@ -220,7 +224,7 @@ const textureCache = new Map<string, Texture>()
 /**
  * specs/022-datos-semilla-flujo-navegacion (FR-005). Genera la textura una sola vez por `(unitId, role)` vía
  * `renderer.generateTexture()` y la reutiliza en llamadas siguientes — instancias repetidas de la misma unidad en
- * batalla (y su eco de muerte) no regeneran el dibujo. specs/042: a resolución 2 (research.md Decisión 10); el tamaño
+ * batalla (y su eco de muerte) no regeneran el dibujo. specs/042/045: a resolución 8 (research.md Decisión 10); el tamaño
  * lógico de la textura, y por tanto el de la unidad en pantalla, no cambia.
  */
 export function getOrCreateUnitTexture(renderer: Renderer, unitId: string, design: ProceduralDesign, role: UnitRole): Texture {

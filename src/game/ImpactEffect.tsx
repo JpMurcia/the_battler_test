@@ -8,7 +8,7 @@ import {
   getSparkCount,
   getSparkPose,
 } from './graphics/cyberEffects'
-import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
+import { getBattleVisualScale, getLaneScreenX, getLaneScreenY } from './graphics/layout'
 import { useGameStore } from '../state/useGameStore'
 
 extend({ Container, Graphics, Text })
@@ -51,7 +51,12 @@ export function ImpactEffect({ id, laneX, damage, color, onExpire }: ImpactEffec
     () => (app?.renderer ? getLaneScreenX(laneX, useGameStore.getState().laneLength, app.screen.width) : 0),
     [laneX, app],
   )
-  const screenY = useMemo(() => (app?.renderer ? getLaneScreenY(app.screen.height) + IMPACT_Y_OFFSET : 0), [app])
+  // specs/045: el impacto crece con la escala visual de la batalla (onda, chispas, altura y texto).
+  const visualScale = useMemo(() => (app?.renderer ? getBattleVisualScale(app.screen.width, app.screen.height) : 1), [app])
+  const screenY = useMemo(
+    () => (app?.renderer ? getLaneScreenY(app.screen.height) + IMPACT_Y_OFFSET * visualScale : 0),
+    [app, visualScale],
+  )
 
   const drawShockwave = useCallback(
     (g: Graphics) => {
@@ -103,7 +108,7 @@ export function ImpactEffect({ id, laneX, damage, color, onExpire }: ImpactEffec
   })
 
   return (
-    <pixiContainer x={screenX} y={screenY}>
+    <pixiContainer x={screenX} y={screenY} scale={visualScale}>
       <pixiGraphics ref={shockwaveRef} draw={drawShockwave} />
       {Array.from({ length: sparkCount }, (_unused, index) => (
         <pixiGraphics
@@ -118,6 +123,8 @@ export function ImpactEffect({ id, laneX, damage, color, onExpire }: ImpactEffec
         ref={textRef}
         text={`-${Math.max(1, Math.round(damage))}`}
         anchor={{ x: 0.5, y: 1 }}
+        // texto rasterizado a la escala a la que se ve, para que no salga borroso al escalar el contenedor
+        resolution={Math.ceil(visualScale * (globalThis.devicePixelRatio || 1))}
         style={{ fontSize: 12, fontWeight: 'bold', fill: 0xffffff, stroke: { color: 0x000000, width: 3 } }}
       />
     </pixiContainer>

@@ -6,7 +6,7 @@ import { resolveUnitDesign } from '../data/unitDesigns'
 import type { BattleUnit } from '../engine/types'
 import { getVisualProfile } from './animation'
 import { EVENT_ANIMATION, getDeathPose } from './eventAnimations'
-import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
+import { getBattleVisualScale, getLaneScreenX, getLaneScreenY } from './graphics/layout'
 import { getOrCreateUnitTexture } from './graphics/unitFactory'
 import { prefersReducedMotion } from './motionPreference'
 import { useGameStore } from '../state/useGameStore'
@@ -65,6 +65,8 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
     [x, app],
   )
   const screenY = useMemo(() => (app?.renderer ? getLaneScreenY(app.screen.height) : 0), [app])
+  // specs/045: misma escala visual que la unidad viva (el eco dura 0,35 s; un resize en ese intervalo es irrelevante).
+  const visualScale = useMemo(() => (app?.renderer ? getBattleVisualScale(app.screen.width, app.screen.height) : 1), [app])
 
   const [idleFrame, setIdleFrame] = useState<Texture | null>(null)
 
@@ -103,8 +105,8 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
     }
 
     const pose = getDeathPose(elapsedRef.current, team, prefersReducedMotion())
-    container.x = screenX + profile.bodyWidth / 2 + pose.offsetX
-    container.y = screenY + pose.offsetY
+    container.x = screenX + ((profile.bodyWidth / 2) + pose.offsetX) * visualScale
+    container.y = screenY + pose.offsetY * visualScale
     container.rotation = pose.rotation
     container.alpha = pose.alpha
   })
@@ -116,8 +118,9 @@ export function DeathEchoSprite({ instanceId, catId, team, x, onExpire }: DeathE
   return (
     <pixiContainer
       ref={containerRef}
-      x={screenX + profile.bodyWidth / 2}
+      x={screenX + (profile.bodyWidth / 2) * visualScale}
       y={screenY}
+      scale={visualScale}
       pivot={{ x: profile.bodyWidth / 2, y: profile.bodyHeight }}
     >
       {body ? (

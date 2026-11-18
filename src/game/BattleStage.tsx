@@ -257,7 +257,14 @@ export function BattleStage() {
 
   return (
     <div ref={containerRef} className="battle-stage">
-      <Application resizeTo={containerRef} backgroundAlpha={0}>
+      {/* specs/045: render a la densidad real de la pantalla (antes resolución 1: borroso en pantallas HiDPI). */}
+      <Application
+        resizeTo={containerRef}
+        backgroundAlpha={0}
+        resolution={globalThis.devicePixelRatio || 1}
+        autoDensity
+        antialias
+      >
         <BattleField />
       </Application>
     </div>

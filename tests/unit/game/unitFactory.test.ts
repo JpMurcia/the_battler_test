@@ -107,13 +107,13 @@ describe('getOrCreateUnitTexture', () => {
     expect(second).toBe(first)
   })
 
-  it('specs/042 (research.md Decisión 10): genera la textura a resolución 2', () => {
+  it('specs/042/045 (research.md Decisión 10): genera la textura a resolución 8 para la escala visual de la batalla', () => {
     clearUnitTextureCache()
     const renderer = fakeRenderer()
 
     getOrCreateUnitTexture(renderer, 'seed-cat-basic', CIRCLE_DESIGN, 'ally')
 
-    expect(renderer.generateTexture).toHaveBeenCalledWith(expect.objectContaining({ resolution: 2 }))
+    expect(renderer.generateTexture).toHaveBeenCalledWith(expect.objectContaining({ resolution: 8 }))
   })
 
   it('genera texturas distintas para unitId distinto, aunque el design sea el mismo', () => {

@@ -6,7 +6,7 @@ import { resolveUnitDesign } from '../data/unitDesigns'
 import type { BattleUnit } from '../engine/types'
 import { getOrCreateUnitTexture } from './graphics/unitFactory'
 import { getHpFraction } from './graphics/baseTower'
-import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
+import { getBattleVisualScale, getLaneScreenX, getLaneScreenY } from './graphics/layout'
 import { computeTeamRingGeometry, drawTeamRing } from './graphics/teamRing'
 import { drawUnitHpBar } from './graphics/unitHpBar'
 import { useGameStore } from '../state/useGameStore'
@@ -162,6 +162,8 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     // recién aquí, en la capa de render, nunca en el motor (Constitución § IV/VI).
     const laneX = getLaneScreenX(unit.x, store.laneLength, app.screen.width)
     const laneY = getLaneScreenY(app.screen.height)
+    // specs/045: escala visual de la batalla (solo render; el cuerpo sigue midiendo bodyWidth×bodyHeight en mundo).
+    const visualScale = getBattleVisualScale(app.screen.width, app.screen.height)
 
     // specs/044: eventos deducidos de la unidad fresca y compuestos con el reposo/ataque.
     const reduced = prefersReducedMotion()
@@ -174,9 +176,11 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     )
     const pose = getUnitEventPose(events, basePose, unit.team, reduced)
 
+    // offsetX ya viene en píxeles de pantalla reales (el retroceso se mide contra screenX), así que no se escala;
+    // offsetY (rebote, saltos) es un desplazamiento del dibujo y crece con él.
     container.x = laneX + pose.offsetX
-    container.y = laneY + pose.offsetY
-    container.scale.set(pose.scaleX, pose.scaleY)
+    container.y = laneY + pose.offsetY * visualScale
+    container.scale.set(pose.scaleX * visualScale, pose.scaleY * visualScale)
     container.rotation = pose.rotation
     container.alpha = pose.alpha
 
@@ -185,6 +189,7 @@ export function UnitSprite({ instanceId, catId, team }: UnitSpriteProps) {
     if (ringRef.current) {
       ringRef.current.x = laneX + pose.ringOffsetX
       ringRef.current.y = laneY
+      ringRef.current.scale.set(visualScale)
       ringRef.current.alpha = pose.ringAlpha
     }
 

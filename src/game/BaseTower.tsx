@@ -11,7 +11,7 @@ import {
   TURRET_ROTATION_SPEED_RAD_PER_SEC,
   type BaseTowerRole,
 } from './graphics/baseTower'
-import { getLaneScreenX, getLaneScreenY } from './graphics/layout'
+import { BASE_VISUAL_SCALE_RATIO, getBattleVisualScale, getLaneScreenX, getLaneScreenY } from './graphics/layout'
 import { useGameStore } from '../state/useGameStore'
 
 extend({ Container, Graphics })
@@ -62,6 +62,9 @@ export function BaseTower({ role }: BaseTowerProps) {
     const unitX = role === 'ally' ? 0 : laneLength
     container.x = getLaneScreenX(unitX, laneLength, app.screen.width)
     container.y = getLaneScreenY(app.screen.height)
+    // specs/045: la base crece en proporción a las unidades (pivote en el centro de su suelo). Es Graphics
+    // vectorial, así que se redibuja nítida a cualquier escala.
+    container.scale.set(getBattleVisualScale(app.screen.width, app.screen.height) * BASE_VISUAL_SCALE_RATIO)
 
     if (turretRef.current) {
       turretAngleRef.current += TURRET_ROTATION_SPEED_RAD_PER_SEC * deltaSeconds * (role === 'ally' ? 1 : -1)

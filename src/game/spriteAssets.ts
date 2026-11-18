@@ -47,5 +47,19 @@ export function resolveSpriteAnimationSet(spriteKey: string | undefined): Sprite
  */
 export async function loadSpriteTextures(paths: string[]): Promise<Texture[]> {
   const loaded = await Assets.load<Texture>(paths)
-  return paths.map((path) => loaded[path])
+  const textures = paths.map((path) => loaded[path])
+  for (const texture of textures) enableMipmaps(texture)
+  return textures
+}
+
+/**
+ * specs/045: los fotogramas de 300×300 se dibujan a ~64 px; sin mipmaps, el filtro lineal solo muestrea 4 píxeles
+ * de la fuente y el contorno sale con dientes de sierra. Idempotente (la textura viene cacheada por `Assets`).
+ */
+function enableMipmaps(texture: Texture | undefined): void {
+  const source = texture?.source
+  if (!source || source.autoGenerateMipmaps) return
+  source.autoGenerateMipmaps = true
+  source.scaleMode = 'linear'
+  source.updateMipmaps()
 }

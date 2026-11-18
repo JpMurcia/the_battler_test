@@ -20,7 +20,7 @@ Todo lo que existe en el mundo del juego (unidades, enemigos, bases, terreno, at
 
 **Principios de apoyo**
 1. **Lo que existe tiene contorno; lo que informa brilla.** *Prueba:* ante un elemento nuevo, pregunta si es parte del mundo o una lectura para el jugador. Mundo: contorno oscuro grueso, relleno plano de 2–3 tonos, sin resplandor ni degradado. Lectura: token `--bc-*` y, solo si hace falta, resplandor.
-2. **Silueta antes que detalle.** Una unidad mide 14–44 px en pantalla. *Prueba:* reduce el dibujo a 24 px de alto; si no reconoces el arquetipo por la silueta, quita detalle.
+2. **Silueta antes que detalle.** Una unidad mide **48–138 px** de alto en pantalla (specs/045: escala visual ≈ 3,46 sobre el cuerpo de 14–40 del mundo, en un canvas de 1256×535; el Gato Básico mide 64 px). *Prueba:* reduce el dibujo a 64 px de alto; si no reconoces el arquetipo, la cara y el arma, quita detalle.
 3. **Un marcador provisional habla el mismo idioma que el arte final.** *Prueba:* pon un diseño procedural junto a un sprite real; si parecen de juegos distintos, el marcador incumple la regla.
 
 **Queda prohibido:** borde, visor, propulsor o resplandor neón en objetos del mundo; degradados de color en unidades; luz neón como iluminación del escenario; texturas fotorrealistas.
@@ -35,7 +35,7 @@ El ánimo de cada estado se fija con **dos palancas**: la temperatura y el valor
 
 **Mapa de etapas.** *Curiosidad y progreso: «¿qué hay más allá?».* Día despejado, neutro-fresco según la región (sección 6), con valores medios y saturación baja para que los nodos neón destaquen. Adjetivos: abierto, exploratorio, claro, ordenado. Energía medida. Lo carga el paisaje ilustrado desaturado al fondo y la ruta punteada que se enciende al avanzar.
 
-**Batalla, apertura.** *Calma tensa: «esto empieza».* Luz de día y fondo de contraste bajo para que se lean siluetas de 14 px. Adjetivos: despejado, expectante, nítido, ligero. Energía medida, que sube con la oleada. Lo carga el horizonte limpio con las dos bases enfrentadas. Lo más brillante de la pantalla es la energía y la fila de despliegue.
+**Batalla, apertura.** *Calma tensa: «esto empieza».* Luz de día y fondo de contraste bajo para que se lean siluetas de 48 px. Adjetivos: despejado, expectante, nítido, ligero. Energía medida, que sube con la oleada. Lo carga el horizonte limpio con las dos bases enfrentadas. Lo más brillante de la pantalla es la energía y la fila de despliegue.
 
 **Batalla, jefe o base bajo ataque.** *Urgencia: «se nos viene encima».* El cielo se enfría y se oscurece algo; aparece una viñeta roja en los bordes, que es información y por tanto neón, y la barra de vida de la base pulsa. Adjetivos: apremiante, pesado, amenazante, tenso. Energía frenética. Con «reducir movimiento», la viñeta queda fija.
 
@@ -51,9 +51,9 @@ El ánimo de cada estado se fija con **dos palancas**: la temperatura y el valor
 
 ## 3. Lenguaje de formas
 
-**Silueta de unidad (se lee a 24 px de alto)**
+**Silueta de unidad (se lee a 64 px de alto; specs/045)**
 - **Proporción chibi:** cabeza grande, aproximadamente la mitad de la altura, y extremidades cortas.
-- **Una masa dominante y un único rasgo distintivo** que sobresale por arriba o por un lado. A 24 px solo se distinguen esas dos cosas; el resto es ruido.
+- **Una masa dominante y un único rasgo distintivo** que sobresale por arriba o por un lado. A 64 px se distinguen además la cara (ojos y boca) y el arma; detalles menores que eso siguen siendo ruido.
 - **El arquetipo se lee por la silueta; el equipo, no.** Aliado y enemigo pueden compartir masa y rasgo. Qué bando es lo dice la capa de información en neón (sección 5), no la forma.
 - **Contorno oscuro grueso.** Propuesta, a validar con una prueba de reducción: al menos 8 px en el fotograma de 300 px, para que sobreviva al encogimiento de 7 a 21 veces que sufre en pantalla.
 - **Sombra de contacto:** una elipse plana y oscura bajo cada unidad ancla el dibujo al suelo.
@@ -74,7 +74,7 @@ El ánimo de cada estado se fija con **dos palancas**: la temperatura y el valor
 
 **Jerarquía mundo: héroes y soporte**
 - **Héroes del mundo** (unidades, bases): contorno más grueso, color más saturado, valor más contrastado.
-- **Soporte** (fondo, atrezo): contorno fino o ninguno, saturación baja, valor medio. Nada del fondo compite con una silueta de 14 px.
+- **Soporte** (fondo, atrezo): contorno fino o ninguno, saturación baja, valor medio. Nada del fondo compite con una silueta de 48 px.
 
 **Gramática de formas de la UI**
 - Esquinas redondeadas con los tokens `--bc-radius-sm/md/lg` (10/14/18 px) y `--bc-radius-pill`. Nodo de mapa: círculo. Barras: píldora.
@@ -161,7 +161,7 @@ La rareza usa su propia escala de siete colores (`RARITY_TAG_CLASS` en `src/data
   - Con «reducir movimiento», Aparición y Muerte se quedan en un fundido; Golpeado y Retroceso no se reproducen.
 
 **Nivel de detalle (LOD)**
-- Se diseña para 24–44 px de alto y se exporta a 300×300. **Si un detalle desaparece al reducir, no existe**: no se dibuja.
+- Se diseña para 48–138 px de alto (64 px el Gato Básico; specs/045) y se exporta a 300×300. **Si un detalle desaparece al reducir, no existe**: no se dibuja.
 
 **Coste conocido de la decisión:** reemplazar los 12 sprites actuales por gatos son 12 × (16 + 12) = 336 fotogramas.
 
@@ -177,9 +177,9 @@ La rareza usa su propia escala de siete colores (`RARITY_TAG_CLASS` en `src/data
 **Fondo de batalla**
 - Sustituye la nebulosa y la rejilla neón (sección 1) por el bioma de la etapa: capas de cielo, montañas lejanas, medias, cercanas y suelo. La cámara no se desplaza, así que **no hace falta parallax**: se compone como imagen estática, con deriva lenta de nubes como extra opcional (se apaga con «reducir movimiento»).
 - **Franja de unidades:** los 56 px sobre el carril son de valor medio y detalle bajo. Nada del fondo es más oscuro que el contorno de una unidad ni más saturado que su relleno. En el Cementerio, que es oscuro, esa franja se aclara con niebla de suelo para que el contorno negro siga leyéndose.
-- **Prueba de lectura:** reduce una captura a gris y al 50 % de escala; una unidad de 14 px debe distinguirse de su fondo.
+- **Prueba de lectura:** reduce una captura a gris y al 50 % de escala; una unidad de 48 px (24 px tras reducir al 50 %) debe distinguirse de su fondo.
 
-**Bases** (46×70 px, el objeto más grande del mundo)
+**Bases** (46×70 en unidades de mundo; en pantalla ≈ 120×182 px con la escala de specs/045 al 75 %; el objeto más grande del mundo)
 - Pasan a cartoon: contorno grueso y color plano. La aliada es una atalaya felina (las orejas del `crown` actual se quedan) y la enemiga una guarida con púas. **La barra de vida de la base sigue siendo neón (información).** Hoy ambas usan degradados cian y rojo con borde brillante, que son deuda.
 
 **Identidad por región y relato sin texto**
