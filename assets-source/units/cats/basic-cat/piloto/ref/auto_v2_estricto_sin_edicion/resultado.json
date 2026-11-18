@@ -1,0 +1,33 @@
+{
+  "aprobadas": 0,
+  "evaluadas": 44,
+  "correcciones_usadas": [
+    "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, warm grey-cream fur #cfc4b3, plain brown leather tunic, short tail, front hand separate from sword hilt",
+    "Add a short iron sword shorter than the cat's head height, replace the peaked cap with a round dome-shaped brown leather cap without visor or brim, and shorten the tail to a short stubby cat tail.",
+    "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, front hand separated from the hilt",
+    "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim",
+    "Add a round dome-shaped brown leather cap without visor or brim, a short sword shorter than the cat's head height, and warm grey-cream fur (#cfc4b3) without extra belt or tail stripe.",
+    "Add a short iron sword blade shorter than the cat's head height, separate the front hand from the hilt, and replace the peaked cap with a round dome-shaped brown leather cap without visor or brim.",
+    "warm grey-cream single fur color #cfc4b3, round dome-shaped brown leather cap without visor or brim, short iron sword blade shorter than head height"
+  ],
+  "sin_aprobar_mejores": [
+    {
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s203.png",
+      "nota": 6.48,
+      "razones": [
+        "puerta g_diseno = no",
+        "c_diseno = 5.0 < 6",
+        "nota 6.48 < 8.0"
+      ]
+    },
+    {
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s202.png",
+      "nota": 6.4,
+      "razones": [
+        "puerta g_diseno = no",
+        "c_diseno = 5.0 < 6",
+        "nota 6.4 < 8.0"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "prompt_ronda": "r1 (side view facing right)", "prompt": "Chibi 2D game character sprite in a flat cartoon style, side view facing right. Very thick, clean, near-black outlines around every shape (about 3% of the character height), flat cel-shaded coloring with only 2 or 3 flat tones per material, no gradients, no glow, no rim light, matte, simple and bold, readable as a silhouette even when very small. Subject: an anthropomorphic CAT warrior, bipedal, oversized head about half of the total height, short stubby arms and legs, short muzzle, large pointed cat ears clearly visible in the silhouette, a short tail, simple expressive face with dot eyes and a tiny mouth. Design: 'Basic Cat', the standard recruit. Warm grey-cream fur (#cfc4b3) with a slightly darker shade tone (#a89b86), pink inner ears (#c98f8a), a small round brown leather cap (#8a5a3b) with the ears poking out on both sides, a plain brown leather tunic (#5e3b25), a short plain iron sword (#9aa6b5) held in the front hand. One dominant round body mass, no shield, no armor plates, no extra accessories. Neutral idle stance, arms relaxed, sword pointing slightly down and forward, feet apart, full body visible from the top of the ears to the feet. A single character, centered, filling about 90% of the image height with a tight margin, standing on an invisible ground line. {fondo} No text, no letters, no watermark, no shadow on the ground, no scenery, no frame or border.",
+  "imagenes": [
+    {
+      "fondo": "blanco",
+      "semilla": 101,
+      "segundos": 31.8,
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\ref_blanco_s101.png"
+    },
+    {
+      "fondo": "blanco",
+      "semilla": 102,
+      "segundos": 6.1,
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\ref_blanco_s102.png"
+    },
+    {
+      "fondo": "blanco",
+      "semilla": 103,
+      "segundos": 6.1,
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\ref_blanco_s103.png"
+    },
+    {
+      "fondo": "blanco",
+      "semilla": 104,
+      "segundos": 6.1,
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\ref_blanco_s104.png"
+    },
+    {
+      "fondo": "verde",
+      "semilla": 101,
+      "segundos": 10.6,
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\ref_verde_s101.png"
+    },
+    {
+      "fondo": "verde",
+      "semilla": 102,
+      "segundos": 6.1,
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\ref_verde_s102.png"
+    },
+    {
+      "fondo": "verde",
+      "semilla": 103,
+      "segundos": 6.3,
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\ref_verde_s103.png"
+    },
+    {
+      "fondo": "verde",
+      "semilla": 104,
+      "segundos": 6.1,
+      "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\ref_verde_s104.png"
+    }
+  ]
+}

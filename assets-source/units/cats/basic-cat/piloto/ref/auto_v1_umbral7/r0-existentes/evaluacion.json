@@ -1,0 +1,286 @@
+[
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s201.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 51,
+      "ocupacion_alto": 0.878,
+      "area_silueta": 0.381,
+      "contorno_oscuro": 0.774,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8,
+      "c_silueta": 7,
+      "c_contorno": 9,
+      "c_animable": 7,
+      "c_defectos": 8,
+      "c_consistencia": null,
+      "defectos": [
+        "la espada es demasiado larga y gruesa para una espada corta de hierro",
+        "la cola es larga y curva, no corta",
+        "los pies no están claramente separados en una misma línea de suelo"
+      ],
+      "motivo": "buen estilo y lectura general, pero la espada sobredimensionada y la cola larga rompen el brief del recluta básico",
+      "correccion": "short plain iron sword, short stubby tail, feet on one ground line"
+    },
+    "nota": 7.8,
+    "aprobada": true,
+    "razones_rechazo": []
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s202.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 57,
+      "ocupacion_alto": 0.833,
+      "area_silueta": 0.365,
+      "contorno_oscuro": 0.766,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8,
+      "c_silueta": 7,
+      "c_contorno": 9,
+      "c_animable": 6,
+      "c_defectos": 8,
+      "c_consistencia": null,
+      "defectos": [
+        "La espada está demasiado larga y desproporcionada respecto al cuerpo",
+        "La mano delantera y la empuñadura se funden visualmente, dificultando la separación para animación",
+        "La cola se oculta parcialmente detrás de la pierna trasera"
+      ],
+      "motivo": "Buen diseño de gato con gorro y estilo flat, pero la espada sobredimensionada y la mano fusionada con la empuñadura perjudican la legibilidad y animación en tamaño reducido",
+      "correccion": "Shorten the sword to a one-handed plain iron sword and separate the front paw from the hilt so both read clearly at 16x19 pixels"
+    },
+    "nota": 7.6,
+    "aprobada": true,
+    "razones_rechazo": []
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s203.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 39,
+      "ocupacion_alto": 0.923,
+      "area_silueta": 0.508,
+      "contorno_oscuro": 0.745,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8,
+      "c_silueta": 7,
+      "c_contorno": 9,
+      "c_animable": 6,
+      "c_defectos": 8,
+      "c_consistencia": null,
+      "defectos": [
+        "la espada se fusiona visualmente con el brazo y el torso, dificultando su separación para animación",
+        "la cola queda oculta parcialmente detrás del cuerpo en lugar de leerse como masa propia",
+        "los pies están muy juntos y no se lee una línea de suelo clara ni postura neutral estable"
+      ],
+      "motivo": "Buen diseño de gato con gorra y espada, estilo plano y contorno cerrado, pero la espada integrada al cuerpo y los pies juntos perjudican la animabilidad y la lectura a 16x19",
+      "correccion": "Separate the sword from the body with clear outline gaps, place feet apart on one ground line, and make the tail a distinct readable mass behind the character"
+    },
+    "nota": 7.6,
+    "aprobada": true,
+    "razones_rechazo": []
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s204.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 66,
+      "ocupacion_alto": 0.859,
+      "area_silueta": 0.403,
+      "contorno_oscuro": 0.772,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8,
+      "c_silueta": 7,
+      "c_contorno": 9,
+      "c_animable": 6,
+      "c_defectos": 8,
+      "c_consistencia": null,
+      "defectos": [
+        "la espada es demasiado larga y gruesa para una espada corta",
+        "la mano y la empuñadura se funden con la espada, dificultando la separación para animación",
+        "la cola es gruesa y curva, puede ocultar detalles a 16x19 px"
+      ],
+      "motivo": "gato con gorra y espada bien leído, pero espada desproporcionada y empuñadura poco separable para rig",
+      "correccion": "short plain iron sword with clearly separated hilt and blade, smaller blade proportional to the cat"
+    },
+    "nota": 7.6,
+    "aprobada": true,
+    "razones_rechazo": []
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s205.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 65,
+      "ocupacion_alto": 0.87,
+      "area_silueta": 0.398,
+      "contorno_oscuro": 0.767,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8,
+      "c_silueta": 8,
+      "c_contorno": 9,
+      "c_animable": 7,
+      "c_defectos": 9,
+      "c_consistencia": null,
+      "defectos": [
+        "La espada es demasiado larga y ancha para ser una espada corta y simple",
+        "La cola es larga y curva, no corta como pide el brief",
+        "El personaje mira ligeramente hacia el espectador en lugar de estar de perfil o tres cuartos mirando a la derecha"
+      ],
+      "motivo": "Buen estilo flat y contorno cerrado, pero la espada es demasiado grande y la cola no es corta, lo que resta fidelidad al brief del Basic Cat.",
+      "correccion": "Reduce the sword to a short plain iron sword, shorten the tail, and make the cat face strictly right in profile or three-quarter view."
+    },
+    "nota": 8.15,
+    "aprobada": true,
+    "razones_rechazo": []
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s206.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 87,
+      "ocupacion_alto": 0.824,
+      "area_silueta": 0.346,
+      "contorno_oscuro": 0.761,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 7,
+      "c_silueta": 6,
+      "c_contorno": 8,
+      "c_animable": 6,
+      "c_defectos": 7,
+      "c_consistencia": null,
+      "defectos": [
+        "la espada es demasiado larga y desproporcionada para un gato chibi",
+        "el capuchón/orejas se leen como una sola masa en 16x19, la espada apenas se distingue",
+        "la espada y el brazo delantero se solapan sin separación clara, dificultando el rig"
+      ],
+      "motivo": "cumple las puertas básicas y el estilo chibi, pero la espada sobredimensionada y la mala lectura a 16x19 lo impiden de enviar",
+      "correccion": "reduce the sword to a short plain iron dagger, separate the sword and front arm from the torso, and make the cap and ears read as two distinct shapes at 16x19"
+    },
+    "nota": 6.8,
+    "aprobada": false,
+    "razones_rechazo": [
+      "nota 6.8 < 7.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s207.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 67,
+      "ocupacion_alto": 0.865,
+      "area_silueta": 0.372,
+      "contorno_oscuro": 0.778,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8,
+      "c_silueta": 7,
+      "c_contorno": 9,
+      "c_animable": 7,
+      "c_defectos": 8,
+      "c_consistencia": null,
+      "defectos": [
+        "La espada es demasiado larga y delgada para un gato chibi",
+        "La cola es muy larga y delgada, rompe la silueta compacta",
+        "El bigote es un detalle fino que se pierde a 16x19 px"
+      ],
+      "motivo": "Buen diseño de gato con capucha y espada, pero la espada y la cola son excesivamente largas para la escala chibi y el bigote no sobrevive al tamaño de juego.",
+      "correccion": "Shorten the sword and tail to compact chibi proportions and remove the thin whisker detail."
+    },
+    "nota": 7.8,
+    "aprobada": true,
+    "razones_rechazo": []
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s208.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 58,
+      "ocupacion_alto": 0.871,
+      "area_silueta": 0.371,
+      "contorno_oscuro": 0.761,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8,
+      "c_silueta": 7,
+      "c_contorno": 8,
+      "c_animable": 6,
+      "c_defectos": 7,
+      "c_consistencia": null,
+      "defectos": [
+        "la espada es demasiado larga y gruesa para una espada corta",
+        "la mano delantera y la espada se solapan sin separación clara",
+        "la cola es larga y curva, no corta",
+        "los pies no están claramente alineados en una misma línea de suelo",
+        "el bigote es un detalle innecesario que puede perderse a 16x19"
+      ],
+      "motivo": "cumple el estilo y la orientación, pero la espada desproporcionada y la falta de separación entre mano y espada perjudican la legibilidad y animabilidad a escala real",
+      "correccion": "shorten the sword to a short plain iron blade, separate the front hand from the hilt with clear outline, shorten the tail, align feet on one ground line, remove whiskers"
+    },
+    "nota": 7.25,
+    "aprobada": true,
+    "razones_rechazo": []
+  }
+]

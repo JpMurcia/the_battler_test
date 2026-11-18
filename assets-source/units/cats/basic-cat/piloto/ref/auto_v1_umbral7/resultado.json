@@ -1,0 +1,46 @@
+{
+  "aprobadas": 7,
+  "evaluadas": 8,
+  "correcciones_usadas": [
+    "reduce the sword to a short plain iron dagger, separate the sword and front arm from the torso, and make the cap and ears read as two distinct shapes at 16x19"
+  ],
+  "ranking": {
+    "primero": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s205.png",
+    "segundo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s201.png",
+    "venice": {
+      "primero": 1,
+      "segundo": 2,
+      "motivo_primero": "Mejor equilibrio general: contorno cerrado y estilo flat limpio, orejas y gorra bien leídas, espada sostenida al frente separada del torso y pies separados que favorecen la animación; aunque la espada y la cola son algo largas, tiene el menor número de defectos críticos y la puntuación más alta.",
+      "motivo_segundo": "Muy similar al primero en estilo y legibilidad, con orejas, gorra y espada reconocibles a tamaño reducido; mantiene la postura neutral y los pies separados, pero la espada sobredimensionada y la cola larga reducen ligeramente la fidelidad al brief.",
+      "descartados": {
+        "3": "Bigote que no sobrevive al tamaño de juego, espada y cola excesivamente largas para la escala chibi, lo que perjudica la lectura a 16x19 px."
+      }
+    },
+    "candidatas": [
+      {
+        "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s205.png",
+        "nota": 8.15
+      },
+      {
+        "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s201.png",
+        "nota": 7.8
+      },
+      {
+        "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s207.png",
+        "nota": 7.8
+      },
+      {
+        "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s202.png",
+        "nota": 7.6
+      },
+      {
+        "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s203.png",
+        "nota": 7.6
+      },
+      {
+        "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s204.png",
+        "nota": 7.6
+      }
+    ]
+  }
+}

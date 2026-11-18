@@ -1,0 +1,34 @@
+{
+  "aprobadas": 3,
+  "evaluadas": 10,
+  "correcciones_usadas": [
+    "short iron sword about head length, short tail, separate paw and hilt, chibi cat with cap facing right"
+  ],
+  "ranking": {
+    "primero": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s202.png",
+    "segundo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s204.png",
+    "venice": {
+      "primero": 1,
+      "segundo": 2,
+      "motivo_primero": "Mejor legibilidad a 16x19 px: orejas, gorro y espada se leen por separado, contorno grueso cerrado, cara derecha y pose neutra con pies alineados.",
+      "motivo_segundo": "Muy similar al primero y también legible, pero la espada es algo más larga y la pata con el arma se pierde un poco al escalar, por lo que queda segundo.",
+      "descartados": {
+        "3": "Gorro con visera, pelaje naranja con rayas y espada larga incumplen el brief de recluta básico."
+      }
+    },
+    "candidatas": [
+      {
+        "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s202.png",
+        "nota": 8.0
+      },
+      {
+        "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s204.png",
+        "nota": 8.0
+      },
+      {
+        "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r0-existentes\\ref_blanco_s203_e1.png",
+        "nota": 8.0
+      }
+    ]
+  }
+}

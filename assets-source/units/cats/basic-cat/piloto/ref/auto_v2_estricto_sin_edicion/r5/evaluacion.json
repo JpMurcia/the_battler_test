@@ -1,0 +1,318 @@
+[
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r5\\ref_blanco_s900.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 77,
+      "ocupacion_alto": 0.849,
+      "area_silueta": 0.357,
+      "contorno_oscuro": 0.769,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 5.0,
+      "c_contorno": 8.0,
+      "c_animable": 6.0,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "cara de expresión triste/preocupada en lugar de neutral",
+        "cola demasiado larga y gruesa, no es una cola corta",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "espada demasiado larga (supera la altura de la cabeza), visera en la gorra prohibida, pelaje blanco en lugar de gris-cálido único, espada no sostenida por la mano delantera separada del torso",
+        "gorra con visor y brim, prohibidos por el brief",
+        "la mano delantera no se lee separada de la empuñadura",
+        "patas traseras demasiado largas, no son cortas y rechonchas"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en elementos clave del brief: espada larga, visera y color de pelaje incorrecto.",
+      "correccion": "Add a short iron sword shorter than the cat's head height, remove the cap visor/brim, and change fur to a single warm grey-cream tone.",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en elementos clave del brief: espada larga, visera y color de pelaje incorrecto.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla casi todo el diseño del personaje: espada larga, gorra con visor, cola y patas desproporcionadas, y expresión no neutral."
+      ],
+      "notas_por_pasada": [
+        5.85,
+        5.7
+      ]
+    },
+    "nota": 5.78,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "c_silueta = 5.0 < 6",
+      "nota 5.78 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r5\\ref_blanco_s901.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 66,
+      "ocupacion_alto": 0.847,
+      "area_silueta": 0.415,
+      "contorno_oscuro": 0.646,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 5.0,
+      "c_silueta": 6.0,
+      "c_contorno": 7.5,
+      "c_animable": 6.0,
+      "c_defectos": 7.0,
+      "c_consistencia": null,
+      "defectos": [
+        "capucha con ala/visor en lugar de gorro redondo sin ala",
+        "capucha con visera/ala en lugar de gorro redondo sin visera",
+        "cola demasiado larga y delgada, no corta",
+        "cola demasiado larga y gruesa, no es una cola corta",
+        "cuerpo demasiado delgado y alargado, no es rechoncho/chibi",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "la mano delantera no se lee separada del puño de la espada",
+        "patas traseras demasiado grandes y desproporcionadas",
+        "piernas muy finas, no son patitas cortas y gruesas",
+        "tunicón marrón con cinturón no es una túnica de cuero simple"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno grueso, pero falla en varios elementos clave del diseño: espada larga, gorro con ala y cola larga.",
+      "correccion": "short sword blade shorter than head height, round dome-shaped brown leather cap without visor or brim, short stubby tail, plain brown leather tunic, one warm grey-cream fur color",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno grueso, pero falla en varios elementos clave del diseño: espada larga, gorro con ala y cola larga.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en las proporciones clave del brief: espada larga, gorro con visera y cuerpo demasiado delgado."
+      ],
+      "notas_por_pasada": [
+        6.1,
+        6.3
+      ]
+    },
+    "nota": 6.2,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 5.0 < 6",
+      "nota 6.2 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r5\\ref_blanco_s902.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 67,
+      "ocupacion_alto": 0.833,
+      "area_silueta": 0.385,
+      "contorno_oscuro": 0.755,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 5.0,
+      "c_contorno": 7.5,
+      "c_animable": 6.0,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "cola con anillos, el brief pide cola simple sin detalles extra",
+        "cola con rayas, el brief pide un solo color de pelaje",
+        "el gorro tiene visera/ala, el brief exige gorro sin visera ni ala",
+        "espada demasiado larga (supera la altura de la cabeza), no es una espada corta de recluta",
+        "la espada es una espada larga, no una espada corta de hierro simple",
+        "la gorra tiene visor/ala, la brief exige gorra sin visor ni ala",
+        "la mano delantera no se lee separada de la empuñadura",
+        "la mano delantera no se lee separada del puño de la espada",
+        "patas traseras con rayas, pelaje no es un único color cálido gris-crema"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno grueso, pero falla en el diseño clave: espada demasiado larga, mano no separada de la empuñadura y gorra con visor prohibido.",
+      "correccion": "Add a short iron sword blade shorter than the cat's head height, separate the front hand from the hilt, and replace the peaked cap with a round dome-shaped brown leather cap without visor or brim.",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno grueso, pero falla en el diseño clave: espada demasiado larga, mano no separada de la empuñadura y gorra con visor prohibido.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visera, mano no separada del puño y pelaje con rayas en lugar de un solo color."
+      ],
+      "notas_por_pasada": [
+        5.5,
+        5.85
+      ]
+    },
+    "nota": 5.67,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "c_silueta = 5.0 < 6",
+      "nota 5.67 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r5\\ref_blanco_s903.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 78,
+      "ocupacion_alto": 0.843,
+      "area_silueta": 0.363,
+      "contorno_oscuro": 0.765,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 5.0,
+      "c_contorno": 7.5,
+      "c_animable": 6.0,
+      "c_defectos": 6.0,
+      "c_consistencia": null,
+      "defectos": [
+        "La cola tiene rayas (el pelaje debe ser de un solo color gris crema cálido)",
+        "La espada es demasiado larga (supera la altura de la cabeza; debe ser más corta)",
+        "La gorra tiene visera y ala ancha (prohibido: debe ser un gorro de cuero marrón redondo sin visera ni ala)",
+        "La mano delantera no se lee separada de la empuñadura",
+        "cola con rayas aunque el brief pide un solo color de pelaje",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "gorra con visera y brim, no es un casco de cuero redondo sin visera",
+        "la mano delantera no se lee separada del puño"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno grueso, pero falla en el diseño clave: espada larga, gorra con visera y cola rayada, lo que lo hace no apto para producción.",
+      "correccion": "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, solid warm grey-cream fur without tail stripes",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno grueso, pero falla en el diseño clave: espada larga, gorra con visera y cola rayada, lo que lo hace no apto para producción.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero incumple varios puntos clave del brief: gorra con visera, espada larga y cola rayada."
+      ],
+      "notas_por_pasada": [
+        5.5,
+        5.7
+      ]
+    },
+    "nota": 5.6,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "c_silueta = 5.0 < 6",
+      "nota 5.6 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r5\\ref_blanco_s904.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 80,
+      "ocupacion_alto": 0.828,
+      "area_silueta": 0.347,
+      "contorno_oscuro": 0.775,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.5,
+      "c_silueta": 6.0,
+      "c_contorno": 8.0,
+      "c_animable": 6.0,
+      "c_defectos": 7.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola demasiado larga y gruesa para un gatito chibi",
+        "cola visible por detrás del cuerpo",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "gorra con visor/ala en lugar de casco redondo sin visor",
+        "gorro con visera/ala en lugar de casco redondo sin visera",
+        "mano delantera no se lee separada del puño"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla el diseño clave: la espada es demasiado larga y la gorra tiene visor, rompiendo el brief del recluta.",
+      "correccion": "short iron sword shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, front hand separated from the hilt",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla el diseño clave: la espada es demasiado larga y la gorra tiene visor, rompiendo el brief del recluta.",
+        "Buen estilo chibi y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visera y mano/púgil no diferenciada."
+      ],
+      "notas_por_pasada": [
+        6.05,
+        6.3
+      ]
+    },
+    "nota": 6.18,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.5 < 6",
+      "nota 6.18 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r5\\ref_blanco_s905.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 86,
+      "ocupacion_alto": 0.82,
+      "area_silueta": 0.339,
+      "contorno_oscuro": 0.767,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.5,
+      "c_silueta": 5.5,
+      "c_contorno": 7.0,
+      "c_animable": 6.0,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "capucha con ala/visor lateral, no es un gorro redondo sin visor",
+        "cola con rayas no previstas en el brief",
+        "cola con rayas, el brief pide un solo color de pelaje",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "espada no se lee separada de la mano a 16x19 px",
+        "gorra con visera/ala prohibida",
+        "la mano delantera no se lee separada de la empuñadura",
+        "túnica marrón con cinturón marrón oscuro, no es una túnica de cuero marrón simple"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno grueso, pero incumple varios puntos clave del brief: espada larga, gorro con visor, cola rayada y mano no separada de la empuñadura.",
+      "correccion": "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, solid warm grey-cream fur with no striped tail, front hand clearly separated from the sword hilt",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno grueso, pero incumple varios puntos clave del brief: espada larga, gorro con visor, cola rayada y mano no separada de la empuñadura.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero incumple varias reglas clave del diseño: espada larga, gorra con visera y cola rayada, lo que lo hace no apto para producción."
+      ],
+      "notas_por_pasada": [
+        6.1,
+        5.5
+      ]
+    },
+    "nota": 5.8,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.5 < 6",
+      "c_silueta = 5.5 < 6",
+      "nota 5.8 < 8.0"
+    ]
+  }
+]

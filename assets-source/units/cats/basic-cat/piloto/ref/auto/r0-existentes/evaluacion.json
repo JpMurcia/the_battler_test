@@ -1,0 +1,490 @@
+[
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s201.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 51,
+      "ocupacion_alto": 0.878,
+      "area_silueta": 0.381,
+      "contorno_oscuro": 0.774,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8.0,
+      "c_silueta": 7.0,
+      "c_contorno": 9.0,
+      "c_animable": 6.5,
+      "c_defectos": 8.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola larga y visible en lugar de corta",
+        "espada demasiado larga (casi del largo del cuerpo)",
+        "la cola es larga en lugar de corta",
+        "la espada es demasiado larga, supera el cuerpo del gato",
+        "la pata y el puño no se leen por separado en el sprite pequeño",
+        "pata no se lee separada del puño a 16x19 px"
+      ],
+      "motivo": "buen estilo plano y contorno cerrado, pero la espada larga y la cola larga rompen el diseño de recluta y perjudican la lectura a 16x19 px",
+      "correccion": "short iron sword about head length, short tail, separate paw and hilt, chibi cat with cap facing right",
+      "motivos": [
+        "buen estilo plano y contorno cerrado, pero la espada larga y la cola larga rompen el diseño de recluta y perjudican la lectura a 16x19 px",
+        "Buen gato chibi de frente-derecha con capucha y espada, pero la espada es demasiado larga y la cola no es corta como pide el brief."
+      ],
+      "notas_por_pasada": [
+        7.6,
+        7.8
+      ]
+    },
+    "nota": 7.7,
+    "aprobada": false,
+    "razones_rechazo": [
+      "nota 7.7 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s202.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 57,
+      "ocupacion_alto": 0.833,
+      "area_silueta": 0.365,
+      "contorno_oscuro": 0.766,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8.0,
+      "c_silueta": 8.0,
+      "c_contorno": 9.0,
+      "c_animable": 7.0,
+      "c_defectos": 8.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola ligeramente gruesa para un recluta chibi",
+        "espada demasiado larga (supera el cuerpo del gato)",
+        "espada demasiado larga (supera el cuerpo), cola muy visible y larga, capucha con visor pronunciado",
+        "pata derecha fusionada con el torso, espada oculta parcialmente tras el cuerpo",
+        "pata y empuñadura no se leen por separado a 16x19 px"
+      ],
+      "motivo": "Buen gato chibi de frente-derecha con gorro y espada, pero la espada es demasiado larga y la pata con el arma se pierde al escalar.",
+      "correccion": "short iron sword clearly shorter than the cat's body, paw separated from hilt, readable at 16x19 pixels",
+      "motivos": [
+        "Buen gato chibi de frente-derecha con gorro y espada, pero la espada es demasiado larga y la pata con el arma se pierde al escalar.",
+        "Buen gato recluta con estilo chibi y outline cerrado, pero la espada es demasiado larga y la cola resta claridad a la silueta a 16x19 px."
+      ],
+      "notas_por_pasada": [
+        8.0,
+        8.0
+      ]
+    },
+    "nota": 8.0,
+    "aprobada": true,
+    "razones_rechazo": []
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s203.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 39,
+      "ocupacion_alto": 0.923,
+      "area_silueta": 0.508,
+      "contorno_oscuro": 0.745,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8.0,
+      "c_silueta": 7.0,
+      "c_contorno": 9.0,
+      "c_animable": 7.5,
+      "c_defectos": 8.5,
+      "c_consistencia": null,
+      "defectos": [
+        "el gorro tiene visera pronunciada en vez de ser un domo casi sin visera",
+        "la cola es larga en lugar de corta",
+        "la cola es larga y no corta",
+        "la espada es demasiado larga para un recluta"
+      ],
+      "motivo": "Buen estilo plano y contorno cerrado, pero la espada larga y la cola larga rompen el brief del recluta básico",
+      "correccion": "short iron sword clearly shorter than the cat's body, short tail, round dome cap with little or no visor, pink inner ears, dot eyes, tiny mouth, light warm fur, plain brown leather tunic, thick closed near-black outline, white background, facing right, chibi proportions",
+      "motivos": [
+        "Buen estilo plano y contorno cerrado, pero la espada larga y la cola larga rompen el brief del recluta básico",
+        "Buen diseño de gato con gorra y espada, pero la espada excede el tamaño permitido y la cola no es corta."
+      ],
+      "notas_por_pasada": [
+        7.8,
+        8.15
+      ]
+    },
+    "nota": 7.97,
+    "aprobada": false,
+    "razones_rechazo": [
+      "nota 7.97 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s204.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 66,
+      "ocupacion_alto": 0.859,
+      "area_silueta": 0.403,
+      "contorno_oscuro": 0.772,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8.0,
+      "c_silueta": 8.0,
+      "c_contorno": 9.0,
+      "c_animable": 7.0,
+      "c_defectos": 8.0,
+      "c_consistencia": null,
+      "defectos": [
+        "el capuchón tiene visera pronunciada en lugar de ser un domo redondo",
+        "la cola es algo larga y curva, no corta",
+        "la cola es larga y curva, no corta",
+        "la espada es demasiado larga para un recluta",
+        "la pata que empuña no se lee separada de la empuñadura a 16x19 px",
+        "la pata que empuña no se lee separada del puño a escala pequeña"
+      ],
+      "motivo": "Buen gato chibi de frente-derecha con contorno cerrado y fondo blanco, pero la espada sobredimensionada y la cola larga rompen el brief de recluta básico.",
+      "correccion": "short iron sword about head length, short tail, round dome cap with little or no visor, paw separated from hilt",
+      "motivos": [
+        "Buen gato chibi de frente-derecha con contorno cerrado y fondo blanco, pero la espada sobredimensionada y la cola larga rompen el brief de recluta básico.",
+        "Buen gato recluta con gorro y espada, estilo plano y contorno cerrado, pero la espada excede el tamaño de la cabeza y la pata/puño se fusionan al reducirse"
+      ],
+      "notas_por_pasada": [
+        8.0,
+        8.0
+      ]
+    },
+    "nota": 8.0,
+    "aprobada": true,
+    "razones_rechazo": []
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s205.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 65,
+      "ocupacion_alto": 0.87,
+      "area_silueta": 0.398,
+      "contorno_oscuro": 0.767,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8.0,
+      "c_silueta": 7.5,
+      "c_contorno": 8.5,
+      "c_animable": 6.5,
+      "c_defectos": 7.5,
+      "c_consistencia": null,
+      "defectos": [
+        "capa o solapa trasera que añade volumen innecesario",
+        "cola larga y visible que rompe la masa dominante",
+        "espada demasiado larga respecto al cuerpo",
+        "la cola es larga y curva, no corta",
+        "la espada es demasiado larga para un recluta",
+        "la pata y el puño no se leen por separado al tamaño real",
+        "pata y empuñadura no se leen por separado a 16x19"
+      ],
+      "motivo": "Buen estilo flat y lectura de gato con gorra, pero la espada es demasiado larga y la cola y la solapa ensucian la silueta a escala real.",
+      "correccion": "short iron sword clearly shorter than the cat's body, blade about as long as the head, paw separated from hilt, short tail, no cape or back flap, thick closed outline, flat colours, facing right, white background",
+      "motivos": [
+        "Buen estilo flat y lectura de gato con gorra, pero la espada es demasiado larga y la cola y la solapa ensucian la silueta a escala real.",
+        "Buen gato chibi de frente derecha con gorro y espada, pero la espada es demasiado larga y la cola no es corta como pide el brief."
+      ],
+      "notas_por_pasada": [
+        7.25,
+        8.0
+      ]
+    },
+    "nota": 7.62,
+    "aprobada": false,
+    "razones_rechazo": [
+      "nota 7.62 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s206.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 87,
+      "ocupacion_alto": 0.824,
+      "area_silueta": 0.346,
+      "contorno_oscuro": 0.761,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 7.5,
+      "c_silueta": 7.0,
+      "c_contorno": 8.5,
+      "c_animable": 6.5,
+      "c_defectos": 8.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola visible pero pequeña en miniatura",
+        "espada demasiado larga (casi del tamaño del cuerpo)",
+        "espada demasiado larga (supera el cuerpo), cola muy larga y delgada, patas traseras fusionadas, espada no separada del torso",
+        "pata y empuñadura no se leen por separado a 16x19 px"
+      ],
+      "motivo": "Buen diseño de gato recluta con gorra y espada, pero la espada es demasiado larga y las patas traseras están fusionadas, lo que perjudica la animación y la lectura a 16x19 px.",
+      "correccion": "shorten the sword to about head length, separate the sword from the torso, split the hind legs into two distinct feet on one ground line, shorten and thicken the tail, keep thick closed outline and flat colours",
+      "motivos": [
+        "Buen diseño de gato recluta con gorra y espada, pero la espada es demasiado larga y las patas traseras están fusionadas, lo que perjudica la animación y la lectura a 16x19 px.",
+        "Buen gato recluta con estilo chibi y outline cerrado, pero la espada es demasiado larga y la pata con el arma no se distinguen a escala real."
+      ],
+      "notas_por_pasada": [
+        7.15,
+        7.8
+      ]
+    },
+    "nota": 7.48,
+    "aprobada": false,
+    "razones_rechazo": [
+      "nota 7.48 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s207.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 67,
+      "ocupacion_alto": 0.865,
+      "area_silueta": 0.372,
+      "contorno_oscuro": 0.778,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8.0,
+      "c_silueta": 7.5,
+      "c_contorno": 9.0,
+      "c_animable": 6.5,
+      "c_defectos": 8.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola muy visible y gruesa, puede confundir la silueta pequeña",
+        "el capuchón tiene visera pronunciada en lugar de ser una cúpula redonda",
+        "espada demasiado larga (supera el cuerpo del gato)",
+        "la cola es larga y curva, no corta",
+        "la espada es demasiado larga para un recluta",
+        "la espada se superpone al cuerpo sin separación clara",
+        "la pata empuñadora no se lee separada del torso ni del puño",
+        "pata y empuñadura no se leen por separado a 16x19 px"
+      ],
+      "motivo": "Buen gato recluta con estilo plano y contorno cerrado, pero la espada es demasiado larga y la empuñadura no se lee separada, lo que perjudica la legibilidad a 16x19 px.",
+      "correccion": "shorten the sword to about head length, separate the paw from the hilt, shorten the tail, and make the cap a round dome with little or no visor",
+      "motivos": [
+        "Buen gato recluta con estilo plano y contorno cerrado, pero la espada es demasiado larga y la empuñadura no se lee separada, lo que perjudica la legibilidad a 16x19 px.",
+        "Buen gato recluta con estilo flat y outline cerrado, pero la espada es demasiado larga y la lectura de la pata con el arma se pierde en tamaño real."
+      ],
+      "notas_por_pasada": [
+        7.6,
+        8.0
+      ]
+    },
+    "nota": 7.8,
+    "aprobada": false,
+    "razones_rechazo": [
+      "nota 7.8 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s208.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 58,
+      "ocupacion_alto": 0.871,
+      "area_silueta": 0.371,
+      "contorno_oscuro": 0.761,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 6.0,
+      "c_contorno": 8.0,
+      "c_animable": 5.0,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "capucha con visera pronunciada en lugar de domo redondo",
+        "cola larga y visible que rompe la silueta chibi",
+        "cola larga y visible, no corta",
+        "espada demasiado larga (supera el cuerpo del gato)",
+        "espada demasiado larga (supera el cuerpo del gato, no es espada de recluta)",
+        "espada no sostenida claramente por una pata delantera (parece flotar)",
+        "ojos demasiado grandes, no son puntos pequeños",
+        "pata delantera derecha no diferenciada del torso",
+        "pata no se lee separada del puño"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño del brief: espada demasiado larga, cola excesiva y pata/soporte de espada poco claros.",
+      "correccion": "short iron sword clearly shorter than the cat's body, held in one front paw, short tail, chibi cat with brown leather cap and tunic, facing right, thick closed black outline, flat colors, white background",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño del brief: espada demasiado larga, cola excesiva y pata/soporte de espada poco claros.",
+        "Buen estilo de arte plano y contorno cerrado, pero falla la puerta de diseño por la espada excesivamente larga y la cola larga; además la espada oculta la pata y perjudica la animabilidad."
+      ],
+      "notas_por_pasada": [
+        5.85,
+        5.7
+      ]
+    },
+    "nota": 5.78,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "c_animable = 5.0 < 6",
+      "nota 5.78 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r0-existentes\\ref_blanco_s203_e1.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 51,
+      "ocupacion_alto": 0.897,
+      "area_silueta": 0.464,
+      "contorno_oscuro": 0.771,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": true,
+      "c_diseno": 8.0,
+      "c_silueta": 8.0,
+      "c_contorno": 9.0,
+      "c_animable": 7.0,
+      "c_defectos": 8.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola ligeramente asimétrica",
+        "la cola es visible y larga, no corta",
+        "la espada es algo larga para un recluta",
+        "la espada no se separa claramente de la pata al reducirse",
+        "patas traseras unidas por una sola línea de suelo"
+      ],
+      "motivo": "Buen diseño de gato con gorra y espada, legible en pequeño, pero la espada y la cola no cumplen del todo el brief de recluta",
+      "correccion": "shorten the sword to about head length, shorten the tail, and separate the sword hilt from the paw so both read at 16x19 pixels",
+      "motivos": [
+        "Buen diseño de gato con gorra y espada, legible en pequeño, pero la espada y la cola no cumplen del todo el brief de recluta",
+        "Buen diseño de gato recluta con gorra y espada, legible en miniatura; la cola y las patas traseras necesitan ajuste menor."
+      ],
+      "notas_por_pasada": [
+        8.0,
+        8.0
+      ]
+    },
+    "nota": 8.0,
+    "aprobada": true,
+    "razones_rechazo": [],
+    "ediciones": 1,
+    "editada_de": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s203.png",
+    "cambio_pedido": "short iron sword clearly shorter than the cat's body, short tail, round dome cap with little or no visor, pink inner ears, dot eyes, tiny mouth, light warm fur, plain brown leather tunic, thick closed near-black outline, white background, facing right, chibi proportions",
+    "nota_antes": 7.97
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r0-existentes\\ref_blanco_s207_e1.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 67,
+      "ocupacion_alto": 0.865,
+      "area_silueta": 0.403,
+      "contorno_oscuro": 0.779,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 6.0,
+      "c_silueta": 7.0,
+      "c_contorno": 8.0,
+      "c_animable": 6.5,
+      "c_defectos": 8.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola larga y visible (la breve pide cola corta)",
+        "el gorro tiene visera pronunciada (no es un casco de domo)",
+        "espada demasiado larga (supera el cuerpo del gato)",
+        "la cola es larga y delgada, no corta",
+        "la espada es demasiado larga, supera la altura del cuerpo",
+        "no se ven orejas rosadas por dentro",
+        "pata izquierda oculta detrás del torso",
+        "visor pronunciado en la gorra (no es un casco redondo)"
+      ],
+      "motivo": "Buen estilo flat y contorno cerrado, pero la espada es demasiado larga, la gorra tiene visor y la cola es larga, rompiendo el diseño de recluta básico.",
+      "correccion": "short iron sword about head length, round dome cap with no visor, short tail, both paws visible, light warm fur, brown leather tunic",
+      "motivos": [
+        "Buen estilo flat y contorno cerrado, pero la espada es demasiado larga, la gorra tiene visor y la cola es larga, rompiendo el diseño de recluta básico.",
+        "buen estilo chibi y fondo blanco, pero el gorro con visera, la espada larga y la cola larga rompen el brief del recluta"
+      ],
+      "notas_por_pasada": [
+        6.9,
+        7.1
+      ]
+    },
+    "nota": 7.0,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "nota 7.0 < 8.0"
+    ],
+    "ediciones": 1,
+    "editada_de": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s207.png",
+    "cambio_pedido": "shorten the sword to about head length, separate the paw from the hilt, shorten the tail, and make the cap a round dome with little or no visor",
+    "nota_antes": 7.8
+  }
+]

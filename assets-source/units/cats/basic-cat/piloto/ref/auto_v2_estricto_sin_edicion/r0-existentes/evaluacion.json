@@ -1,0 +1,430 @@
+[
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s201.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 51,
+      "ocupacion_alto": 0.878,
+      "area_silueta": 0.381,
+      "contorno_oscuro": 0.774,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.5,
+      "c_silueta": 6.0,
+      "c_contorno": 8.0,
+      "c_animable": 5.5,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "capa con visera/borde en lugar de gorro redondo sin visera",
+        "cola demasiado larga y delgada, no corta",
+        "el gorro tiene visera/ala en lugar de ser un simple casco redondo sin ala",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "la espada es demasiado larga, supera la altura de la cabeza",
+        "la mano delantera no se lee separada del puño",
+        "la túnica parece un vestido sin piernas separadas",
+        "mano delantera no se lee por separado del puño",
+        "patas traseras no separadas del suelo, pose rígida"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visera y cola larga rompen el brief del recluta.",
+      "correccion": "short sword blade shorter than head height, round dome-shaped brown leather cap without visor or brim, short stubby tail, front hand separated from hilt",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visera y cola larga rompen el brief del recluta.",
+        "buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, mano sin separar del puño y gorro con visera"
+      ],
+      "notas_por_pasada": [
+        5.7,
+        6.3
+      ]
+    },
+    "nota": 6.0,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.5 < 6",
+      "c_animable = 5.5 < 6",
+      "nota 6.0 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s202.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 57,
+      "ocupacion_alto": 0.833,
+      "area_silueta": 0.365,
+      "contorno_oscuro": 0.766,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 5.0,
+      "c_silueta": 6.0,
+      "c_contorno": 8.0,
+      "c_animable": 6.5,
+      "c_defectos": 7.0,
+      "c_consistencia": null,
+      "defectos": [
+        "capa de visera o ala en la gorra",
+        "cara de frente en lugar de tres cuartos mirando a la derecha",
+        "cola demasiado larga y gruesa para un gatito chibi",
+        "cola visible detrás del cuerpo",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "la gorra tiene visor/ala en lugar de ser redonda y sin ala",
+        "la mano delantera no se lee separada del puño",
+        "las orejas no sobresalen claramente a ambos lados de la gorra",
+        "patas delanteras no se leen separadas del torso"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorra con visera y orientación frontal.",
+      "correccion": "short iron sword blade shorter than head height, round dome-shaped brown leather cap without visor or brim, cat facing right in three-quarter view",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorra con visera y orientación frontal.",
+        "Buen estilo chibi y contorno cerrado, pero falla en el diseño clave: espada larga, mano no separada del puño y gorra con visor."
+      ],
+      "notas_por_pasada": [
+        6.5,
+        6.3
+      ]
+    },
+    "nota": 6.4,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 5.0 < 6",
+      "nota 6.4 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s203.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 39,
+      "ocupacion_alto": 0.923,
+      "area_silueta": 0.508,
+      "contorno_oscuro": 0.745,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 5.0,
+      "c_silueta": 6.0,
+      "c_contorno": 8.0,
+      "c_animable": 6.5,
+      "c_defectos": 7.5,
+      "c_consistencia": null,
+      "defectos": [
+        "El color del pelaje es gris claro, no el gris crema cálido del brief",
+        "El gorro tiene visera y ala, no es un simple gorro de cuero marrón sin visera",
+        "La espada es demasiado larga, supera la altura de la cabeza",
+        "capucha con visor/ala que sobresale a ambos lados, no es un gorro redondo sin visor",
+        "cola larga y delgada, no corta",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "la mano delantera no se lee separada del puño de la espada",
+        "pelaje gris claro en lugar del gris crema cálido (#cfc4b3)",
+        "tunic con cuello en V y cinturón, no es una túnica de cuero marrón simple"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visor y colores incorrectos.",
+      "correccion": "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, warm grey-cream fur #cfc4b3, plain brown leather tunic, short tail, front hand separate from sword hilt",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visor y colores incorrectos.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visera y color de pelaje incorrecto."
+      ],
+      "notas_por_pasada": [
+        6.3,
+        6.65
+      ]
+    },
+    "nota": 6.48,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 5.0 < 6",
+      "nota 6.48 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s204.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 66,
+      "ocupacion_alto": 0.859,
+      "area_silueta": 0.403,
+      "contorno_oscuro": 0.772,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 5.0,
+      "c_contorno": 7.5,
+      "c_animable": 5.5,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "capucha con visor/ala en lugar de gorro redondo sin visera",
+        "capucha con visor/ala en lugar de gorro redondo sin visor",
+        "cola demasiado gruesa y larga para un gatito chibi",
+        "cola demasiado larga y gruesa",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "patas delanteras no leen como manos empuñando el arma por separado",
+        "patas delanteras no se leen separadas del torso ni del arma",
+        "patas traseras no separadas del cuerpo",
+        "tunica parece cinturon y deja piernas descubiertas en lugar de ser prenda completa",
+        "túnica marrón no se lee como prenda de cuero clara"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visera y cola excesiva rompen el brief del recluta.",
+      "correccion": "short sword shorter than head height, round dome-shaped brown leather cap without visor or brim, short stubby tail, plain brown leather tunic, front hand separate from hilt",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visera y cola excesiva rompen el brief del recluta.",
+        "gato chibi bien orientado y con estilo plano, pero falla en diseno al llevar espada larga, visor y tunica incompleta"
+      ],
+      "notas_por_pasada": [
+        5.85,
+        5.3
+      ]
+    },
+    "nota": 5.58,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "c_silueta = 5.0 < 6",
+      "c_animable = 5.5 < 6",
+      "nota 5.58 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s205.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 65,
+      "ocupacion_alto": 0.87,
+      "area_silueta": 0.398,
+      "contorno_oscuro": 0.767,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.5,
+      "c_silueta": 5.5,
+      "c_contorno": 7.5,
+      "c_animable": 6.0,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "capucha con visor/ala en lugar de gorro redondo sin ala",
+        "cola con rayas no previstas en el brief",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "la mano delantera no se lee separada del puño",
+        "mano delantera no se lee separada del puño",
+        "pelaje demasiado claro/casi blanco, no es el gris crema cálido del brief",
+        "túnica con hebilla/cinturón extra no solicitado",
+        "túnica marrón con solapa/pechera que parece armadura o detalles extra"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero incumple varios requisitos clave del diseño: espada larga, cola rayada, gorro con visor y mano no separada del puño.",
+      "correccion": "short iron sword blade shorter than the cat's head height, front hand clearly separated from the hilt, plain round brown leather cap without visor or brim, solid warm grey-cream fur without tail stripes, plain brown leather tunic without extra belt buckle",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero incumple varios requisitos clave del diseño: espada larga, cola rayada, gorro con visor y mano no separada del puño.",
+        "Buen estilo de dibujo plano y contorno grueso, pero falla en el diseño clave: espada larga, cola rayada y colores incorrectos para el Basic Cat."
+      ],
+      "notas_por_pasada": [
+        6.3,
+        5.5
+      ]
+    },
+    "nota": 5.9,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.5 < 6",
+      "c_silueta = 5.5 < 6",
+      "nota 5.9 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s206.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 87,
+      "ocupacion_alto": 0.824,
+      "area_silueta": 0.346,
+      "contorno_oscuro": 0.761,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.5,
+      "c_silueta": 5.5,
+      "c_contorno": 7.0,
+      "c_animable": 6.0,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "cola no se distingue a 16x19",
+        "cola visible por detrás rompe la silueta frontal limpia",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "falta color gris-crema cálido único (parece blanco/crema plano)",
+        "gorra tiene visera/ala que sobresale",
+        "gorro tiene visera/banda que rompe la forma de dome sin ala",
+        "mano delantera no se lee separada del puño",
+        "túnica marrón no distingue bien la prenda de cuero en miniatura"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno grueso, pero falla el diseño clave: la espada es demasiado larga y la mano no se separa del puño, además el gorro no es un dome de cuero limpio.",
+      "correccion": "short iron sword blade shorter than the cat's head height, front hand clearly separated from the hilt, round dome-shaped brown leather cap without visor or brim",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno grueso, pero falla el diseño clave: la espada es demasiado larga y la mano no se separa del puño, además el gorro no es un dome de cuero limpio.",
+        "Buen estilo de dibujo plano y contorno grueso, pero falla en el diseño clave: la espada es demasiado larga, la mano no se separa del puño y la gorra tiene visera prohibida."
+      ],
+      "notas_por_pasada": [
+        5.5,
+        6.1
+      ]
+    },
+    "nota": 5.8,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.5 < 6",
+      "c_silueta = 5.5 < 6",
+      "nota 5.8 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s207.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 67,
+      "ocupacion_alto": 0.865,
+      "area_silueta": 0.372,
+      "contorno_oscuro": 0.778,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 5.0,
+      "c_silueta": 6.0,
+      "c_contorno": 8.0,
+      "c_animable": 6.0,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "capucha con visor/ala en lugar de gorro redondo sin visor",
+        "cola visible por detrás del cuerpo",
+        "cola visible por detrás rompe la silueta frontal limpia",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "pelaje blanco en lugar de gris crema cálido",
+        "pelaje gris claro en lugar de gris crema cálido (#cfc4b3)",
+        "tunic con solapa cruzada en lugar de túnica de cuero marrón simple"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, visor en la gorra y color de pelaje incorrecto.",
+      "correccion": "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, warm grey-cream fur color #cfc4b3",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, visor en la gorra y color de pelaje incorrecto.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visor y colores incorrectos."
+      ],
+      "notas_por_pasada": [
+        6.15,
+        6.3
+      ]
+    },
+    "nota": 6.23,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 5.0 < 6",
+      "nota 6.23 < 8.0"
+    ]
+  },
+  {
+    "archivo": "assets-source\\units\\cats\\basic-cat\\piloto\\ref\\r2\\ref_blanco_s208.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 58,
+      "ocupacion_alto": 0.871,
+      "area_silueta": 0.371,
+      "contorno_oscuro": 0.761,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 5.0,
+      "c_contorno": 7.5,
+      "c_animable": 5.0,
+      "c_defectos": 6.0,
+      "c_consistencia": null,
+      "defectos": [
+        "capa con visor/ala en lugar de gorro redondo sin visor",
+        "capucha con visor/ala en lugar de gorro redondo sin visor",
+        "cola demasiado larga y delgada",
+        "cola excesivamente larga y gruesa",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "mano delantera no se lee separada del puño",
+        "patas traseras fusionadas sin separación",
+        "pelaje blanco en lugar de gris crema cálido",
+        "tunic con cuello en V y costura visible en lugar de túnica marrón simple"
+      ],
+      "motivo": "Buen estilo de dibujo plano y grosor de contorno, pero falla en el diseño clave: espada larga, gorro con visor y patas traseras unidas.",
+      "correccion": "short sword blade shorter than head height, round dome-shaped brown leather cap without visor or brim, separated feet on one ground line, front hand distinct from hilt",
+      "motivos": [
+        "Buen estilo de dibujo plano y grosor de contorno, pero falla en el diseño clave: espada larga, gorro con visor y patas traseras unidas.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, gorro con visor y color de pelaje incorrecto."
+      ],
+      "notas_por_pasada": [
+        5.3,
+        5.5
+      ]
+    },
+    "nota": 5.4,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "c_silueta = 5.0 < 6",
+      "c_animable = 5.0 < 6",
+      "nota 5.4 < 8.0"
+    ]
+  }
+]

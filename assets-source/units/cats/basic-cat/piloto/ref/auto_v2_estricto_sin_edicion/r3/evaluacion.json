@@ -1,0 +1,316 @@
+[
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r3\\ref_blanco_s700.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 68,
+      "ocupacion_alto": 0.833,
+      "area_silueta": 0.37,
+      "contorno_oscuro": 0.774,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 5.0,
+      "c_silueta": 6.0,
+      "c_contorno": 7.0,
+      "c_animable": 6.0,
+      "c_defectos": 7.0,
+      "c_consistencia": null,
+      "defectos": [
+        "capucha con visor/ala en lugar de gorro redondo sin visera",
+        "capucha con visor/ala en lugar de gorro redondo sin visor",
+        "cola visible por detrás del cuerpo",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "patas traseras no separadas del cuerpo",
+        "patas traseras no separadas del torso"
+      ],
+      "motivo": "Buen estilo chibi y contorno cerrado, pero falla el diseño clave: la espada es demasiado larga y el gorro tiene visor, rompiendo el brief del recluta básico.",
+      "correccion": "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim",
+      "motivos": [
+        "Buen estilo chibi y contorno cerrado, pero falla el diseño clave: la espada es demasiado larga y el gorro tiene visor, rompiendo el brief del recluta básico.",
+        "Buen estilo de dibujo plano y contorno grueso, pero falla en el diseño clave: la espada es demasiado larga y el gorro tiene visera, rompiendo el brief del recluta básico."
+      ],
+      "notas_por_pasada": [
+        6.1,
+        6.1
+      ]
+    },
+    "nota": 6.1,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 5.0 < 6",
+      "nota 6.1 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r3\\ref_blanco_s701.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 93,
+      "ocupacion_alto": 0.812,
+      "area_silueta": 0.317,
+      "contorno_oscuro": 0.778,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 5.0,
+      "c_contorno": 7.5,
+      "c_animable": 5.0,
+      "c_defectos": 6.0,
+      "c_consistencia": null,
+      "defectos": [
+        "capucha con visor/ala que sobresale a la derecha",
+        "cara de frente en lugar de tres cuartos mirando a la derecha",
+        "cola visible por detrás del cuerpo",
+        "el gorro tiene visera/ala, el brief pide gorro redondo sin visera ni ala",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "espada demasiado larga (supera la altura de la cabeza), no es una espada corta de recluta",
+        "la cola es demasiado larga y gruesa, no es una cola corta",
+        "la mano delantera no se lee separada del puño",
+        "patas traseras no separadas del torso"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, mano no separada del puño y gorro con visera prohibida.",
+      "correccion": "short iron sword shorter than the cat's head height, hand separate from hilt, round brown leather cap without visor or brim, short tail",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, mano no separada del puño y gorro con visera prohibida.",
+        "Buen estilo de dibujo plano y contorno grueso, pero falla en proporciones clave: espada larga, visor en la gorra y orientación frontal."
+      ],
+      "notas_por_pasada": [
+        5.5,
+        5.3
+      ]
+    },
+    "nota": 5.4,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "c_silueta = 5.0 < 6",
+      "c_animable = 5.0 < 6",
+      "nota 5.4 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r3\\ref_blanco_s702.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 77,
+      "ocupacion_alto": 0.834,
+      "area_silueta": 0.353,
+      "contorno_oscuro": 0.733,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 5.0,
+      "c_contorno": 7.5,
+      "c_animable": 6.0,
+      "c_defectos": 6.0,
+      "c_consistencia": null,
+      "defectos": [
+        "capa o solapa de túnic visible",
+        "capucha con visor/ala en lugar de gorro redondo sin visor",
+        "cara demasiado frontal, no perfilada a la derecha",
+        "cola demasiado larga y gruesa",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "espada demasiado larga (supera la altura de la cabeza), no es una espada corta de recluta",
+        "gorra con visera y botón superior, no es un gorro de cuero redondo sin visera",
+        "la mano delantera no se lee separada del puño de la espada",
+        "patas traseras no separadas del cuerpo",
+        "túnica marrón con detalles que no leen como cuero plano"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga y gorra con visera en lugar de gorro redondo sin visera.",
+      "correccion": "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, front hand separated from the hilt",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga y gorra con visera en lugar de gorro redondo sin visera.",
+        "Buen estilo de dibujo plano y contorno grueso, pero falla en el diseño clave: espada larga, gorro con visor y cola excesiva rompen el brief del recluta básico."
+      ],
+      "notas_por_pasada": [
+        5.7,
+        5.5
+      ]
+    },
+    "nota": 5.6,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "c_silueta = 5.0 < 6",
+      "nota 5.6 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r3\\ref_blanco_s703.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 89,
+      "ocupacion_alto": 0.809,
+      "area_silueta": 0.326,
+      "contorno_oscuro": 0.777,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.0,
+      "c_silueta": 6.0,
+      "c_contorno": 8.0,
+      "c_animable": 6.0,
+      "c_defectos": 7.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola visible por detrás del cuerpo",
+        "color de pelaje blanco en lugar de gris crema cálido",
+        "color de pelaje blanco en lugar de gris-cálido (#cfc4b3)",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "gorra con visera/ala en lugar de redonda sin visera",
+        "mano delantera no se lee separada del puño",
+        "patas traseras no separadas claramente del suelo"
+      ],
+      "motivo": "Buen contorno y estilo chibi, pero falla en el diseño clave: espada larga, pelaje blanco y gorra con visera.",
+      "correccion": "short iron sword blade shorter than cat head height, warm grey-cream fur #cfc4b3, round dome-shaped brown leather cap without visor or brim",
+      "motivos": [
+        "Buen contorno y estilo chibi, pero falla en el diseño clave: espada larga, pelaje blanco y gorra con visera.",
+        "Buen estilo de dibujo plano y contorno cerrado, pero falla en el diseño clave: espada larga, pelaje blanco y gorra con visera rompen el brief del recluta."
+      ],
+      "notas_por_pasada": [
+        6.05,
+        6.05
+      ]
+    },
+    "nota": 6.05,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.0 < 6",
+      "nota 6.05 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r3\\ref_blanco_s704.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 73,
+      "ocupacion_alto": 0.845,
+      "area_silueta": 0.369,
+      "contorno_oscuro": 0.736,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 4.5,
+      "c_silueta": 5.5,
+      "c_contorno": 7.5,
+      "c_animable": 6.0,
+      "c_defectos": 6.5,
+      "c_consistencia": null,
+      "defectos": [
+        "capa con visera/ala que sobresale del casco",
+        "capucha con visor/ala en lugar de gorro redondo sin ala",
+        "cola ausente en la vista pequeña",
+        "cola demasiado larga y gruesa",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "mano delantera no se lee separada del puño",
+        "patas delanteras no se leen separadas del torso"
+      ],
+      "motivo": "gato chibi bien orientado y con estilo plano, pero la espada es demasiado larga y el casco tiene visera prohibida",
+      "correccion": "short iron sword blade shorter than the cat's head height, round dome-shaped brown leather cap without visor or brim, visible short tail",
+      "motivos": [
+        "gato chibi bien orientado y con estilo plano, pero la espada es demasiado larga y el casco tiene visera prohibida",
+        "Buen estilo de dibujo plano y contorno cerrado, pero la espada es demasiado larga y la mano no se distingue del puño, incumpliendo el brief del recluta."
+      ],
+      "notas_por_pasada": [
+        5.5,
+        6.3
+      ]
+    },
+    "nota": 5.9,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 4.5 < 6",
+      "c_silueta = 5.5 < 6",
+      "nota 5.9 < 8.0"
+    ]
+  },
+  {
+    "archivo": "C:\\Users\\Usuario\\Documents\\GitHub\\IA GAME\\battle-cats-web\\assets-source\\units\\cats\\basic-cat\\piloto\\ref\\auto\\r3\\ref_blanco_s705.png",
+    "codigo": {
+      "fondo_blanco": 1.0,
+      "margen_px": 83,
+      "ocupacion_alto": 0.822,
+      "area_silueta": 0.347,
+      "contorno_oscuro": 0.769,
+      "ok": true,
+      "fallos_codigo": []
+    },
+    "venice": {
+      "g_especie": true,
+      "g_orientacion": true,
+      "g_estilo": true,
+      "g_fondo": true,
+      "g_diseno": false,
+      "c_diseno": 5.0,
+      "c_silueta": 6.0,
+      "c_contorno": 8.0,
+      "c_animable": 6.0,
+      "c_defectos": 7.0,
+      "c_consistencia": null,
+      "defectos": [
+        "cola no visible en la vista reducida",
+        "cola visible por detrás del cuerpo",
+        "espada demasiado larga (supera la altura de la cabeza)",
+        "gorra con visera/ala prohibida",
+        "gorra no es redonda/domo sin ala",
+        "mano delantera no se lee separada de la empuñadura",
+        "visor en la gorra (prohibido)"
+      ],
+      "motivo": "Buen estilo de dibujo plano y contorno cerrado, pero la espada es demasiado larga y la gorra tiene visor, violando el brief del recluta básico.",
+      "correccion": "short iron sword blade shorter than cat head height, round dome-shaped brown leather cap without visor or brim, visible short tail, facing right",
+      "motivos": [
+        "Buen estilo de dibujo plano y contorno cerrado, pero la espada es demasiado larga y la gorra tiene visor, violando el brief del recluta básico.",
+        "Buen estilo chibi y contorno cerrado, pero falla en el diseño clave: espada larga y gorra con visera, además de que la mano y la empuñadura no se distinguen."
+      ],
+      "notas_por_pasada": [
+        6.3,
+        6.3
+      ]
+    },
+    "nota": 6.3,
+    "aprobada": false,
+    "razones_rechazo": [
+      "puerta g_diseno = no",
+      "c_diseno = 5.0 < 6",
+      "nota 6.3 < 8.0"
+    ]
+  }
+]
